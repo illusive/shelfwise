@@ -4,7 +4,11 @@ import type { SosMeasure } from './sos';
  * Share across several visits from their underlying counts (never an average of
  * percentages). Unavailable measures contribute nothing.
  */
-export function aggregateShare(measures: readonly SosMeasure[]): { sharePct: number | null; client: number; eligible: number } {
+export function aggregateShare(measures: readonly SosMeasure[]): {
+  sharePct: number | null;
+  client: number;
+  eligible: number;
+} {
   let client = 0;
   let eligible = 0;
   for (const m of measures) {

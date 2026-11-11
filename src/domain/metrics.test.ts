@@ -25,7 +25,12 @@ function visit() {
 describe('computeVisitMetrics', () => {
   it('computes shelf and cooler separately and aggregates counts for overall', () => {
     const m = computeVisitMetrics(visit(), [], catalogue);
-    expect(m.scopes.shelf.sos.counts).toEqual({ client: 1, competitor: 1, unknown: 1, eligible: 3 });
+    expect(m.scopes.shelf.sos.counts).toEqual({
+      client: 1,
+      competitor: 1,
+      unknown: 1,
+      eligible: 3,
+    });
     expect(m.scopes.cooler.sos.sharePct).toBe(50);
     // 2 of 5 counted facings, not the average of 33.3% and 50%.
     expect(m.scopes.overall.sos.sharePct).toBe(40);
@@ -34,7 +39,10 @@ describe('computeVisitMetrics', () => {
 
   it('counts licensed brands as client', () => {
     const m = computeVisitMetrics(visit(), [], catalogue);
-    expect(m.clientProducts.map((p) => p.productId)).toEqual(['royal-pilsner-6x330', 'pepsi-max-330']);
+    expect(m.clientProducts.map((p) => p.productId)).toEqual([
+      'royal-pilsner-6x330',
+      'pepsi-max-330',
+    ]);
     expect(m.uniqueClientSkus).toBe(2);
   });
 
@@ -42,10 +50,31 @@ describe('computeVisitMetrics', () => {
     const base = visit();
     const res = response({
       ...base,
-      images: [...base.images, { imageId: 'img-4', usable: true, locationType: 'display', locationId: 'loc-d', issues: [] }],
-      locations: [...base.locations, { locationId: 'loc-d', type: 'display', label: 'Display 1', imageIds: ['img-4'] }],
+      images: [
+        ...base.images,
+        {
+          imageId: 'img-4',
+          usable: true,
+          locationType: 'display',
+          locationId: 'loc-d',
+          issues: [],
+        },
+      ],
+      locations: [
+        ...base.locations,
+        { locationId: 'loc-d', type: 'display', label: 'Display 1', imageIds: ['img-4'] },
+      ],
       facings: [...base.facings, facing('loc-d', 'img-4', matched('royal-classic-6x330'), 'd1')],
-      displays: [{ displayId: 'd', imageId: 'img-4', locationId: 'loc-d', region: null, brandIds: ['royal'], description: 'Floor' }],
+      displays: [
+        {
+          displayId: 'd',
+          imageId: 'img-4',
+          locationId: 'loc-d',
+          region: null,
+          brandIds: ['royal'],
+          description: 'Floor',
+        },
+      ],
     });
     const m = computeVisitMetrics(res, [], catalogue);
     expect(m.scopes.overall.sos.counts.eligible).toBe(5);
@@ -117,7 +146,10 @@ describe('compareSos', () => {
     const base = visit();
     const wider = response({
       ...base,
-      locations: [...base.locations, { locationId: 'loc-shelf-2', type: 'shelf', label: 'Shelf 2', imageIds: ['img-1'] }],
+      locations: [
+        ...base.locations,
+        { locationId: 'loc-shelf-2', type: 'shelf', label: 'Shelf 2', imageIds: ['img-1'] },
+      ],
     });
     const cur = computeVisitMetrics(wider, [], catalogue);
     expect(compareSos(cur, prev, 'shelf').reasons).toContain('coverage-differs');
@@ -126,11 +158,16 @@ describe('compareSos', () => {
   it('does not compare different methods', () => {
     const prev = { ...computeVisitMetrics(visit(), [], catalogue), methodVersion: 'other' };
     const cur = computeVisitMetrics(visit(), [], catalogue);
-    expect(compareSos(cur, prev, 'shelf')).toMatchObject({ status: 'not-comparable', deltaPp: null });
+    expect(compareSos(cur, prev, 'shelf')).toMatchObject({
+      status: 'not-comparable',
+      deltaPp: null,
+    });
   });
 
   it('handles a first visit', () => {
-    expect(compareSos(computeVisitMetrics(visit(), [], catalogue), null, 'shelf').status).toBe('no-previous');
+    expect(compareSos(computeVisitMetrics(visit(), [], catalogue), null, 'shelf').status).toBe(
+      'no-previous',
+    );
   });
 });
 
@@ -147,7 +184,13 @@ describe('analysisResponseSchema', () => {
 
   it('rejects matched observations without a product or brand', () => {
     const res = visit();
-    res.facings[0].match = { status: 'matched', productId: null, brandId: null, category: null, providerScore: 1 };
+    res.facings[0].match = {
+      status: 'matched',
+      productId: null,
+      brandId: null,
+      category: null,
+      providerScore: 1,
+    };
     expect(analysisResponseSchema.safeParse(res).success).toBe(false);
   });
 

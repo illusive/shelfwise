@@ -50,7 +50,14 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
   tone?: 'light' | 'dark' | 'plain';
 }
 
-export function IconButton({ label, tone = 'plain', className, children, type = 'button', ...props }: IconButtonProps) {
+export function IconButton({
+  label,
+  tone = 'plain',
+  className,
+  children,
+  type = 'button',
+  ...props
+}: IconButtonProps) {
   return (
     <button
       type={type}

@@ -44,7 +44,11 @@ export async function createServices(
     repos,
     blobs,
     catalogue: indexCatalogue(seedCatalogue),
-    captures: createCaptureService({ repos, blobs, images: options.images ?? browserImageProcessor }),
+    captures: createCaptureService({
+      repos,
+      blobs,
+      images: options.images ?? browserImageProcessor,
+    }),
     analysis: createAnalysisService({ repos, blobs, provider }),
   };
 }

@@ -67,11 +67,18 @@ export function applyFacingCorrections(
 function classifyAiFacing(f: ReconciledFacing, catalogue: CatalogueIndex): EffectiveFacing {
   const { match } = f;
   const unresolved = match.status !== 'matched' || f.conflict;
-  const brand = match.status === 'matched' ? resolveBrand(catalogue, match.productId, match.brandId) : undefined;
+  const brand =
+    match.status === 'matched'
+      ? resolveBrand(catalogue, match.productId, match.brandId)
+      : undefined;
   const product = match.productId ? catalogue.productById.get(match.productId) : undefined;
   return {
     ...f,
-    classification: brand ? (isClientRelation(brand.relation) ? 'client' : 'competitor') : 'unknown',
+    classification: brand
+      ? isClientRelation(brand.relation)
+        ? 'client'
+        : 'competitor'
+      : 'unknown',
     productId: brand ? (product?.id ?? null) : null,
     brandId: brand?.id ?? null,
     category: product?.category ?? brand?.category ?? match.category,
@@ -89,16 +96,39 @@ function withCorrection(
   const base = { ...f, source: 'rep' as const, needsReview: false, excluded: false };
   switch (value.kind) {
     case 'not-beverage':
-      return { ...base, classification: 'unknown', productId: null, brandId: null, category: null, excluded: true };
+      return {
+        ...base,
+        classification: 'unknown',
+        productId: null,
+        brandId: null,
+        category: null,
+        excluded: true,
+      };
     case 'unknown':
-      return { ...base, classification: 'unknown', productId: null, brandId: null, category: f.match.category };
+      return {
+        ...base,
+        classification: 'unknown',
+        productId: null,
+        brandId: null,
+        category: f.match.category,
+      };
     case 'product':
     case 'brand': {
       const productId = value.kind === 'product' ? value.productId : null;
-      const brand = resolveBrand(catalogue, productId, value.kind === 'brand' ? value.brandId : null);
+      const brand = resolveBrand(
+        catalogue,
+        productId,
+        value.kind === 'brand' ? value.brandId : null,
+      );
       const product = productId ? catalogue.productById.get(productId) : undefined;
       if (!brand) {
-        return { ...base, classification: 'unknown', productId: null, brandId: null, category: f.match.category };
+        return {
+          ...base,
+          classification: 'unknown',
+          productId: null,
+          brandId: null,
+          category: f.match.category,
+        };
       }
       return {
         ...base,

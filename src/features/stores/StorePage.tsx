@@ -1,7 +1,13 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';
-import { useCurrentRep, useInvalidate, useStore, useVisitDetail, useVisitSummaries } from '@/app/data';
+import {
+  useCurrentRep,
+  useInvalidate,
+  useStore,
+  useVisitDetail,
+  useVisitSummaries,
+} from '@/app/data';
 import { useServices } from '@/app/services-context';
 import { formatPct, formatRelativeDay, formatTime, padSequence } from '@/i18n/format';
 import { t } from '@/i18n/strings';
@@ -25,7 +31,12 @@ export function StorePage({ storeId }: { storeId: string }) {
   const actions = useVisitActions();
 
   if (isPending || !rep) return null;
-  if (!store) return <Screen nav><EmptyState title={t.common.notFound} /></Screen>;
+  if (!store)
+    return (
+      <Screen nav>
+        <EmptyState title={t.common.notFound} />
+      </Screen>
+    );
 
   const draft = summaries.find((s) => s.visit.status === 'draft' && s.visit.repId === rep.id);
 
@@ -33,11 +44,16 @@ export function StorePage({ storeId }: { storeId: string }) {
     const visit = await actions.startVisit(store.id, rep.id);
     await navigate({ to: '/visits/$visitId/camera', params: { visitId: visit.id } });
   };
-  const resolveVisitId = async () => (draft ? draft.visit.id : (await actions.startVisit(store.id, rep.id)).id);
+  const resolveVisitId = async () =>
+    draft ? draft.visit.id : (await actions.startVisit(store.id, rep.id)).id;
 
   const header = (
     <>
-      <TopBar title={t.store.title} subtitle={t.store.subtitle} onBack={() => void navigate({ to: '/' })} />
+      <TopBar
+        title={t.store.title}
+        subtitle={t.store.subtitle}
+        onBack={() => void navigate({ to: '/' })}
+      />
       <Eyebrow steps={{ current: 1, total: 3 }}>{t.store.eyebrow}</Eyebrow>
       <div className={shared.stackTight}>
         <h1 className={shared.storeTitle} data-testid="store-name">
@@ -92,7 +108,11 @@ export function StorePage({ storeId }: { storeId: string }) {
           tone={s.job?.status === 'failed' ? 'danger' : 'info'}
           title={s.job?.status === 'failed' ? t.processing.status.failed : t.store.processing}
           action={
-            <Link to="/visits/$visitId/processing" params={{ visitId: s.visit.id }} className={styles.changeStore}>
+            <Link
+              to="/visits/$visitId/processing"
+              params={{ visitId: s.visit.id }}
+              className={styles.changeStore}
+            >
               {t.common.viewAll} →
             </Link>
           }
@@ -125,7 +145,11 @@ function LatestResult({ summary }: { summary: VisitSummary }) {
   if (!metrics) return null;
   const share = (pct: number | null) => (pct === null ? '—' : formatPct(pct));
   return (
-    <Link to="/visits/$visitId/results" params={{ visitId: visit.id }} className={`${shared.card} ${styles.latest}`}>
+    <Link
+      to="/visits/$visitId/results"
+      params={{ visitId: visit.id }}
+      className={`${shared.card} ${styles.latest}`}
+    >
       <div className={shared.spread}>
         <SectionHeader title={t.store.latest} />
         <MockBadge source={metrics.source} />
@@ -184,7 +208,13 @@ function DraftHub({
   return (
     <Screen
       action={
-        <Button block size="lg" withArrow disabled={captures.length === 0 || submitting} onClick={onSubmit}>
+        <Button
+          block
+          size="lg"
+          withArrow
+          disabled={captures.length === 0 || submitting}
+          onClick={onSubmit}
+        >
           {t.store.analyse(captures.length)}
         </Button>
       }
@@ -202,15 +232,23 @@ function DraftHub({
                 className={styles.leadImage}
               />
               <span className={styles.chip}>{padSequence(lead.sequence)}</span>
-              <IconButton label={t.store.takePhotos} tone="light" className={styles.leadCamera} onClick={toCamera}>
+              <IconButton
+                label={t.store.takePhotos}
+                tone="light"
+                className={styles.leadCamera}
+                onClick={toCamera}
+              >
                 <CameraIcon />
               </IconButton>
             </div>
             <div className={shared.spread}>
               <div className={shared.stackTight}>
-                <span className={styles.guideTitle}>{t.store.capture(padSequence(lead.sequence))}</span>
+                <span className={styles.guideTitle}>
+                  {t.store.capture(padSequence(lead.sequence))}
+                </span>
                 <span className={shared.muted}>
-                  {formatRelativeDay(lead.capturedAt, timeZone)} · {formatTime(lead.capturedAt, timeZone)}
+                  {formatRelativeDay(lead.capturedAt, timeZone)} ·{' '}
+                  {formatTime(lead.capturedAt, timeZone)}
                 </span>
               </div>
               <span className={styles.status}>
@@ -239,7 +277,11 @@ function DraftHub({
                     ))}
                   </AnimatePresence>
                 </ul>
-                <Link to="/visits/$visitId/captures" params={{ visitId }} className={styles.changeStore}>
+                <Link
+                  to="/visits/$visitId/captures"
+                  params={{ visitId }}
+                  className={styles.changeStore}
+                >
                   {t.store.reviewAll(captures.length)} →
                 </Link>
               </>

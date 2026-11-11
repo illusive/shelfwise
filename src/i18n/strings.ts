@@ -69,7 +69,8 @@ export const t = {
     importPhotos: 'Import photos',
     reviewAll: (n: number) => `Review all ${n} captures`,
     guideTitle: 'A better scan starts here',
-    guide: 'Keep shelves straight and price labels visible. Overlap each photo slightly with the last.',
+    guide:
+      'Keep shelves straight and price labels visible. Overlap each photo slightly with the last.',
     privacy: 'Photos stay on this device until analysed.',
     analyse: (n: number) => `Analyze ${n === 1 ? 'shelf' : `${n} captures`}`,
     start: 'Start visit',
@@ -83,7 +84,10 @@ export const t = {
   camera: {
     title: 'Capture photos',
     retakeTitle: (n: string) => `Retake capture ${n}`,
-    tip: ['Fit the full shelf and its price labels', 'Move along and overlap the last photo slightly'],
+    tip: [
+      'Fit the full shelf and its price labels',
+      'Move along and overlap the last photo slightly',
+    ],
     steady: 'Hold steady. Keep your phone level.',
     mode: 'Photo',
     done: 'Done',
@@ -154,7 +158,10 @@ export const t = {
     saved: 'Saved',
     summary: 'Summary',
     sos: 'Share of shelf',
-    scope: { shelf: 'Shelves', cooler: 'Coolers', overall: 'Overall' } as Record<'shelf' | 'cooler' | 'overall', string>,
+    scope: { shelf: 'Shelves', cooler: 'Coolers', overall: 'Overall' } as Record<
+      'shelf' | 'cooler' | 'overall',
+      string
+    >,
     facingsOf: (client: number, eligible: number) => `${client} of ${eligible} visible facings`,
     vsLast: 'vs. last visit',
     firstVisit: 'First visit — baseline',
@@ -170,7 +177,8 @@ export const t = {
     reviewNeeded: (n: number) => `${n} ${n === 1 ? 'item needs' : 'items need'} a closer look`,
     reviewHint: 'Confirm or correct unresolved products and prices.',
     review: 'Review now',
-    displays: (n: number, client: number) => `${n} ${n === 1 ? 'display' : 'displays'} · ${client} with client brands`,
+    displays: (n: number, client: number) =>
+      `${n} ${n === 1 ? 'display' : 'displays'} · ${client} with client brands`,
     displaysHint: 'Displays are counted separately and excluded from share of shelf.',
     promotions: 'Promotions',
     savedTo: (store: string, when: string) => `Saved to ${store} · ${when}`,
@@ -179,13 +187,18 @@ export const t = {
     corrections: (n: number) => `Includes ${n} rep ${n === 1 ? 'correction' : 'corrections'}`,
     coverage: (photos: number, usable: number) => `${usable} of ${photos} photos usable`,
     locations: (shelf: number, cooler: number, display: number) =>
-      [plural(shelf, 'shelf', 'shelves'), plural(cooler, 'cooler', 'coolers'), plural(display, 'display', 'displays')].join(' · '),
+      [
+        plural(shelf, 'shelf', 'shelves'),
+        plural(cooler, 'cooler', 'coolers'),
+        plural(display, 'display', 'displays'),
+      ].join(' · '),
     capturedAreaOnly: 'Results describe the captured area only, not the whole store.',
   },
   report: {
     title: 'Product report',
     coverage: 'Coverage',
-    observations: (obs: number, merged: number) => `${obs} observations, ${merged} overlapping duplicates merged`,
+    observations: (obs: number, merged: number) =>
+      `${obs} observations, ${merged} overlapping duplicates merged`,
     clientProducts: 'Client products observed',
     uniqueSkus: (n: number) => `${n} unique SKUs`,
     facings: 'Facings',
@@ -200,7 +213,12 @@ export const t = {
     depositIncluded: (v: string) => `incl. pant ${v}`,
     depositUnknown: 'pant not stated',
     multibuy: (q: number, total: string, each: string) => `${q} for ${total} (≈ ${each} each)`,
-    priceType: { regular: 'Regular', promotion: 'Promotion', member: 'Member price', unknown: 'Unclear type' },
+    priceType: {
+      regular: 'Regular',
+      promotion: 'Promotion',
+      member: 'Member price',
+      unknown: 'Unclear type',
+    },
     unresolved: 'Unresolved',
     unresolvedReason: {
       unreadable: 'Unreadable label',
@@ -250,7 +268,8 @@ export const t = {
     search: 'Search stores or locations',
     allStores: 'All stores',
     period: { month: 'This month', '30d': 'Last 30 days', all: 'All time' },
-    summary: (visits: number, stores: number) => `${plural(visits, 'analysis', 'analyses')} across ${plural(stores, 'store', 'stores')}`,
+    summary: (visits: number, stores: number) =>
+      `${plural(visits, 'analysis', 'analyses')} across ${plural(stores, 'store', 'stores')}`,
     visitsInPeriod: (n: number) => plural(n, 'visit', 'visits'),
     empty: 'No visits match these filters.',
     footer: 'Your store history, always within reach.',
@@ -266,12 +285,16 @@ export const t = {
     'rtd-cider': 'RTD & cider',
     other: 'Other',
   } satisfies Record<Category, string>,
-  locationTypes: { shelf: 'Shelf', cooler: 'Cooler', display: 'Display' } satisfies Record<LocationType, string>,
+  locationTypes: { shelf: 'Shelf', cooler: 'Cooler', display: 'Display' } satisfies Record<
+    LocationType,
+    string
+  >,
   sosReasons: {
     'not-captured': 'Not captured in this visit',
     'no-usable-images': 'No usable photos',
     'no-facings': 'No products detected',
-    'overlap-unreconciled': 'Overlapping photos could not be reconciled; counts may include duplicates',
+    'overlap-unreconciled':
+      'Overlapping photos could not be reconciled; counts may include duplicates',
     'high-unknown-share': 'Many products could not be identified',
     'uncategorised-facings': 'Some products have no category',
   } satisfies Record<SosReason, string>,

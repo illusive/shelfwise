@@ -33,7 +33,9 @@ export interface ReconcileResult {
   unreconciledLocationIds: string[];
 }
 
-export function facingKey(f: Pick<FacingObservation, 'locationId' | 'physicalPositionId' | 'facingId'>) {
+export function facingKey(
+  f: Pick<FacingObservation, 'locationId' | 'physicalPositionId' | 'facingId'>,
+) {
   return `${f.locationId}::${f.physicalPositionId ?? `obs:${f.facingId}`}`;
 }
 
@@ -74,7 +76,11 @@ export function reconcileFacings(
       physicalPositionId: first.physicalPositionId,
       match,
       conflict,
-      evidence: group.map((g) => ({ observationId: g.facingId, imageId: g.imageId, region: g.region })),
+      evidence: group.map((g) => ({
+        observationId: g.facingId,
+        imageId: g.imageId,
+        region: g.region,
+      })),
     });
   }
 

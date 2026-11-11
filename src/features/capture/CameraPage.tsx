@@ -25,7 +25,13 @@ const BLOCKING: Partial<Record<CameraStatus, { title: string; hint: string }>> =
   error: { title: t.camera.unavailable, hint: t.camera.unavailableHint },
 };
 
-export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; retakeCaptureId?: string }) {
+export function CameraPage({
+  visitId,
+  retakeCaptureId,
+}: {
+  visitId: string;
+  retakeCaptureId?: string;
+}) {
   const navigate = useNavigate();
   const services = useServices();
   const invalidate = useInvalidate();
@@ -85,7 +91,14 @@ export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; reta
 
   return (
     <div className={styles.camera}>
-      <video ref={camera.videoRef} className={styles.video} playsInline muted autoPlay aria-hidden="true" />
+      <video
+        ref={camera.videoRef}
+        className={styles.video}
+        playsInline
+        muted
+        autoPlay
+        aria-hidden="true"
+      />
       <div className={styles.shadeTop} aria-hidden="true" />
 
       <header className={styles.top}>
@@ -94,7 +107,9 @@ export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; reta
         </IconButton>
         <div className={styles.titleBlock}>
           <h1 className={styles.title}>
-            {retakeTarget ? t.camera.retakeTitle(padSequence(retakeTarget.sequence)) : t.camera.title}
+            {retakeTarget
+              ? t.camera.retakeTitle(padSequence(retakeTarget.sequence))
+              : t.camera.title}
           </h1>
           {detail && (
             <p className={styles.store} data-testid="camera-store">
@@ -106,7 +121,11 @@ export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; reta
           <InfoIcon />
         </IconButton>
         {camera.torch.supported && (
-          <IconButton label={t.camera.torch} aria-pressed={camera.torch.on} onClick={() => void camera.toggleTorch()}>
+          <IconButton
+            label={t.camera.torch}
+            aria-pressed={camera.torch.on}
+            onClick={() => void camera.toggleTorch()}
+          >
             <LightningIcon />
           </IconButton>
         )}
@@ -131,8 +150,14 @@ export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; reta
           <p className={styles.blockingTitle}>{blocking.title}</p>
           <p className={styles.blockingHint}>{blocking.hint}</p>
           <div className={styles.blockingActions}>
-            {(camera.status === 'interrupted' || camera.status === 'error' || camera.status === 'denied') && (
-              <Button variant="accent" icon={<RefreshIcon size={18} />} onClick={() => void camera.start()}>
+            {(camera.status === 'interrupted' ||
+              camera.status === 'error' ||
+              camera.status === 'denied') && (
+              <Button
+                variant="accent"
+                icon={<RefreshIcon size={18} />}
+                onClick={() => void camera.start()}
+              >
                 {camera.status === 'interrupted' ? t.camera.resume : t.common.retry}
               </Button>
             )}
@@ -171,7 +196,14 @@ export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; reta
             disabled={captures.length === 0}
             aria-label={`${t.camera.captures}: ${count}`}
           >
-            {last && <BlobImage blobId={last.thumbBlobId} fallbackBlobId={last.blobId} alt="" className={styles.lastImage} />}
+            {last && (
+              <BlobImage
+                blobId={last.thumbBlobId}
+                fallbackBlobId={last.blobId}
+                alt=""
+                className={styles.lastImage}
+              />
+            )}
             <AnimatePresence mode="popLayout">
               {count > 0 && (
                 <motion.span
@@ -214,7 +246,12 @@ export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; reta
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
               >
-                <BlobImage blobId={c.thumbBlobId} fallbackBlobId={c.blobId} alt={t.store.capture(padSequence(c.sequence))} className={styles.stripImage} />
+                <BlobImage
+                  blobId={c.thumbBlobId}
+                  fallbackBlobId={c.blobId}
+                  alt={t.store.capture(padSequence(c.sequence))}
+                  className={styles.stripImage}
+                />
                 <span className={styles.stripLabel}>{padSequence(c.sequence)}</span>
                 <div className={styles.stripActions}>
                   <Button
@@ -227,7 +264,11 @@ export function CameraPage({ visitId, retakeCaptureId }: { visitId: string; reta
                   >
                     {t.camera.retake}
                   </Button>
-                  <IconButton label={t.captures.remove(padSequence(c.sequence))} tone="dark" onClick={() => void remove(c)}>
+                  <IconButton
+                    label={t.captures.remove(padSequence(c.sequence))}
+                    tone="dark"
+                    onClick={() => void remove(c)}
+                  >
                     <TrashIcon size={18} />
                   </IconButton>
                 </div>

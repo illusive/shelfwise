@@ -13,7 +13,13 @@ export interface ImportPhotosProps {
 }
 
 /** Photo-library fallback for browsers or devices where the in-app camera is unavailable. */
-export function ImportPhotos({ resolveVisitId, onImport, variant = 'ghost', label, block }: ImportPhotosProps) {
+export function ImportPhotos({
+  resolveVisitId,
+  onImport,
+  variant = 'ghost',
+  label,
+  block,
+}: ImportPhotosProps) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 

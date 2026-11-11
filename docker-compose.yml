@@ -1,0 +1,24 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        VITE_ANALYSIS_PROVIDER: ${VITE_ANALYSIS_PROVIDER:-mock}
+        VITE_MOCK_LATENCY_MS: ${VITE_MOCK_LATENCY_MS:-2500}
+        VITE_MOCK_FAIL_FIRST_ATTEMPT: ${VITE_MOCK_FAIL_FIRST_ATTEMPT:-false}
+    image: shelfwise-web:local
+    container_name: shelfwise-web
+    ports:
+      - '${HTTPS_PORT:-8443}:443'
+      - '${HTTP_PORT:-8080}:80'
+    environment:
+      LAN_HOST: ${LAN_HOST:-}
+      HTTPS_PORT: ${HTTPS_PORT:-8443}
+    # Named volume (no host file sharing needed). The container creates a self-signed
+    # certificate on first start; load host certs with `npm run docker:certs`.
+    volumes:
+      - certs:/etc/nginx/certs
+    restart: unless-stopped
+
+volumes:
+  certs:

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export type CameraStatus = 'starting' | 'ready' | 'denied' | 'unavailable' | 'insecure' | 'interrupted' | 'error';
+export type CameraStatus =
+  'starting' | 'ready' | 'denied' | 'unavailable' | 'insecure' | 'interrupted' | 'error';
 
 const CONSTRAINTS: MediaStreamConstraints = {
   audio: false,
@@ -61,7 +62,8 @@ export function useCamera() {
       if (mine !== generation.current) return;
       const name = error instanceof DOMException ? error.name : '';
       if (name === 'NotAllowedError' || name === 'SecurityError') setStatus('denied');
-      else if (name === 'NotFoundError' || name === 'OverconstrainedError') setStatus('unavailable');
+      else if (name === 'NotFoundError' || name === 'OverconstrainedError')
+        setStatus('unavailable');
       else setStatus('error');
     }
   }, [stop]);

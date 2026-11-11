@@ -75,9 +75,27 @@ export function response(overrides: Partial<AnalysisResponse> = {}): AnalysisRes
     catalogueVersion: 'dk-seed-2026.11',
     analysedAt: '2026-11-10T13:38:00.000Z',
     images: [
-      { imageId: 'img-1', usable: true, locationType: 'shelf', locationId: 'loc-shelf', issues: [] },
-      { imageId: 'img-2', usable: true, locationType: 'shelf', locationId: 'loc-shelf', issues: [] },
-      { imageId: 'img-3', usable: true, locationType: 'cooler', locationId: 'loc-cooler', issues: [] },
+      {
+        imageId: 'img-1',
+        usable: true,
+        locationType: 'shelf',
+        locationId: 'loc-shelf',
+        issues: [],
+      },
+      {
+        imageId: 'img-2',
+        usable: true,
+        locationType: 'shelf',
+        locationId: 'loc-shelf',
+        issues: [],
+      },
+      {
+        imageId: 'img-3',
+        usable: true,
+        locationType: 'cooler',
+        locationId: 'loc-cooler',
+        issues: [],
+      },
     ],
     locations: [
       { locationId: 'loc-shelf', type: 'shelf', label: 'Shelf 1', imageIds: ['img-1', 'img-2'] },

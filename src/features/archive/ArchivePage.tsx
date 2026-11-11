@@ -31,11 +31,14 @@ export function ArchivePage() {
   const now = new Date();
 
   const visits = summaries.filter((s) => s.visit.status !== 'draft');
-  const storeOptions = [...new Map(visits.map((s) => [s.store.id, s.store])).values()].sort((a, b) =>
-    a.name.localeCompare(b.name, 'da-DK'),
+  const storeOptions = [...new Map(visits.map((s) => [s.store.id, s.store])).values()].sort(
+    (a, b) => a.name.localeCompare(b.name, 'da-DK'),
   );
   const filtered = visits.filter(
-    (s) => (storeId === 'all' || s.store.id === storeId) && matchesStore(s.store, query) && inPeriod(s, period, now),
+    (s) =>
+      (storeId === 'all' || s.store.id === storeId) &&
+      matchesStore(s.store, query) &&
+      inPeriod(s, period, now),
   );
   const groups = new Map<string, VisitSummary[]>();
   for (const s of filtered) groups.set(s.store.id, [...(groups.get(s.store.id) ?? []), s]);
@@ -50,12 +53,21 @@ export function ArchivePage() {
       <label className={shared.searchField}>
         <SearchIcon size={18} />
         <span className="visually-hidden">{t.archive.search}</span>
-        <input type="search" value={query} placeholder={t.archive.search} onChange={(e) => setQuery(e.target.value)} />
+        <input
+          type="search"
+          value={query}
+          placeholder={t.archive.search}
+          onChange={(e) => setQuery(e.target.value)}
+        />
       </label>
       <div className={styles.filters}>
         <label className={shared.selectWrap}>
           <span className="visually-hidden">{t.archive.allStores}</span>
-          <select className={`${shared.select} ${shared.selectDark}`} value={storeId} onChange={(e) => setStoreId(e.target.value)}>
+          <select
+            className={`${shared.select} ${shared.selectDark}`}
+            value={storeId}
+            onChange={(e) => setStoreId(e.target.value)}
+          >
             <option value="all">{t.archive.allStores}</option>
             {storeOptions.map((s) => (
               <option key={s.id} value={s.id}>
@@ -67,7 +79,11 @@ export function ArchivePage() {
         </label>
         <label className={shared.selectWrap}>
           <span className="visually-hidden">Period</span>
-          <select className={shared.select} value={period} onChange={(e) => setPeriod(e.target.value as Period)}>
+          <select
+            className={shared.select}
+            value={period}
+            onChange={(e) => setPeriod(e.target.value as Period)}
+          >
             {(Object.keys(t.archive.period) as Period[]).map((p) => (
               <option key={p} value={p}>
                 {t.archive.period[p]}
@@ -86,7 +102,11 @@ export function ArchivePage() {
           const store = items[0].store;
           return (
             <section key={store.id} className={styles.group}>
-              <Link to="/stores/$storeId" params={{ storeId: store.id }} className={styles.groupHead}>
+              <Link
+                to="/stores/$storeId"
+                params={{ storeId: store.id }}
+                className={styles.groupHead}
+              >
                 <span className={styles.groupTitle}>{store.name}</span>
                 <ChevronRightIcon size={18} className={shared.chevron} />
               </Link>

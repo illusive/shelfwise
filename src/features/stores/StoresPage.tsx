@@ -26,7 +26,9 @@ export function StoresPage() {
     }
     return map;
   }, [summaries]);
-  const drafts = new Set(summaries.filter((s) => s.visit.status === 'draft').map((s) => s.store.id));
+  const drafts = new Set(
+    summaries.filter((s) => s.visit.status === 'draft').map((s) => s.store.id),
+  );
 
   const sorted = [...stores].sort((a, b) => a.name.localeCompare(b.name, 'da-DK'));
   const assigned = sorted.filter((s) => rep && s.assignedRepIds.includes(rep.id));

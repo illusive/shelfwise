@@ -18,7 +18,11 @@ export interface ScreenProps {
 /** Page shell: scrollable content with a short, interruptible entry transition. */
 export function Screen({ children, action, nav = false, tone = 'paper', className }: ScreenProps) {
   return (
-    <div className={`${styles.screen} ${styles[tone]}`} data-has-action={Boolean(action)} data-has-nav={nav}>
+    <div
+      className={`${styles.screen} ${styles[tone]}`}
+      data-has-action={Boolean(action)}
+      data-has-nav={nav}
+    >
       <motion.main
         className={`${styles.content} ${className ?? ''}`}
         initial={{ opacity: 0, y: 8 }}

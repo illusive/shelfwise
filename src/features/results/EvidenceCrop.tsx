@@ -3,7 +3,15 @@ import { useBlobUrl } from '@/ui/primitives/useBlobUrl';
 import styles from './results.module.css';
 
 /** Shows just the evidence region of a photo, with a little context around it. */
-export function EvidenceCrop({ blobId, region, label }: { blobId: string; region: Region | null; label: string }) {
+export function EvidenceCrop({
+  blobId,
+  region,
+  label,
+}: {
+  blobId: string;
+  region: Region | null;
+  label: string;
+}) {
   const url = useBlobUrl(blobId);
   const pad = 0.04;
   const r = region

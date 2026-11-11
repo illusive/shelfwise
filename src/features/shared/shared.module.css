@@ -123,3 +123,7 @@
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
+
+.selectDark + .selectIcon {
+  color: var(--color-surface);
+}

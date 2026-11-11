@@ -23,7 +23,8 @@
     "certs": "sh scripts/certs.sh",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f web"
+    "docker:logs": "docker compose logs -f web",
+    "docker:certs": "sh scripts/certs.sh && docker compose cp certs/. web:/etc/nginx/certs && docker compose restart web"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.3.0",

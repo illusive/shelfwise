@@ -89,8 +89,11 @@ export function normalisePrice(
 
   // Only a confirmed match ties a price to a product.
   const matched = label.match.status === 'matched';
-  const brand = matched ? resolveBrand(catalogue, label.match.productId, label.match.brandId) : undefined;
-  const product = matched && label.match.productId ? catalogue.productById.get(label.match.productId) : undefined;
+  const brand = matched
+    ? resolveBrand(catalogue, label.match.productId, label.match.brandId)
+    : undefined;
+  const product =
+    matched && label.match.productId ? catalogue.productById.get(label.match.productId) : undefined;
 
   let pack: NormalisedPrice['pack'] = null;
   let packSource: NormalisedPrice['packSource'] = null;
@@ -107,7 +110,10 @@ export function normalisePrice(
   const base = resolved ? basePrice(displayedOre!, label.deposit) : null;
   const perLitre = base !== null && pack ? pricePerLitre(base, pack) : null;
   const multibuy = label.multibuy
-    ? { ...label.multibuy, perItemOre: Math.round(label.multibuy.totalOre / label.multibuy.quantity) }
+    ? {
+        ...label.multibuy,
+        perItemOre: Math.round(label.multibuy.totalOre / label.multibuy.quantity),
+      }
     : null;
 
   return {
@@ -118,7 +124,11 @@ export function normalisePrice(
     locationId: label.locationId,
     productId: product?.id ?? null,
     brandId: brand?.id ?? null,
-    classification: brand ? (isClientRelation(brand.relation) ? 'client' : 'competitor') : 'unknown',
+    classification: brand
+      ? isClientRelation(brand.relation)
+        ? 'client'
+        : 'competitor'
+      : 'unknown',
     status,
     unresolvedReason,
     priceType,

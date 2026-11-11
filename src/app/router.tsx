@@ -16,8 +16,16 @@ import { RootLayout } from './RootLayout';
 const rootRoute = createRootRoute({ component: RootLayout, notFoundComponent: NotFound });
 
 const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: HomePage });
-const storesRoute = createRoute({ getParentRoute: () => rootRoute, path: '/stores', component: StoresPage });
-const archiveRoute = createRoute({ getParentRoute: () => rootRoute, path: '/archive', component: ArchivePage });
+const storesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/stores',
+  component: StoresPage,
+});
+const archiveRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/archive',
+  component: ArchivePage,
+});
 
 const storeRoute = createRoute({
   getParentRoute: () => rootRoute,

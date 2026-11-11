@@ -49,7 +49,10 @@ export function useStores() {
 
 export function useStore(id: string) {
   const { repos } = useServices();
-  return useQuery({ queryKey: queryKeys.store(id), queryFn: async () => (await repos.stores.get(id)) ?? null });
+  return useQuery({
+    queryKey: queryKeys.store(id),
+    queryFn: async () => (await repos.stores.get(id)) ?? null,
+  });
 }
 
 export function useVisitDetail(visitId: string) {

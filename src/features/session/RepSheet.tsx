@@ -10,7 +10,13 @@ import { useToast } from '@/ui/primitives/Toast';
 import shared from '../shared/shared.module.css';
 import styles from './session.module.css';
 
-export function RepSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function RepSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const services = useServices();
   const { data: reps = [] } = useReps();
   const { data: current } = useCurrentRep();

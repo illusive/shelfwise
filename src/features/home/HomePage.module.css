@@ -13,7 +13,12 @@
   overflow: hidden;
   color: var(--color-surface);
   background:
-    linear-gradient(90deg, rgb(16 43 36 / 0.92) 0%, rgb(16 43 36 / 0.55) 60%, rgb(16 43 36 / 0.25) 100%),
+    linear-gradient(
+      90deg,
+      rgb(16 43 36 / 0.92) 0%,
+      rgb(16 43 36 / 0.55) 60%,
+      rgb(16 43 36 / 0.25) 100%
+    ),
     url('/hero-shelf.svg') center / cover no-repeat,
     var(--color-primary-deep);
 }

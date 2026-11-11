@@ -24,7 +24,12 @@ function legend(scope: ScopeMetrics): LegendItem[] {
   const items: LegendItem[] = [];
   if (client) items.push({ kind: 'client', label: client.label, pct: client.sharePct });
   if (top) items.push({ kind: 'competitor', label: top.label, pct: top.sharePct });
-  if (rest.length) items.push({ kind: 'unknown', label: t.results.otherUnknown, pct: rest.reduce((n, g) => n + g.sharePct, 0) });
+  if (rest.length)
+    items.push({
+      kind: 'unknown',
+      label: t.results.otherUnknown,
+      pct: rest.reduce((n, g) => n + g.sharePct, 0),
+    });
   return items;
 }
 
@@ -77,7 +82,9 @@ export function ShareHero({
             </p>
             <div className={styles.delta}>
               {comparison.deltaPp !== null && (
-                <Badge tone={comparison.status === 'comparable' ? 'accent' : 'warning'}>{formatPp(comparison.deltaPp)}</Badge>
+                <Badge tone={comparison.status === 'comparable' ? 'accent' : 'warning'}>
+                  {formatPp(comparison.deltaPp)}
+                </Badge>
               )}
               <span className={styles.deltaLabel}>
                 {comparison.status === 'no-previous'
@@ -88,7 +95,9 @@ export function ShareHero({
               </span>
             </div>
           </div>
-          <p className={styles.facingsOf}>{t.results.facingsOf(sos.counts.client, sos.counts.eligible)}</p>
+          <p className={styles.facingsOf}>
+            {t.results.facingsOf(sos.counts.client, sos.counts.eligible)}
+          </p>
           <FacingGrid counts={sos.counts} />
           <ul className={styles.legend}>
             {legend(current).map((item) => (

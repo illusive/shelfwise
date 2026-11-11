@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['favicon.svg', 'icons/*.svg', 'hero-shelf.svg'],
+      includeAssets: ['favicon.svg', 'icons/*', 'hero-shelf.svg'],
       manifest: {
         name: 'Shelfwise',
         short_name: 'Shelfwise',
@@ -25,17 +25,19 @@ export default defineConfig(({ mode }) => {
         start_url: '/',
         scope: '/',
         icons: [
-          { src: '/icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           {
-            src: '/icons/icon-maskable.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: '/icons/icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'maskable',
           },
+          { src: '/icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: '/index.html',
       },
     }),
@@ -46,6 +48,18 @@ export default defineConfig(({ mode }) => {
     plugins,
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-dom/client'],
+            tanstack: ['@tanstack/react-router', '@tanstack/react-query'],
+            ui: ['motion', '@radix-ui/react-dialog', '@radix-ui/react-toggle-group'],
+            data: ['dexie', 'zod'],
+          },
+        },
+      },
     },
     server: { port: 5173 },
     preview: { port: 4173 },

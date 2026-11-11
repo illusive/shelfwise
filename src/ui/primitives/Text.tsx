@@ -3,7 +3,13 @@ import { t } from '@/i18n/strings';
 import { AlertIcon, InfoIcon } from '../icons';
 import styles from './Text.module.css';
 
-export function Eyebrow({ children, steps }: { children: ReactNode; steps?: { current: number; total: number } }) {
+export function Eyebrow({
+  children,
+  steps,
+}: {
+  children: ReactNode;
+  steps?: { current: number; total: number };
+}) {
   return (
     <div className={styles.eyebrowRow}>
       <span className={styles.eyebrow}>{children}</span>
@@ -24,7 +30,15 @@ export function Mono({ children, className }: { children: ReactNode; className?:
 
 export type BadgeTone = 'accent' | 'neutral' | 'warning' | 'danger' | 'mock' | 'dark';
 
-export function Badge({ tone = 'neutral', icon, children }: { tone?: BadgeTone; icon?: ReactNode; children: ReactNode }) {
+export function Badge({
+  tone = 'neutral',
+  icon,
+  children,
+}: {
+  tone?: BadgeTone;
+  icon?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <span className={`${styles.badge} ${styles[`badge-${tone}`]}`}>
       {icon}
@@ -55,8 +69,13 @@ export function Notice({
   action?: ReactNode;
 }) {
   return (
-    <div className={`${styles.notice} ${styles[`notice-${tone}`]}`} role={tone === 'danger' ? 'alert' : undefined}>
-      <span className={styles.noticeIcon}>{tone === 'info' ? <InfoIcon size={18} /> : <AlertIcon size={18} />}</span>
+    <div
+      className={`${styles.notice} ${styles[`notice-${tone}`]}`}
+      role={tone === 'danger' ? 'alert' : undefined}
+    >
+      <span className={styles.noticeIcon}>
+        {tone === 'info' ? <InfoIcon size={18} /> : <AlertIcon size={18} />}
+      </span>
       <div className={styles.noticeBody}>
         <p className={styles.noticeTitle}>{title}</p>
         {children && <div className={styles.noticeText}>{children}</div>}
@@ -75,7 +94,15 @@ export function SectionHeader({ title, aside }: { title: ReactNode; aside?: Reac
   );
 }
 
-export function EmptyState({ icon, title, children }: { icon?: ReactNode; title: string; children?: ReactNode }) {
+export function EmptyState({
+  icon,
+  title,
+  children,
+}: {
+  icon?: ReactNode;
+  title: string;
+  children?: ReactNode;
+}) {
   return (
     <div className={styles.empty}>
       {icon && <span className={styles.emptyIcon}>{icon}</span>}

@@ -36,10 +36,7 @@ export function createDexieRepositories(db: ShelfwiseDb, catalogue: Catalogue): 
         return visits;
       },
       async findDraft(storeId, repId) {
-        return db.visits
-          .where('[storeId+repId+status]')
-          .equals([storeId, repId, 'draft'])
-          .first();
+        return db.visits.where('[storeId+repId+status]').equals([storeId, repId, 'draft']).first();
       },
       async put(visit) {
         await db.visits.put(visit);

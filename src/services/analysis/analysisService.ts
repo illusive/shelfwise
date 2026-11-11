@@ -48,7 +48,10 @@ export function createAnalysisService(deps: {
     const visit = await repos.visits.get(job.visitId);
     const store = visit ? await repos.stores.get(visit.storeId) : undefined;
     if (!visit || !store) {
-      await save(job, { status: 'failed', failure: { code: 'visit-missing', message: 'Visit not found.', retryable: false } });
+      await save(job, {
+        status: 'failed',
+        failure: { code: 'visit-missing', message: 'Visit not found.', retryable: false },
+      });
       return;
     }
 
@@ -65,7 +68,8 @@ export function createAnalysisService(deps: {
       const images: { imageId: string; blob: Blob }[] = [];
       for (const capture of captures) {
         const blob = await blobs.get(capture.blobId);
-        if (!blob) throw new JobError('photo-missing', 'A photo is missing from this device.', false);
+        if (!blob)
+          throw new JobError('photo-missing', 'A photo is missing from this device.', false);
         images.push({ imageId: capture.id, blob });
         job = await save(job, { progress: { done: images.length, total: captures.length } });
       }
@@ -118,7 +122,13 @@ export function createAnalysisService(deps: {
 
       // Deterministic id: a retried job overwrites, never duplicates, its result.
       const resultId = `result-${job.id}`;
-      await repos.results.put({ id: resultId, visitId: visit.id, jobId: job.id, storedAt: nowIso(now), response });
+      await repos.results.put({
+        id: resultId,
+        visitId: visit.id,
+        jobId: job.id,
+        storedAt: nowIso(now),
+        response,
+      });
       await repos.visits.update(visit.id, {
         status: 'completed',
         resultId,

@@ -16,7 +16,9 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-12);
   font-weight: var(--font-weight-semibold);
-  transition: background-color var(--duration-base) var(--ease-out), color var(--duration-base);
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    color var(--duration-base);
 }
 
 .item[data-state='on'] {

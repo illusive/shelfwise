@@ -6,7 +6,17 @@ import { newId } from './ids';
 import type { Services } from './index';
 import { PHOTO_MIME } from './images';
 
-const SHELF_COLOURS = ['#c8102e', '#00843d', '#1d4f91', '#f2a900', '#e35205', '#6d2077', '#ffffff', '#00a3e0', '#2d2926'];
+const SHELF_COLOURS = [
+  '#c8102e',
+  '#00843d',
+  '#1d4f91',
+  '#f2a900',
+  '#e35205',
+  '#6d2077',
+  '#ffffff',
+  '#00a3e0',
+  '#2d2926',
+];
 
 /** Draws a stylised shelf or cooler photo so demo history has real image blobs. */
 async function renderDemoPhoto(seed: number, cooler: boolean): Promise<Blob> {
@@ -37,7 +47,8 @@ async function renderDemoPhoto(seed: number, cooler: boolean): Promise<Blob> {
     ctx.fillStyle = cooler ? '#3c4a46' : '#8b8576';
     ctx.fillRect(0, r * rowH + rowH * 0.8, canvas.width, 10);
     ctx.fillStyle = '#fafaf5';
-    for (let lx = 40; lx < canvas.width; lx += 260) ctx.fillRect(lx, r * rowH + rowH * 0.83, 120, 34);
+    for (let lx = 40; lx < canvas.width; lx += 260)
+      ctx.fillRect(lx, r * rowH + rowH * 0.83, 120, 34);
   }
   if (cooler) {
     const glare = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -58,7 +69,9 @@ async function renderDemoPhoto(seed: number, cooler: boolean): Promise<Blob> {
  */
 export async function addDemoHistory(services: Services, repId: string): Promise<number> {
   const { repos } = services;
-  const stores = (await repos.stores.list()).filter((s) => s.assignedRepIds.includes(repId)).slice(0, 3);
+  const stores = (await repos.stores.list())
+    .filter((s) => s.assignedRepIds.includes(repId))
+    .slice(0, 3);
   let created = 0;
   for (const [storeIndex, store] of stores.entries()) {
     for (const daysAgo of [16, 5]) {
@@ -82,8 +95,13 @@ export async function addDemoHistory(services: Services, repId: string): Promise
       const captures: Capture[] = [];
       for (let i = 0; i < photoCount; i++) {
         const capturedAt = new Date(start.getTime() + i * 90_000);
-        const blob = await renderDemoPhoto(storeIndex * 100 + daysAgo * 10 + i, i >= photoCount - 2);
-        captures.push(await services.captures.addCapture(visit.id, { blob, source: 'demo', capturedAt }));
+        const blob = await renderDemoPhoto(
+          storeIndex * 100 + daysAgo * 10 + i,
+          i >= photoCount - 2,
+        );
+        captures.push(
+          await services.captures.addCapture(visit.id, { blob, source: 'demo', capturedAt }),
+        );
       }
       const submittedAt = new Date(start.getTime() + photoCount * 90_000 + 60_000).toISOString();
       const analysedAt = new Date(start.getTime() + photoCount * 90_000 + 120_000).toISOString();
@@ -120,7 +138,13 @@ export async function addDemoHistory(services: Services, repId: string): Promise
         createdAt: submittedAt,
         updatedAt: analysedAt,
       });
-      await repos.results.put({ id: resultId, visitId: visit.id, jobId, storedAt: analysedAt, response });
+      await repos.results.put({
+        id: resultId,
+        visitId: visit.id,
+        jobId,
+        storedAt: analysedAt,
+        response,
+      });
       await repos.visits.update(visit.id, {
         status: 'completed',
         jobId,

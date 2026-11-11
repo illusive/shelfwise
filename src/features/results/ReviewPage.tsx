@@ -3,7 +3,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { useCurrentRep, useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
-import type { Correction, EffectiveFacing, FacingCorrectionValue, PriceCorrectionValue } from '@/domain/corrections';
+import type {
+  Correction,
+  EffectiveFacing,
+  FacingCorrectionValue,
+  PriceCorrectionValue,
+} from '@/domain/corrections';
 import type { NormalisedPrice } from '@/domain/pricing';
 import { formatPack, parseDkkInput } from '@/i18n/format';
 import { t } from '@/i18n/strings';
@@ -33,7 +38,9 @@ export function ReviewPage({ visitId }: { visitId: string }) {
       ...detail.metrics.facings
         .filter((f) => f.needsReview && !f.excluded && f.locationType !== 'display')
         .map((facing) => ({ kind: 'facing' as const, facing })),
-      ...detail.metrics.prices.filter((p) => p.needsReview).map((price) => ({ kind: 'price' as const, price })),
+      ...detail.metrics.prices
+        .filter((p) => p.needsReview)
+        .map((price) => ({ kind: 'price' as const, price })),
     ];
   }, [detail]);
 
@@ -62,8 +69,18 @@ export function ReviewPage({ visitId }: { visitId: string }) {
     };
     const correction: Correction =
       item.kind === 'facing'
-        ? { ...base, targetKind: 'facing', targetId: item.facing.key, value: value as FacingCorrectionValue }
-        : { ...base, targetKind: 'price-label', targetId: item.price.labelId, value: value as PriceCorrectionValue };
+        ? {
+            ...base,
+            targetKind: 'facing',
+            targetId: item.facing.key,
+            value: value as FacingCorrectionValue,
+          }
+        : {
+            ...base,
+            targetKind: 'price-label',
+            targetId: item.price.labelId,
+            value: value as PriceCorrectionValue,
+          };
     await services.repos.corrections.add(correction);
     await invalidate();
   };
@@ -71,12 +88,22 @@ export function ReviewPage({ visitId }: { visitId: string }) {
   return (
     <Screen
       action={
-        <Button block size="lg" variant={current ? 'secondary' : 'primary'} withArrow={!current} onClick={back}>
+        <Button
+          block
+          size="lg"
+          variant={current ? 'secondary' : 'primary'}
+          withArrow={!current}
+          onClick={back}
+        >
           {t.review.backToResults}
         </Button>
       }
     >
-      <TopBar title={t.review.title} subtitle={`${detail.store.name} · ${detail.store.address.street}`} onBack={back} />
+      <TopBar
+        title={t.review.title}
+        subtitle={`${detail.store.name} · ${detail.store.address.street}`}
+        onBack={back}
+      />
       <p className={shared.muted}>{t.review.intro}</p>
       {current ? (
         <>
@@ -97,7 +124,11 @@ export function ReviewPage({ visitId }: { visitId: string }) {
                   onSave={(v) => save(current, v)}
                 />
               ) : (
-                <PriceReview price={current.price} blobId={blobFor(current.price.imageId)} onSave={(v) => save(current, v)} />
+                <PriceReview
+                  price={current.price}
+                  blobId={blobFor(current.price.imageId)}
+                  onSave={(v) => save(current, v)}
+                />
               )}
               <Button variant="ghost" onClick={() => setSkipped((s) => [...s, keyOf(current)])}>
                 {t.review.skip}
@@ -129,29 +160,49 @@ function FacingReview({
   const q = query.trim().toLocaleLowerCase('da-DK');
   const results = q
     ? catalogue.products
-        .filter((p) => `${p.name} ${catalogue.brandById.get(p.brandId)?.name ?? ''}`.toLocaleLowerCase('da-DK').includes(q))
+        .filter((p) =>
+          `${p.name} ${catalogue.brandById.get(p.brandId)?.name ?? ''}`
+            .toLocaleLowerCase('da-DK')
+            .includes(q),
+        )
         .slice(0, 6)
     : [];
 
   return (
     <div className={shared.stack} data-testid="review-facing">
       <h2 className={styles.question}>{t.review.product}</h2>
-      {blobId && <EvidenceCrop blobId={blobId} region={facing.evidence[0].region} label={t.review.product} />}
+      {blobId && (
+        <EvidenceCrop blobId={blobId} region={facing.evidence[0].region} label={t.review.product} />
+      )}
       {suggestion && (
-        <Button variant="primary" block icon={<CheckIcon size={18} />} onClick={() => void onSave({ kind: 'product', productId: suggestion })}>
+        <Button
+          variant="primary"
+          block
+          icon={<CheckIcon size={18} />}
+          onClick={() => void onSave({ kind: 'product', productId: suggestion })}
+        >
           {t.review.aiSuggested(productName(catalogue, suggestion, null))}
         </Button>
       )}
       <label className={shared.searchField}>
         <SearchIcon size={18} />
         <span className="visually-hidden">{t.review.searchProducts}</span>
-        <input type="search" value={query} placeholder={t.review.searchProducts} onChange={(e) => setQuery(e.target.value)} />
+        <input
+          type="search"
+          value={query}
+          placeholder={t.review.searchProducts}
+          onChange={(e) => setQuery(e.target.value)}
+        />
       </label>
       {results.length > 0 && (
         <ul className={styles.options}>
           {results.map((p) => (
             <li key={p.id}>
-              <button type="button" className={styles.option} onClick={() => void onSave({ kind: 'product', productId: p.id })}>
+              <button
+                type="button"
+                className={styles.option}
+                onClick={() => void onSave({ kind: 'product', productId: p.id })}
+              >
                 <span>{p.name}</span>
                 <Mono>{formatPack(p.pack)}</Mono>
               </button>
@@ -188,15 +239,25 @@ function PriceReview({
       <h2 className={styles.question}>{t.review.price}</h2>
       {blobId && <EvidenceCrop blobId={blobId} region={price.region} label={t.review.price} />}
       {price.rawText && <Mono>“{price.rawText}”</Mono>}
-      {price.unresolvedReason && <p className={shared.muted}>{t.report.unresolvedReason[price.unresolvedReason]}</p>}
+      {price.unresolvedReason && (
+        <p className={shared.muted}>{t.report.unresolvedReason[price.unresolvedReason]}</p>
+      )}
       <div className={styles.pair}>
         <label className={styles.field}>
           <span className={shared.muted}>{t.review.priceLabel}</span>
-          <input inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" />
+          <input
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0,00"
+          />
         </label>
         <label className={styles.field}>
           <span className={shared.muted}>{t.review.priceType}</span>
-          <select value={priceType} onChange={(e) => setPriceType(e.target.value as typeof priceType)}>
+          <select
+            value={priceType}
+            onChange={(e) => setPriceType(e.target.value as typeof priceType)}
+          >
             <option value="regular">{t.report.priceType.regular}</option>
             <option value="promotion">{t.report.priceType.promotion}</option>
             <option value="member">{t.report.priceType.member}</option>
@@ -204,7 +265,10 @@ function PriceReview({
         </label>
       </div>
       <div className={styles.pair}>
-        <Button disabled={ore === null} onClick={() => ore !== null && void onSave({ kind: 'price', amountOre: ore, priceType })}>
+        <Button
+          disabled={ore === null}
+          onClick={() => ore !== null && void onSave({ kind: 'price', amountOre: ore, priceType })}
+        >
           {t.review.confirm}
         </Button>
         <Button variant="secondary" onClick={() => void onSave({ kind: 'unreadable' })}>

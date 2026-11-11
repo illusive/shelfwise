@@ -44,20 +44,33 @@ export function formatLongDay(iso: string, timeZone = DEFAULT_TIME_ZONE): string
 
 /** Calendar date in the store's time zone, as YYYY-MM-DD. */
 export function localDateKey(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(
-    new Date(iso),
-  );
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(iso));
 }
 
 /** "Today", "Yesterday", "7 Nov" or "7 Nov 2025", by the store's local date. */
-export function formatRelativeDay(iso: string, timeZone = DEFAULT_TIME_ZONE, now = new Date()): string {
+export function formatRelativeDay(
+  iso: string,
+  timeZone = DEFAULT_TIME_ZONE,
+  now = new Date(),
+): string {
   const day = localDateKey(iso, timeZone);
   const today = localDateKey(now.toISOString(), timeZone);
   const yesterday = localDateKey(new Date(now.getTime() - 86_400_000).toISOString(), timeZone);
   if (day === today) return 'Today';
   if (day === yesterday) return 'Yesterday';
   const sameYear = day.slice(0, 4) === today.slice(0, 4);
-  return parts(iso, timeZone, sameYear ? { day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short', year: 'numeric' });
+  return parts(
+    iso,
+    timeZone,
+    sameYear
+      ? { day: 'numeric', month: 'short' }
+      : { day: 'numeric', month: 'short', year: 'numeric' },
+  );
 }
 
 export function formatVolume(ml: number): string {
@@ -72,7 +85,9 @@ const containerNames: Record<PackSize['container'], [string, string]> = {
 };
 
 /** "330 ml can", "6 × 330 ml cans" */
-export function formatPack(pack: Pick<PackSize, 'units' | 'volumeMl'> & { container?: PackSize['container'] }): string {
+export function formatPack(
+  pack: Pick<PackSize, 'units' | 'volumeMl'> & { container?: PackSize['container'] },
+): string {
   const names = pack.container ? containerNames[pack.container] : null;
   if (pack.units === 1) return `${formatVolume(pack.volumeMl)}${names ? ` ${names[0]}` : ''}`;
   return `${pack.units} × ${formatVolume(pack.volumeMl)}${names ? ` ${names[1]}` : ''}`;
@@ -88,7 +103,10 @@ export function padSequence(n: number): string {
 
 /** Parses "12,95", "12.95" or "12" kr. into øre; null when not a valid amount. */
 export function parseDkkInput(value: string): number | null {
-  const normalised = value.trim().replace(/\s|kr\.?/gi, '').replace(',', '.');
+  const normalised = value
+    .trim()
+    .replace(/\s|kr\.?/gi, '')
+    .replace(',', '.');
   if (!/^\d+(\.\d{1,2})?$/.test(normalised)) return null;
   return Math.round(Number(normalised) * 100);
 }

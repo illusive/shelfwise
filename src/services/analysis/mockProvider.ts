@@ -102,7 +102,8 @@ function rng(seedText: string) {
 }
 
 type Random = ReturnType<typeof rng>;
-const pick = <T>(random: Random, items: readonly T[]): T => items[Math.floor(random() * items.length)];
+const pick = <T>(random: Random, items: readonly T[]): T =>
+  items[Math.floor(random() * items.length)];
 
 export function planLocationTypes(count: number): LocationType[] {
   if (count === 1) return ['shelf'];
@@ -126,10 +127,13 @@ function poolFor(type: LocationType, catalogue: Catalogue): Product[] {
 function priceFor(product: Product): { amountOre: number; depositOre: number } {
   const { units, volumeMl } = product.pack;
   const deposit = volumeMl >= 1000 ? 300 : 100;
-  if (units > 1) return { amountOre: product.category === 'beer' ? 6495 : 4995, depositOre: deposit * units };
+  if (units > 1)
+    return { amountOre: product.category === 'beer' ? 6495 : 4995, depositOre: deposit * units };
   if (volumeMl >= 1000) return { amountOre: 2195, depositOre: deposit };
-  if (product.category === 'energy-functional') return { amountOre: volumeMl >= 500 ? 1895 : 1595, depositOre: deposit };
-  if (product.category === 'beer') return { amountOre: volumeMl >= 500 ? 1295 : 1495, depositOre: deposit };
+  if (product.category === 'energy-functional')
+    return { amountOre: volumeMl >= 500 ? 1895 : 1595, depositOre: deposit };
+  if (product.category === 'beer')
+    return { amountOre: volumeMl >= 500 ? 1295 : 1495, depositOre: deposit };
   if (product.category === 'water') return { amountOre: 1095, depositOre: deposit };
   return { amountOre: 895, depositOre: deposit };
 }
@@ -144,8 +148,17 @@ interface Block {
 }
 
 /** Fills a location's shelf rows with brand blocks of 2–4 facings, weighted toward the client. */
-function planogram(random: Random, pool: Product[], rows: number, cols: number, clientWeight: number, catalogue: Catalogue): Block[] {
-  const clientBrands = new Set(catalogue.brands.filter((b) => b.relation !== 'competitor').map((b) => b.id));
+function planogram(
+  random: Random,
+  pool: Product[],
+  rows: number,
+  cols: number,
+  clientWeight: number,
+  catalogue: Catalogue,
+): Block[] {
+  const clientBrands = new Set(
+    catalogue.brands.filter((b) => b.relation !== 'competitor').map((b) => b.id),
+  );
   const client = pool.filter((p) => clientBrands.has(p.brandId));
   const competitor = pool.filter((p) => !clientBrands.has(p.brandId));
   const blocks: Block[] = [];
@@ -209,13 +222,17 @@ export function generateMockAnalysis(
     const rows = group.type === 'display' ? 3 : 5;
     const step = COLS_PER_IMAGE - OVERLAP_COLS;
     const totalCols = COLS_PER_IMAGE + (group.imageIds.length - 1) * step;
-    const pool = group.type === 'display' ? poolFor('shelf', catalogue) : poolFor(group.type, catalogue);
+    const pool =
+      group.type === 'display' ? poolFor('shelf', catalogue) : poolFor(group.type, catalogue);
     const clientWeight = group.type === 'cooler' ? 0.45 : 0.38;
     let blocks = planogram(random, pool, rows, totalCols, clientWeight, catalogue);
 
     if (group.type === 'display') {
-      const clientBrands = new Set(catalogue.brands.filter((b) => b.relation !== 'competitor').map((b) => b.id));
-      const featured = pool.find((p) => clientBrands.has(p.brandId) && p.category === 'beer') ?? pool[0];
+      const clientBrands = new Set(
+        catalogue.brands.filter((b) => b.relation !== 'competitor').map((b) => b.id),
+      );
+      const featured =
+        pool.find((p) => clientBrands.has(p.brandId) && p.category === 'beer') ?? pool[0];
       blocks = blocks.map((b) => ({ ...b, product: featured }));
       displays.push({
         displayId: `${locationId}-display`,
@@ -232,7 +249,7 @@ export function generateMockAnalysis(
     for (const b of blocks) {
       for (let c = b.startCol; c <= b.endCol; c++) {
         const r = random();
-        positionState.set(`${b.row}:${c}`, r < 0.03 ? 'unknown' : r < 0.07 ? 'candidate' : 'clear');
+        positionState.set(`${b.row}:${c}`, r < 0.02 ? 'unknown' : r < 0.05 ? 'candidate' : 'clear');
       }
     }
 
@@ -261,11 +278,29 @@ export function generateMockAnalysis(
           const inGlare = glare && local >= 2 && local <= 3 && b.row <= 1;
           let match: ProductMatch;
           if (inGlare || state === 'unknown') {
-            match = { status: 'unknown', productId: null, brandId: null, category: random() < 0.5 ? b.product.category : null, providerScore: null };
+            match = {
+              status: 'unknown',
+              productId: null,
+              brandId: null,
+              category: random() < 0.5 ? b.product.category : null,
+              providerScore: null,
+            };
           } else if (state === 'candidate') {
-            match = { status: 'candidate', productId: b.product.id, brandId: b.product.brandId, category: b.product.category, providerScore: 0.4 + random() * 0.2 };
+            match = {
+              status: 'candidate',
+              productId: b.product.id,
+              brandId: b.product.brandId,
+              category: b.product.category,
+              providerScore: 0.4 + random() * 0.2,
+            };
           } else {
-            match = { status: 'matched', productId: b.product.id, brandId: b.product.brandId, category: b.product.category, providerScore: 0.8 + random() * 0.19 };
+            match = {
+              status: 'matched',
+              productId: b.product.id,
+              brandId: b.product.brandId,
+              category: b.product.category,
+              providerScore: 0.8 + random() * 0.19,
+            };
           }
           facings.push({
             facingId: `${imageId}-f-${b.row}-${c}`,
@@ -287,8 +322,14 @@ export function generateMockAnalysis(
         const physicalLabelId = `${locationId}-label-${b.row}-${b.startCol}`;
         const { amountOre, depositOre } = priceFor(b.product);
         const local = b.startCol - startCol;
-        const region = { x: 0.02 + local * colWidth, y: 0.04 + b.row * rowHeight + rowHeight * 0.74, width: colWidth * 0.9, height: rowHeight * 0.16 };
-        const isClient = catalogue.brands.find((br) => br.id === b.product.brandId)?.relation !== 'competitor';
+        const region = {
+          x: 0.02 + local * colWidth,
+          y: 0.04 + b.row * rowHeight + rowHeight * 0.74,
+          width: colWidth * 0.9,
+          height: rowHeight * 0.16,
+        };
+        const isClient =
+          catalogue.brands.find((br) => br.id === b.product.brandId)?.relation !== 'competitor';
         const base: PriceLabelObservation = {
           labelId: `${imageId}-${physicalLabelId}`,
           imageId,
@@ -298,7 +339,13 @@ export function generateMockAnalysis(
           rawText: `${b.product.name.toUpperCase()} ${ore(amountOre)} + PANT ${ore(depositOre)}`,
           status: 'resolved',
           unresolvedReason: null,
-          match: { status: 'matched', productId: b.product.id, brandId: b.product.brandId, category: b.product.category, providerScore: 0.9 },
+          match: {
+            status: 'matched',
+            productId: b.product.id,
+            brandId: b.product.brandId,
+            category: b.product.category,
+            providerScore: 0.9,
+          },
           priceType: 'regular',
           amountOre,
           currency: 'DKK',
@@ -309,7 +356,12 @@ export function generateMockAnalysis(
           promotionId: null,
         };
         const roll = rng(physicalLabelId)();
-        if (!multibuyDone && isClient && b.product.pack.units === 1 && b.product.pack.volumeMl < 1000) {
+        if (
+          !multibuyDone &&
+          isClient &&
+          b.product.pack.units === 1 &&
+          b.product.pack.volumeMl < 1000
+        ) {
           multibuyDone = true;
           const promotionId = `promo-${physicalLabelId}`;
           promotions.push({
@@ -343,7 +395,13 @@ export function generateMockAnalysis(
             productIds: [b.product.id],
             brandIds: [b.product.brandId],
           });
-          priceLabels.push({ ...base, priceType: 'member', amountOre: memberOre, conditionText: 'Loyalty members only, max 2', promotionId });
+          priceLabels.push({
+            ...base,
+            priceType: 'member',
+            amountOre: memberOre,
+            conditionText: 'Loyalty members only, max 2',
+            promotionId,
+          });
         } else if (!ambiguousDone && roll < 0.2) {
           ambiguousDone = true;
           priceLabels.push({
@@ -352,13 +410,19 @@ export function generateMockAnalysis(
             unresolvedReason: 'ambiguous-product',
             match: { ...base.match, status: 'candidate', providerScore: 0.45 },
           });
-        } else if (roll < 0.12) {
+        } else if (roll < 0.07) {
           priceLabels.push({
             ...base,
             rawText: null,
             status: 'unresolved',
             unresolvedReason: 'unreadable',
-            match: { status: 'unknown', productId: null, brandId: null, category: null, providerScore: null },
+            match: {
+              status: 'unknown',
+              productId: null,
+              brandId: null,
+              category: null,
+              providerScore: null,
+            },
             amountOre: null,
             deposit: { shown: false, amountOre: null, included: null },
             pack: { units: null, volumeMl: null },
@@ -384,17 +448,30 @@ export function generateMockAnalysis(
 
   const unusable = imageResults.filter((i) => !i.usable).map((i) => i.imageId);
   if (unusable.length) {
-    warnings.push({ code: 'unusable-image', message: `${unusable.length} photo(s) could not be analysed.`, imageIds: unusable });
+    warnings.push({
+      code: 'unusable-image',
+      message: `${unusable.length} photo(s) could not be analysed.`,
+      imageIds: unusable,
+    });
   }
   const unreadable = priceLabels.filter((p) => p.unresolvedReason === 'unreadable');
   if (unreadable.length) {
-    warnings.push({ code: 'label-unreadable', message: `${unreadable.length} price label(s) were unreadable.`, imageIds: [...new Set(unreadable.map((p) => p.imageId))] });
+    warnings.push({
+      code: 'label-unreadable',
+      message: `${unreadable.length} price label(s) were unreadable.`,
+      imageIds: [...new Set(unreadable.map((p) => p.imageId))],
+    });
   }
   if (usable.length < 3) {
-    warnings.push({ code: 'low-coverage', message: 'Few photos: results describe only the captured area.', imageIds: [] });
+    warnings.push({
+      code: 'low-coverage',
+      message: 'Few photos: results describe only the captured area.',
+      imageIds: [],
+    });
   }
 
-  const status: AnalysisResponse['status'] = usable.length === 0 ? 'partial' : unusable.length ? 'partial' : 'completed';
+  const status: AnalysisResponse['status'] =
+    usable.length === 0 ? 'partial' : unusable.length ? 'partial' : 'completed';
   return {
     ...base(request, catalogue.version, analysedAt),
     status,

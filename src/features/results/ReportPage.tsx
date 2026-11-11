@@ -29,8 +29,14 @@ export function ReportPage({ visitId }: { visitId: string }) {
   const prices = sortPrices(metrics.prices);
   const groups = [
     { title: t.report.clientPrices, items: prices.filter((p) => p.classification === 'client') },
-    { title: t.report.competitorPrices, items: prices.filter((p) => p.classification === 'competitor') },
-    { title: t.report.unmatchedPrices, items: prices.filter((p) => p.classification === 'unknown') },
+    {
+      title: t.report.competitorPrices,
+      items: prices.filter((p) => p.classification === 'competitor'),
+    },
+    {
+      title: t.report.unmatchedPrices,
+      items: prices.filter((p) => p.classification === 'unknown'),
+    },
   ];
   const imageIssues = new Map(result.response.images.map((i) => [i.imageId, i]));
 
@@ -47,9 +53,15 @@ export function ReportPage({ visitId }: { visitId: string }) {
         <SectionHeader title={t.report.coverage} />
         <p className={shared.muted}>
           {t.results.coverage(metrics.coverage.imagesSubmitted, metrics.coverage.imagesUsable)} ·{' '}
-          {t.results.locations(metrics.coverage.locations.shelf, metrics.coverage.locations.cooler, metrics.coverage.locations.display)}
+          {t.results.locations(
+            metrics.coverage.locations.shelf,
+            metrics.coverage.locations.cooler,
+            metrics.coverage.locations.display,
+          )}
         </p>
-        <p className={shared.muted}>{t.report.observations(metrics.coverage.observations, metrics.coverage.duplicatesMerged)}</p>
+        <p className={shared.muted}>
+          {t.report.observations(metrics.coverage.observations, metrics.coverage.duplicatesMerged)}
+        </p>
         <p className={shared.muted}>{t.results.capturedAreaOnly}</p>
         {metrics.warnings.length > 0 && (
           <ul className={report.warnings}>
@@ -95,24 +107,32 @@ export function ReportPage({ visitId }: { visitId: string }) {
           .filter((s) => metrics.scopes[s].sos.reasons.length > 0)
           .map((s) => (
             <p key={s} className={shared.muted}>
-              {t.results.scope[s]}: {metrics.scopes[s].sos.reasons.map((r) => t.sosReasons[r]).join('; ')}
+              {t.results.scope[s]}:{' '}
+              {metrics.scopes[s].sos.reasons.map((r) => t.sosReasons[r]).join('; ')}
             </p>
           ))}
       </section>
 
       <Divider />
       <section className={shared.stackTight}>
-        <SectionHeader title={t.report.clientProducts} aside={t.report.uniqueSkus(metrics.uniqueClientSkus)} />
+        <SectionHeader
+          title={t.report.clientProducts}
+          aside={t.report.uniqueSkus(metrics.uniqueClientSkus)}
+        />
         <ul className={shared.list}>
           {metrics.clientProducts.map((p) => (
             <li key={p.key} className={styles.priceRow}>
               <div>
                 <p className={styles.priceName}>{productName(catalogue, p.productId, p.brandId)}</p>
-                <p className={styles.priceSub}>{productPack(catalogue, p.productId) ?? t.report.brandOnly}</p>
+                <p className={styles.priceSub}>
+                  {productPack(catalogue, p.productId) ?? t.report.brandOnly}
+                </p>
               </div>
               <div>
                 <p className={styles.priceValue}>{p.facings.shelf + p.facings.cooler}</p>
-                <p className={styles.priceDetail}>{t.report.shelfCooler(p.facings.shelf, p.facings.cooler)}</p>
+                <p className={styles.priceDetail}>
+                  {t.report.shelfCooler(p.facings.shelf, p.facings.cooler)}
+                </p>
               </div>
             </li>
           ))}
@@ -156,7 +176,8 @@ export function ReportPage({ visitId }: { visitId: string }) {
         </ul>
         {metrics.displays.count > 0 && (
           <p className={shared.muted}>
-            {t.results.displays(metrics.displays.count, metrics.displays.withClientBrand)}. {t.results.displaysHint}
+            {t.results.displays(metrics.displays.count, metrics.displays.withClientBrand)}.{' '}
+            {t.results.displaysHint}
           </p>
         )}
       </section>
@@ -169,14 +190,27 @@ export function ReportPage({ visitId }: { visitId: string }) {
             const analysis = imageIssues.get(c.id);
             return (
               <li key={c.id}>
-                <Link to="/visits/$visitId/photos/$captureId" params={{ visitId, captureId: c.id }} className={report.photo}>
-                  <BlobImage blobId={c.thumbBlobId} fallbackBlobId={c.blobId} alt={t.store.capture(padSequence(c.sequence))} className={report.photoImage} />
+                <Link
+                  to="/visits/$visitId/photos/$captureId"
+                  params={{ visitId, captureId: c.id }}
+                  className={report.photo}
+                >
+                  <BlobImage
+                    blobId={c.thumbBlobId}
+                    fallbackBlobId={c.blobId}
+                    alt={t.store.capture(padSequence(c.sequence))}
+                    className={report.photoImage}
+                  />
                   <span className={report.photoLabel}>
                     {padSequence(c.sequence)} ·{' '}
-                    {analysis?.locationType ? t.locationTypes[analysis.locationType] : t.photo.noLocation}
+                    {analysis?.locationType
+                      ? t.locationTypes[analysis.locationType]
+                      : t.photo.noLocation}
                   </span>
                   {analysis?.issues.length ? (
-                    <span className={report.photoIssue}>{analysis.issues.map((i) => t.imageIssues[i]).join(', ')}</span>
+                    <span className={report.photoIssue}>
+                      {analysis.issues.map((i) => t.imageIssues[i]).join(', ')}
+                    </span>
                   ) : null}
                 </Link>
               </li>
@@ -185,7 +219,10 @@ export function ReportPage({ visitId }: { visitId: string }) {
         </ul>
       </section>
 
-      <Mono>{t.report.method(metrics.methodVersion, metrics.catalogueVersion)} · {result.response.provider.name}</Mono>
+      <Mono>
+        {t.report.method(metrics.methodVersion, metrics.catalogueVersion)} ·{' '}
+        {result.response.provider.name}
+      </Mono>
     </Screen>
   );
 }

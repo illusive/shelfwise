@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { measureCategorySos, measureSos, type ClassifiedFacing } from './sos';
 
-const f = (classification: ClassifiedFacing['classification'], category: ClassifiedFacing['category'] = 'beer') => ({
+const f = (
+  classification: ClassifiedFacing['classification'],
+  category: ClassifiedFacing['category'] = 'beer',
+) => ({
   classification,
   category,
 });
@@ -35,12 +38,20 @@ describe('measureSos', () => {
   });
 
   it('is unavailable when the scope was not captured', () => {
-    const m = measureSos('cooler', [], { locations: 0, usableImages: 0, unreconciledOverlap: false });
+    const m = measureSos('cooler', [], {
+      locations: 0,
+      usableImages: 0,
+      unreconciledOverlap: false,
+    });
     expect(m).toMatchObject({ status: 'unavailable', sharePct: null, reasons: ['not-captured'] });
   });
 
   it('is unavailable when no usable images exist', () => {
-    const m = measureSos('shelf', [], { locations: 1, usableImages: 0, unreconciledOverlap: false });
+    const m = measureSos('shelf', [], {
+      locations: 1,
+      usableImages: 0,
+      unreconciledOverlap: false,
+    });
     expect(m.reasons).toEqual(['no-usable-images']);
   });
 

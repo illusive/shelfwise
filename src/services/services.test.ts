@@ -32,7 +32,8 @@ async function setup(provider?: AnalysisProvider) {
 
 async function draftWithPhotos(count: number) {
   const visit = await services.captures.startVisit('st-meny-osterbro', 'rep-alex');
-  for (let i = 0; i < count; i++) await services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' });
+  for (let i = 0; i < count; i++)
+    await services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' });
   return visit;
 }
 
@@ -48,7 +49,9 @@ describe('capture drafts', () => {
   it('numbers rapid captures consecutively', async () => {
     const visit = await services.captures.startVisit('st-meny-osterbro', 'rep-alex');
     await Promise.all(
-      [1, 2, 3, 4].map(() => services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' })),
+      [1, 2, 3, 4].map(() =>
+        services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' }),
+      ),
     );
     const captures = await services.repos.captures.listByVisit(visit.id);
     expect(captures.map((c) => c.sequence)).toEqual([1, 2, 3, 4]);
@@ -57,11 +60,16 @@ describe('capture drafts', () => {
   it('keeps the sequence position on retake and removes photos', async () => {
     const visit = await draftWithPhotos(3);
     const [first, second] = await services.repos.captures.listByVisit(visit.id);
-    const retaken = await services.captures.replaceCapture(second.id, { blob: photo(), source: 'camera' });
+    const retaken = await services.captures.replaceCapture(second.id, {
+      blob: photo(),
+      source: 'camera',
+    });
     expect(retaken.sequence).toBe(2);
     expect(retaken.blobId).not.toBe(second.blobId);
     await services.captures.removeCapture(first.id);
-    expect((await services.repos.captures.listByVisit(visit.id)).map((c) => c.sequence)).toEqual([2, 3]);
+    expect((await services.repos.captures.listByVisit(visit.id)).map((c) => c.sequence)).toEqual([
+      2, 3,
+    ]);
   });
 });
 
@@ -79,11 +87,15 @@ describe('analysis submission', () => {
     expect(job?.status).toBe('completed');
     const stored = await services.repos.visits.get(visit.id);
     expect(stored).toMatchObject({ status: 'completed', resultId: `result-${a.id}` });
-    await expect(services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' })).rejects.toThrow();
+    await expect(
+      services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' }),
+    ).rejects.toThrow();
   });
 
   it('records a retryable failure and succeeds on retry without duplicating results', async () => {
-    await setup(createMockProvider({ catalogue: seedCatalogue, latencyMs: 0, failFirstAttempt: true }));
+    await setup(
+      createMockProvider({ catalogue: seedCatalogue, latencyMs: 0, failFirstAttempt: true }),
+    );
     const visit = await draftWithPhotos(2);
     const job = await services.analysis.submitVisit(visit.id);
     await services.analysis.whenIdle(job.id);
@@ -106,7 +118,9 @@ describe('analysis submission', () => {
   });
 
   it('reopening a failed submission issues a new idempotency key', async () => {
-    await setup(createMockProvider({ catalogue: seedCatalogue, latencyMs: 0, failFirstAttempt: true }));
+    await setup(
+      createMockProvider({ catalogue: seedCatalogue, latencyMs: 0, failFirstAttempt: true }),
+    );
     const visit = await draftWithPhotos(1);
     const job = await services.analysis.submitVisit(visit.id);
     await services.analysis.whenIdle(job.id);

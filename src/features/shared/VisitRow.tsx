@@ -22,7 +22,13 @@ function locationSummary(summary: VisitSummary): string {
 }
 
 /** Visit list row shared by Home, Store and Archive (Figma "Recent visits" row). */
-export function VisitRow({ summary, title = 'store' }: { summary: VisitSummary; title?: VisitRowTitle }) {
+export function VisitRow({
+  summary,
+  title = 'store',
+}: {
+  summary: VisitSummary;
+  title?: VisitRowTitle;
+}) {
   const { visit, store, metrics, job } = summary;
   const when = visit.completedAt ?? visit.submittedAt ?? visit.createdAt;
   const tz = store.timeZone;
@@ -49,7 +55,9 @@ export function VisitRow({ summary, title = 'store' }: { summary: VisitSummary; 
       <div className={styles.body}>
         <p className={styles.title}>{title === 'store' ? store.name : day}</p>
         <p className={styles.sub}>
-          {title === 'store' ? `${store.area} · ${locationSummary(summary)}` : locationSummary(summary)}
+          {title === 'store'
+            ? `${store.area} · ${locationSummary(summary)}`
+            : locationSummary(summary)}
         </p>
         <p className={styles.meta}>
           {title === 'store'

@@ -6,7 +6,14 @@ import { t } from '@/i18n/strings';
 import { CheckIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
 import { Screen, TopBar } from '@/ui/primitives/Screen';
-import { Divider, EmptyState, Eyebrow, MockBadge, Notice, SectionHeader } from '@/ui/primitives/Text';
+import {
+  Divider,
+  EmptyState,
+  Eyebrow,
+  MockBadge,
+  Notice,
+  SectionHeader,
+} from '@/ui/primitives/Text';
 import shared from '../shared/shared.module.css';
 import { sortPrices } from './labels';
 import { PriceRow } from './PriceRow';
@@ -45,7 +52,12 @@ export function ResultsPage({ visitId }: { visitId: string }) {
   return (
     <Screen
       action={
-        <Button block size="lg" withArrow onClick={() => void navigate({ to: '/visits/$visitId/report', params: { visitId } })}>
+        <Button
+          block
+          size="lg"
+          withArrow
+          onClick={() => void navigate({ to: '/visits/$visitId/report', params: { visitId } })}
+        >
           {t.results.fullReport}
         </Button>
       }
@@ -65,18 +77,31 @@ export function ResultsPage({ visitId }: { visitId: string }) {
         <MockBadge source={metrics.source} />
       </div>
 
-      <ShareHero metrics={metrics} previous={previous?.metrics ?? null} clientName={catalogue.client.name} />
+      <ShareHero
+        metrics={metrics}
+        previous={previous?.metrics ?? null}
+        clientName={catalogue.client.name}
+      />
 
       <p className={shared.muted}>
-        {t.results.locations(metrics.coverage.locations.shelf, metrics.coverage.locations.cooler, metrics.coverage.locations.display)} ·{' '}
-        {t.results.coverage(metrics.coverage.imagesSubmitted, metrics.coverage.imagesUsable)}
+        {t.results.locations(
+          metrics.coverage.locations.shelf,
+          metrics.coverage.locations.cooler,
+          metrics.coverage.locations.display,
+        )}{' '}
+        · {t.results.coverage(metrics.coverage.imagesSubmitted, metrics.coverage.imagesUsable)}
       </p>
 
       {unresolved > 0 && (
         <Notice
           title={t.results.reviewNeeded(unresolved)}
           action={
-            <Link to="/visits/$visitId/review" params={{ visitId }} className={styles.toggle} data-testid="review-link">
+            <Link
+              to="/visits/$visitId/review"
+              params={{ visitId }}
+              className={styles.toggle}
+              data-testid="review-link"
+            >
               {t.results.review} →
             </Link>
           }
@@ -121,7 +146,8 @@ export function ResultsPage({ visitId }: { visitId: string }) {
           </ul>
           {metrics.displays.count > 0 && (
             <p className={shared.muted}>
-              {t.results.displays(metrics.displays.count, metrics.displays.withClientBrand)}. {t.results.displaysHint}
+              {t.results.displays(metrics.displays.count, metrics.displays.withClientBrand)}.{' '}
+              {t.results.displaysHint}
             </p>
           )}
         </section>
@@ -130,7 +156,10 @@ export function ResultsPage({ visitId }: { visitId: string }) {
       <div className={shared.stackTight}>
         <p className={shared.footnote}>
           <CheckIcon size={14} />
-          {t.results.savedTo(store.name, `${formatRelativeDay(completedAt, tz)}, ${formatTime(completedAt, tz)}`)}
+          {t.results.savedTo(
+            store.name,
+            `${formatRelativeDay(completedAt, tz)}, ${formatTime(completedAt, tz)}`,
+          )}
         </p>
         {corrections > 0 && <p className={shared.footnote}>{t.results.corrections(corrections)}</p>}
         <p className={shared.footnote}>{t.results.capturedAreaOnly}</p>

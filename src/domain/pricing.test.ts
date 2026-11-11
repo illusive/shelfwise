@@ -40,7 +40,10 @@ describe('normalisePrice', () => {
   });
 
   it('computes price per litre only with a known pack', () => {
-    const withCatalogue = normalisePrice(label({ amountOre: 6495, match: matched('royal-pilsner-6x330') }), catalogue);
+    const withCatalogue = normalisePrice(
+      label({ amountOre: 6495, match: matched('royal-pilsner-6x330') }),
+      catalogue,
+    );
     expect(withCatalogue.packSource).toBe('catalogue');
     expect(withCatalogue.pricePerLitreOre).toBe(Math.round(6495 / 1.98));
 
@@ -57,7 +60,15 @@ describe('normalisePrice', () => {
 
   it('does not attach a candidate match to a product', () => {
     const p = normalisePrice(
-      label({ match: { status: 'candidate', productId: 'pepsi-330', brandId: null, category: null, providerScore: 0.4 } }),
+      label({
+        match: {
+          status: 'candidate',
+          productId: 'pepsi-330',
+          brandId: null,
+          category: null,
+          providerScore: 0.4,
+        },
+      }),
       catalogue,
     );
     expect(p.productId).toBeNull();
@@ -78,13 +89,23 @@ describe('normalisePrice', () => {
       value: { kind: 'price', amountOre: 1295, priceType: 'regular' },
     };
     const corrected = normalisePrice(raw, catalogue, correction);
-    expect(corrected).toMatchObject({ needsReview: false, source: 'rep', displayedOre: 1295, status: 'resolved' });
+    expect(corrected).toMatchObject({
+      needsReview: false,
+      source: 'rep',
+      displayedOre: 1295,
+      status: 'resolved',
+    });
   });
 });
 
 describe('dedupeLabels', () => {
   it('lists a physical label seen in two photos once, preferring the readable view', () => {
-    const a = label({ physicalLabelId: 'pl-1', status: 'unresolved', unresolvedReason: 'unreadable', amountOre: null });
+    const a = label({
+      physicalLabelId: 'pl-1',
+      status: 'unresolved',
+      unresolvedReason: 'unreadable',
+      amountOre: null,
+    });
     const b = label({ physicalLabelId: 'pl-1', imageId: 'img-2' });
     const result = dedupeLabels([a, b, label()]);
     expect(result).toHaveLength(2);
@@ -93,10 +114,21 @@ describe('dedupeLabels', () => {
 
   it('applies the latest correction per label', () => {
     const raw = label({ status: 'unresolved', unresolvedReason: 'unreadable', amountOre: null });
-    const base = { resultId: 'r', visitId: 'v', repId: 'rep', targetKind: 'price-label' as const, targetId: raw.labelId };
+    const base = {
+      resultId: 'r',
+      visitId: 'v',
+      repId: 'rep',
+      targetKind: 'price-label' as const,
+      targetId: raw.labelId,
+    };
     const prices = normalisePrices([raw], catalogue, [
       { ...base, id: 'c2', createdAt: '2026-11-10T10:05:00Z', value: { kind: 'unreadable' } },
-      { ...base, id: 'c1', createdAt: '2026-11-10T10:00:00Z', value: { kind: 'price', amountOre: 1, priceType: 'regular' } },
+      {
+        ...base,
+        id: 'c1',
+        createdAt: '2026-11-10T10:00:00Z',
+        value: { kind: 'price', amountOre: 1, priceType: 'regular' },
+      },
     ]);
     expect(prices[0]).toMatchObject({ status: 'unresolved', source: 'rep', needsReview: false });
   });

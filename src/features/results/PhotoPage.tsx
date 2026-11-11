@@ -52,7 +52,10 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
         id: e.observationId,
         kind: f.excluded ? 'unknown' : f.classification,
         region: e.region,
-        title: f.classification === 'unknown' ? t.results.unknown : productName(catalogue, f.productId, f.brandId),
+        title:
+          f.classification === 'unknown'
+            ? t.results.unknown
+            : productName(catalogue, f.productId, f.brandId),
         detail: [
           t.locationTypes[f.locationType],
           f.source === 'rep' ? t.report.repCorrected : f.match.status,
@@ -70,7 +73,9 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
       id: label.labelId,
       kind: 'price',
       region: label.region,
-      title: normalised ? priceLabelName(catalogue, normalised) : (label.rawText ?? t.report.unresolved),
+      title: normalised
+        ? priceLabelName(catalogue, normalised)
+        : (label.rawText ?? t.report.unresolved),
       detail:
         normalised?.status === 'resolved' && normalised.displayedOre !== null
           ? formatDkk(normalised.displayedOre)
@@ -84,7 +89,11 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
     const next = captures[index + offset];
     if (next) {
       setSelected(null);
-      void navigate({ to: '/visits/$visitId/photos/$captureId', params: { visitId, captureId: next.id }, replace: true });
+      void navigate({
+        to: '/visits/$visitId/photos/$captureId',
+        params: { visitId, captureId: next.id },
+        replace: true,
+      });
     }
   };
 
@@ -104,9 +113,24 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
           </Badge>
         ))}
       </div>
-      <div className={styles.viewer} style={{ aspectRatio: `${capture.width} / ${capture.height}` }}>
-        {url && <img src={url} alt={t.photo.title(padSequence(capture.sequence))} className={styles.image} />}
-        <svg className={styles.overlay} viewBox="0 0 1 1" preserveAspectRatio="none" role="group" aria-label="Evidence">
+      <div
+        className={styles.viewer}
+        style={{ aspectRatio: `${capture.width} / ${capture.height}` }}
+      >
+        {url && (
+          <img
+            src={url}
+            alt={t.photo.title(padSequence(capture.sequence))}
+            className={styles.image}
+          />
+        )}
+        <svg
+          className={styles.overlay}
+          viewBox="0 0 1 1"
+          preserveAspectRatio="none"
+          role="group"
+          aria-label="Evidence"
+        >
           {boxes.map((b) => (
             <rect
               key={b.id}
@@ -146,7 +170,13 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
         )}
       </div>
       <div className={shared.spread}>
-        <button type="button" className={styles.pager} onClick={() => go(-1)} disabled={index <= 0} aria-label="Previous photo">
+        <button
+          type="button"
+          className={styles.pager}
+          onClick={() => go(-1)}
+          disabled={index <= 0}
+          aria-label="Previous photo"
+        >
           <ArrowLeftIcon />
         </button>
         <Link to="/visits/$visitId/results" params={{ visitId }} className={shared.muted}>

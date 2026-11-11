@@ -11,7 +11,11 @@ export const PHOTO_QUALITY = 0.92;
 
 function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Canvas encoding failed'))), type, quality),
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error('Canvas encoding failed'))),
+      type,
+      quality,
+    ),
   );
 }
 

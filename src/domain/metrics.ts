@@ -79,7 +79,9 @@ export function computeVisitMetrics(
   corrections: readonly Correction[],
   catalogue: CatalogueIndex,
 ): VisitMetrics {
-  const facingCorrections = corrections.filter((c): c is FacingCorrection => c.targetKind === 'facing');
+  const facingCorrections = corrections.filter(
+    (c): c is FacingCorrection => c.targetKind === 'facing',
+  );
   const priceCorrections = corrections.filter(
     (c): c is PriceCorrection => c.targetKind === 'price-label',
   );
@@ -139,8 +141,9 @@ export function computeVisitMetrics(
     promotions: response.promotions,
     displays: {
       count: response.locations.filter((l) => l.type === 'display').length,
-      withClientBrand: response.displays.filter((d) => d.brandIds.some((b) => clientBrandIds.has(b)))
-        .length,
+      withClientBrand: response.displays.filter((d) =>
+        d.brandIds.some((b) => clientBrandIds.has(b)),
+      ).length,
       items: response.displays,
     },
     unresolved: {
@@ -168,7 +171,10 @@ export function computeVisitMetrics(
 }
 
 /** Client vs each competitor company vs unknown, as shares of the same denominator. */
-export function shareGroups(facings: readonly EffectiveFacing[], catalogue: CatalogueIndex): ShareGroup[] {
+export function shareGroups(
+  facings: readonly EffectiveFacing[],
+  catalogue: CatalogueIndex,
+): ShareGroup[] {
   const total = facings.length;
   if (total === 0) return [];
   const counts = new Map<string, ShareGroup>();
@@ -200,7 +206,12 @@ function observedClientProducts(facings: readonly EffectiveFacing[]): ObservedPr
     const key = f.productId ?? `brand:${f.brandId}`;
     const entry =
       byKey.get(key) ??
-      ({ key, productId: f.productId, brandId: f.brandId, facings: { shelf: 0, cooler: 0 } } as ObservedProduct);
+      ({
+        key,
+        productId: f.productId,
+        brandId: f.brandId,
+        facings: { shelf: 0, cooler: 0 },
+      } as ObservedProduct);
     entry.facings[f.locationType] += 1;
     byKey.set(key, entry);
   }

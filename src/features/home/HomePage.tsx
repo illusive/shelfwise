@@ -30,7 +30,9 @@ export function HomePage() {
   const monthShare = aggregateShare(latestPerStore.map((s) => s.metrics!.scopes.overall.sos));
   const draft = summaries.find((s) => s.visit.status === 'draft');
   const processing = summaries.filter((s) => s.job && isJobActive(s.job.status)).length;
-  const failed = summaries.filter((s) => s.visit.status === 'submitted' && s.job?.status === 'failed').length;
+  const failed = summaries.filter(
+    (s) => s.visit.status === 'submitted' && s.job?.status === 'failed',
+  ).length;
   const recent = summaries.filter((s) => s.visit.status !== 'draft').slice(0, 3);
 
   return (
@@ -62,7 +64,9 @@ export function HomePage() {
             block
             size="lg"
             withArrow
-            onClick={() => void navigate({ to: '/stores/$storeId', params: { storeId: draft.store.id } })}
+            onClick={() =>
+              void navigate({ to: '/stores/$storeId', params: { storeId: draft.store.id } })
+            }
           >
             {t.home.resume(draft.store.name)}
           </Button>

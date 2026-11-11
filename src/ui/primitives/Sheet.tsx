@@ -16,7 +16,14 @@ export interface SheetProps {
 }
 
 /** Accessible bottom sheet (Radix Dialog) with an interruptible slide-in/out. */
-export function Sheet({ open, onOpenChange, title, description, children, tone = 'paper' }: SheetProps) {
+export function Sheet({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  tone = 'paper',
+}: SheetProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <AnimatePresence>
@@ -49,7 +56,9 @@ export function Sheet({ open, onOpenChange, title, description, children, tone =
                   </Dialog.Close>
                 </div>
                 {description ? (
-                  <Dialog.Description className={styles.description}>{description}</Dialog.Description>
+                  <Dialog.Description className={styles.description}>
+                    {description}
+                  </Dialog.Description>
                 ) : (
                   <Dialog.Description className="visually-hidden">{title}</Dialog.Description>
                 )}

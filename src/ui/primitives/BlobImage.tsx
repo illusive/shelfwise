@@ -13,12 +13,25 @@ export interface BlobImageProps {
   fit?: 'cover' | 'contain';
 }
 
-export function BlobImage({ blobId, fallbackBlobId, alt, className, style, fit = 'cover' }: BlobImageProps) {
+export function BlobImage({
+  blobId,
+  fallbackBlobId,
+  alt,
+  className,
+  style,
+  fit = 'cover',
+}: BlobImageProps) {
   const url = useBlobUrl(blobId ?? fallbackBlobId);
   return (
     <div className={`${styles.frame} ${className ?? ''}`} style={style}>
       {url ? (
-        <img src={url} alt={alt} className={styles.img} style={{ objectFit: fit }} draggable={false} />
+        <img
+          src={url}
+          alt={alt}
+          className={styles.img}
+          style={{ objectFit: fit }}
+          draggable={false}
+        />
       ) : (
         <span className={styles.placeholder} role="img" aria-label={alt}>
           <ImageIcon />

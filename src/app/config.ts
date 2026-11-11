@@ -10,7 +10,9 @@ function readNumber(value: string | undefined, fallback: number): number {
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
 
-export function readConfig(env: Record<string, string | boolean | undefined> = import.meta.env): AppConfig {
+export function readConfig(
+  env: Record<string, string | boolean | undefined> = import.meta.env,
+): AppConfig {
   const provider = env.VITE_ANALYSIS_PROVIDER === 'live' ? 'live' : 'mock';
   return {
     analysisProvider: provider,

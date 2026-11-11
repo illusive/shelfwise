@@ -23,7 +23,12 @@ export function CapturesPage({ visitId }: { visitId: string }) {
   const [inspect, setInspect] = useState<Capture | null>(null);
 
   if (isPending) return null;
-  if (!detail) return <Screen><EmptyState title={t.common.notFound} /></Screen>;
+  if (!detail)
+    return (
+      <Screen>
+        <EmptyState title={t.common.notFound} />
+      </Screen>
+    );
 
   const { visit, store, captures } = detail;
   const tz = store.timeZone;
@@ -93,7 +98,11 @@ export function CapturesPage({ visitId }: { visitId: string }) {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.18 }}
                 >
-                  <button type="button" className={styles.imageButton} onClick={() => setInspect(c)}>
+                  <button
+                    type="button"
+                    className={styles.imageButton}
+                    onClick={() => setInspect(c)}
+                  >
                     <BlobImage
                       blobId={c.thumbBlobId}
                       fallbackBlobId={c.blobId}
@@ -138,7 +147,12 @@ export function CapturesPage({ visitId }: { visitId: string }) {
       >
         {inspect && (
           <>
-            <BlobImage blobId={inspect.blobId} alt={t.store.capture(padSequence(inspect.sequence))} className={styles.full} fit="contain" />
+            <BlobImage
+              blobId={inspect.blobId}
+              alt={t.store.capture(padSequence(inspect.sequence))}
+              className={styles.full}
+              fit="contain"
+            />
             {editable && (
               <div className={shared.spread}>
                 <Button

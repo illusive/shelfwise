@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4173;
+// Set E2E_BASE_URL (e.g. https://localhost:8443) to test a running Docker build instead.
+const external = process.env.E2E_BASE_URL;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -9,7 +11,8 @@ export default defineConfig({
   fullyParallel: false,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: external ?? `http://localhost:${PORT}`,
+    ignoreHTTPSErrors: Boolean(external),
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
@@ -26,10 +29,12 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: `npx vite build --mode e2e && npx vite preview --port ${PORT} --strictPort`,
-    url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-  },
+  webServer: external
+    ? undefined
+    : {
+        command: `npx vite build --mode e2e && npx vite preview --port ${PORT} --strictPort`,
+        url: `http://localhost:${PORT}`,
+        reuseExistingServer: !process.env.CI,
+        timeout: 180_000,
+      },
 });

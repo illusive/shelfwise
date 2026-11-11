@@ -1,11 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
+import { snap } from './snap';
 
-const samplePhoto = fileURLToPath(new URL('../docs/references/figma/shelf-photo.jpg', import.meta.url));
-const shots = process.env.E2E_SCREENSHOTS;
-const snap = async (page: import('@playwright/test').Page, name: string) => {
-  if (shots) await page.screenshot({ path: `${shots}/${name}.png`, fullPage: true });
-};
+const samplePhoto = fileURLToPath(
+  new URL('../docs/references/figma/shelf-photo.jpg', import.meta.url),
+);
 
 test('rep finds a store, captures, reviews, submits and sees results', async ({ page }) => {
   await page.goto('/');
@@ -77,7 +76,10 @@ test('rep finds a store, captures, reviews, submits and sees results', async ({ 
   await page.getByRole('button', { name: 'View full product report' }).click();
   await expect(page.getByRole('heading', { name: 'Product report' })).toBeVisible();
   await snap(page, '09-report');
-  await page.getByRole('link', { name: /Capture 01/ }).first().click();
+  await page
+    .getByRole('link', { name: /Capture 01/ })
+    .first()
+    .click();
   await expect(page.getByRole('group', { name: 'Evidence' })).toBeVisible();
   await snap(page, '10-photo');
 
@@ -92,7 +94,8 @@ test('camera permission denial offers the import fallback', async ({ browser }) 
   const context = await browser.newContext({ permissions: [] });
   const page = await context.newPage();
   await page.addInitScript(() => {
-    navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException('Denied', 'NotAllowedError'));
+    navigator.mediaDevices.getUserMedia = () =>
+      Promise.reject(new DOMException('Denied', 'NotAllowedError'));
   });
   await page.goto('/');
   await page.getByRole('button', { name: /Alex Holm/ }).click();

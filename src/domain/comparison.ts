@@ -43,10 +43,12 @@ export function compareSos(
     reasons: [reason],
   });
   if (current.methodVersion !== previous.methodVersion) return notComparable('method-changed');
-  if (cur.sos.sharePct === null || prev.sos.sharePct === null) return notComparable('measure-unavailable');
+  if (cur.sos.sharePct === null || prev.sos.sharePct === null)
+    return notComparable('measure-unavailable');
 
   const reasons: ComparisonReason[] = [];
-  if (cur.sos.status === 'qualified' || prev.sos.status === 'qualified') reasons.push('measure-qualified');
+  if (cur.sos.status === 'qualified' || prev.sos.status === 'qualified')
+    reasons.push('measure-qualified');
   if (coverageDiffers(cur.coverage, prev.coverage)) reasons.push('coverage-differs');
   if (current.source !== previous.source) reasons.push('source-differs');
 
