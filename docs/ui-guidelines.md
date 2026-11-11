@@ -32,10 +32,15 @@ caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `E
 - **StoreHeader** (`features/shared/StoreHeader`): full-bleed dark-green header with outlined back
   button, white logo circle (`StoreLogo`), name, two-line Danish address and status chips. Used
   on every store-related screen, followed by a `PageTitle`.
-- **Planned visit card** (`features/home/PlannedVisitCard`): numbered route dot joined to a
-  dark-green card by the shared goo filter (`GooFilter`, rendered once at the app root); logo
-  circle, name, address, "days since last visit" pill and tag chips. **DayStrip**: Monday–Sunday,
-  selected day filled, today ringed, dot when visits are planned.
+- **Planned visits on Home** use the original Figma list-row language (like "Recent visits"):
+  round chain logo with a small route-number badge, store name, street (+ floor) and mono
+  postcode/city line, a right-aligned value (days since the last visit, or "Ny/New — first
+  visit"; visited/in-progress as badges) and a chevron, separated by dividers. Visit tags are kept
+  in the data but not shown. **DayStrip**: Monday–Sunday, selected day filled, today ringed, dot
+  when visits are planned. The heading is a standard `SectionHeader` with the visit count.
+- **Store logos** (`StoreLogo`, metadata in `features/shared/storeLogos.ts`): the logo fills the
+  whole round bubble — square/round marks edge to edge (`cover`), wordmarks on the brand colour
+  at a per-chain scale. Brand colours live with the logo metadata, not in components.
 - **Close/back controls** in modals, the lightbox, the camera and headers use `IconButton`
   tones `outline`/`outline-light` (circular border, 44 px touch target).
 - **Lightbox**: icon-only actions (previous, retake, remove, next) and a zoom toggle/double-tap
@@ -89,7 +94,7 @@ bar sits above the safe-area inset.
 
 1. User drawer (current rep, language, switch rep, _Add demo history_) opened from the top-right
    avatar.
-1. Home planned visits: day strip + numbered route cards.
+1. Home planned visits: day strip + Figma-style list rows.
 1. Shared store header on all store-related screens.
 1. Report gate sheet when unresolved items remain.
 1. Stores: assigned + full-catalogue search with address disambiguation.

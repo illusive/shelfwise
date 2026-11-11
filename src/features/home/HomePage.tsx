@@ -10,7 +10,7 @@ import type { VisitSummary } from '@/services/visitSummaries';
 import { AlertIcon, CheckIcon, StoreIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
 import { Screen } from '@/ui/primitives/Screen';
-import { EmptyState } from '@/ui/primitives/Text';
+import { EmptyState, SectionHeader } from '@/ui/primitives/Text';
 import { AppHeader } from '../session/AppHeader';
 import shared from '../shared/shared.module.css';
 import { useVisitActions } from '../visit/useVisitActions';
@@ -102,18 +102,16 @@ export function HomePage() {
       />
 
       <section className={styles.plan}>
-        <div className={styles.planHead}>
-          <h2 className={styles.planTitle}>
-            {selected === today
-              ? t.home.todaysVisits
-              : t.home.dayVisits(formatWeekdayLong(selected))}
-          </h2>
-          <span className={styles.countPill}>{t.home.plannedCount(dayPlans.length)}</span>
-        </div>
+        <SectionHeader
+          title={
+            selected === today ? t.home.todaysVisits : t.home.dayVisits(formatWeekdayLong(selected))
+          }
+          aside={t.home.plannedCount(dayPlans.length)}
+        />
         {dayPlans.length === 0 ? (
           <EmptyState title={t.home.noPlanned} />
         ) : (
-          <ol className={styles.planList}>
+          <ol className={`${shared.list} ${styles.planList}`}>
             {dayPlans.map((plan) => {
               const store = storeById.get(plan.storeId)!;
               const last = lastVisit.get(store.id);

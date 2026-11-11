@@ -42,7 +42,7 @@ percentages.
 ## Home and planned visits
 
 Home answers "what do I have to do": the week strip selects a day and the numbered list shows that
-day's route with days since the last visit and tags (campaign, upsell, display, new listing).
+day's route with the route number, days since the last visit and visited/in-progress state.
 One tap opens the visit. History is in the archive and on each store page.
 
 ## Draft actions

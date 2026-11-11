@@ -31,37 +31,9 @@
 .plan {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-}
-
-.planHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.planTitle {
-  font-size: var(--font-size-24);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: -0.02em;
-}
-
-.countPill {
-  padding: 3px var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--color-accent);
-  color: var(--color-primary);
-  font-size: var(--font-size-12);
-  font-weight: var(--font-weight-bold);
-  white-space: nowrap;
+  gap: var(--space-1);
 }
 
 .planList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
