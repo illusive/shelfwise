@@ -63,12 +63,17 @@ device until a live backend exists.
    Repeated taps cannot create a second job.
 2. The job runner (module-level, survives navigation) reads each photo blob
    (`preparing`, real `done/total`), builds and validates an `AnalysisRequest`, calls the
-   provider (`analysing`), validates the response, and stores the result under a deterministic
-   id. Retries reuse the job and overwrite the same result id.
-3. Failures are stored on the job with `retryable`. _Edit photos_ cancels the job and reopens
-   the draft with a new idempotency key.
-4. On app start, `resumeInterrupted()` restarts jobs left `queued/preparing/analysing`.
-5. UI polls job state from IndexedDB while active (TanStack Query `refetchInterval`).
+   provider (`analysing`), validates the response, and completes in one transaction
+   (`visits.completeJob`): result stored under a deterministic id, visit and job completed —
+   only if the visit still owns the job and the job wasn't cancelled. Retries reuse the job
+   and overwrite the same result id. Job writes never override a `cancelled` status.
+3. Failures are stored on the job with `retryable`. _Edit photos_ (`visits.reopen`) cancels the
+   job and reopens the draft with a new idempotency key in one transaction.
+4. Submission first waits for in-flight capture writes (`captures.whenIdle`), so a photo saved
+   just before tapping _Analyze_ is never dropped or left out.
+5. On app start, `resumeInterrupted()` restarts jobs left `queued/preparing/analysing`.
+6. UI polls IndexedDB while a submitted visit awaits its result (TanStack Query
+   `refetchInterval`).
 
 ## Integrations (planned)
 
