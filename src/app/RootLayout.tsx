@@ -1,11 +1,9 @@
 import { Outlet } from '@tanstack/react-router';
-import { RepPicker } from '@/features/session/RepPicker';
 import { useCurrentRep } from './data';
 
-/** Requires a selected test rep before any screen is shown. */
+/** Waits for the current rep (defaulted at start-up) before rendering screens. */
 export function RootLayout() {
-  const { data: rep, isPending } = useCurrentRep();
+  const { isPending } = useCurrentRep();
   if (isPending) return null;
-  if (!rep) return <RepPicker />;
   return <Outlet />;
 }

@@ -2,7 +2,7 @@ import type { Catalogue } from '@/domain/catalogue';
 import type { ShelfwiseDb } from './db';
 import type { BlobStore, Repositories } from './repositories';
 
-const CURRENT_REP_KEY = 'currentRepId';
+import { CURRENT_REP_KEY } from './seed';
 
 export function createDexieRepositories(db: ShelfwiseDb, catalogue: Catalogue): Repositories {
   return {

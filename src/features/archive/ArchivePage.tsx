@@ -5,7 +5,8 @@ import { localDateKey } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import type { VisitSummary } from '@/services/visitSummaries';
 import { ChevronDownIcon, ChevronRightIcon, SearchIcon } from '@/ui/icons';
-import { Screen, Wordmark } from '@/ui/primitives/Screen';
+import { Screen } from '@/ui/primitives/Screen';
+import { AppHeader } from '../session/AppHeader';
 import { EmptyState } from '@/ui/primitives/Text';
 import shared from '../shared/shared.module.css';
 import { VisitRow } from '../shared/VisitRow';
@@ -45,7 +46,7 @@ export function ArchivePage() {
 
   return (
     <Screen nav>
-      <Wordmark />
+      <AppHeader />
       <div className={shared.stackTight}>
         <h1 className={shared.displayTitle}>{t.archive.title}</h1>
         <p className={shared.muted}>{t.archive.subtitle}</p>

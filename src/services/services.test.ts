@@ -37,6 +37,20 @@ async function draftWithPhotos(count: number) {
   return visit;
 }
 
+describe('current rep', () => {
+  it('defaults to the seeded POC rep and keeps a valid choice', async () => {
+    const db = new ShelfwiseDb(`test-rep-${++dbCount}`);
+    services = await createServices(config, { db, images });
+    expect(await services.repos.session.getCurrentRepId()).toBe('rep-alex');
+    await services.repos.session.setCurrentRepId('rep-mette');
+    services = await createServices(config, { db, images });
+    expect(await services.repos.session.getCurrentRepId()).toBe('rep-mette');
+    await services.repos.session.setCurrentRepId('rep-gone');
+    services = await createServices(config, { db, images });
+    expect(await services.repos.session.getCurrentRepId()).toBe('rep-alex');
+  });
+});
+
 describe('capture drafts', () => {
   beforeEach(() => setup());
 

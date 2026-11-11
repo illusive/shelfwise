@@ -22,9 +22,11 @@ export const t = {
     save: 'Save',
   },
   reps: {
-    title: 'Who is visiting stores?',
-    subtitle: 'Test reps for the POC. Your choice stays on this device.',
+    menu: (name: string) => `User: ${name}`,
+    drawerTitle: 'User',
+    current: 'Visiting stores as',
     switch: 'Switch rep',
+    note: 'Test reps for the POC — no sign-in. Your choice stays on this device.',
     demoData: 'Add demo history',
     demoDataHint: 'Creates two analysed visits per assigned store with generated photos.',
     demoAdded: 'Demo history added',

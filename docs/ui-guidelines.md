@@ -25,7 +25,7 @@
 `Screen` (page shell + fixed action + bottom nav, entry transition), `TopBar`, `Wordmark`,
 `BottomNav`, `Sheet` (Radix Dialog + spring), `Segmented` (Radix ToggleGroup), `Eyebrow` (mono
 caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `EmptyState`,
-`Divider`, `BlobImage`, `Toast`. Shared feature components: `VisitRow`, `PriceRow`,
+`Divider`, `BlobImage`, `Toast`. Shared feature components: `AppHeader` + `UserDrawer` + `Avatar`, `VisitRow`, `PriceRow`,
 `ShareHero`, `FacingGrid`, `EvidenceCrop`.
 
 ## Motion
@@ -44,11 +44,11 @@ caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `E
 - Captures show "Capture 01 · 14:24" instead of shelf names (agreed).
 - Home stat "Average shelf share" became "Shelf share this month", aggregated from counts
   (percentages are never averaged).
-- A user (switch rep) button on Home; Mock badges throughout.
+- A user avatar (top right of Home, Stores and Archive) opens the user drawer; Mock badges throughout.
 
 ## Screens invented beyond Figma (for review)
 
-1. Test-rep picker and switch-rep sheet (with _Add demo history_).
+1. User drawer (current rep, switch rep, _Add demo history_) opened from the top-right avatar.
 2. Stores: assigned + full-catalogue search with address/customer number disambiguation.
 3. Store overview (no draft): latest result card, history, empty state, _Start visit_.
 4. Camera blocking states (denied, unavailable, insecure, interrupted), captures sheet, tips sheet.

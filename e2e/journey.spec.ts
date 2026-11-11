@@ -9,8 +9,7 @@ const samplePhoto = fileURLToPath(
 test('rep finds a store, captures, reviews, submits and sees results', async ({ page }) => {
   await page.goto('/');
 
-  // Test-rep picker (no real auth in the POC).
-  await page.getByRole('button', { name: /Alex Holm/ }).click();
+  // No sign-in: the POC starts as the default test rep.
   await expect(page.getByRole('heading', { name: 'Hello, Alex.' })).toBeVisible();
   await snap(page, '01-home');
 
@@ -98,7 +97,6 @@ test('camera permission denial offers the import fallback', async ({ browser }) 
       Promise.reject(new DOMException('Denied', 'NotAllowedError'));
   });
   await page.goto('/');
-  await page.getByRole('button', { name: /Alex Holm/ }).click();
   await expect(page.getByRole('heading', { name: 'Hello, Alex.' })).toBeVisible();
   await page.goto('/stores');
   await page.getByRole('link', { name: /Meny Østerbro/ }).click();
@@ -107,4 +105,24 @@ test('camera permission denial offers the import fallback', async ({ browser }) 
   await page.getByTestId('import-input').setInputFiles(samplePhoto);
   await expect(page.getByTestId('capture-count')).toHaveText('1');
   await context.close();
+});
+
+test('rep can be switched from the user drawer', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Hello, Alex.' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'User: Alex Holm' }).click();
+  await expect(page.getByRole('dialog', { name: 'User' })).toBeVisible();
+  await snap(page, '16-user-drawer');
+  await page.getByRole('button', { name: /Mette Larsen/ }).click();
+  await expect(page.getByRole('heading', { name: 'Hello, Mette.' })).toBeVisible();
+
+  // The choice persists, and the drawer is available on the other tabs too.
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Hello, Mette.' })).toBeVisible();
+  await page.getByRole('link', { name: 'Stores' }).click();
+  await page.getByRole('button', { name: 'User: Mette Larsen' }).click();
+  await page.getByRole('button', { name: /Alex Holm/ }).click();
+  await page.getByRole('link', { name: 'Home' }).click();
+  await expect(page.getByRole('heading', { name: 'Hello, Alex.' })).toBeVisible();
 });

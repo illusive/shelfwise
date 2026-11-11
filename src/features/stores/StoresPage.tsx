@@ -5,7 +5,8 @@ import type { Store } from '@/domain/models';
 import { formatRelativeDay } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { ChevronRightIcon, SearchIcon } from '@/ui/icons';
-import { Screen, Wordmark } from '@/ui/primitives/Screen';
+import { Screen } from '@/ui/primitives/Screen';
+import { AppHeader } from '../session/AppHeader';
 import { EmptyState, SectionHeader } from '@/ui/primitives/Text';
 import shared from '../shared/shared.module.css';
 import { matchesStore } from './search';
@@ -69,7 +70,7 @@ export function StoresPage() {
 
   return (
     <Screen nav>
-      <Wordmark />
+      <AppHeader />
       <h1 className={shared.displayTitle}>{t.stores.title}</h1>
       <label className={shared.searchField}>
         <SearchIcon size={18} />

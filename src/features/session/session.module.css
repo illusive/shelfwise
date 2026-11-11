@@ -28,11 +28,59 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  flex-shrink: 0;
   border-radius: var(--radius-round);
   background: var(--color-surface-muted);
   color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  font-size: var(--font-size-12);
+  background: var(--color-primary);
+  color: var(--color-accent);
+}
+
+.avatar-md {
+  width: 40px;
+  height: 40px;
+  font-size: var(--font-size-13);
+}
+
+.avatar-lg {
+  width: 52px;
+  height: 52px;
+  font-size: var(--font-size-17);
+  background: var(--color-primary);
+  color: var(--color-accent);
+}
+
+.userButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  margin-right: calc(-1 * var(--space-1));
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-round);
+  background: transparent;
+}
+
+.current {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-2);
+}
+
+.currentName {
+  font-size: var(--font-size-17);
+  font-weight: var(--font-weight-semibold);
 }
 
 .repBody {

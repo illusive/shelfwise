@@ -3,10 +3,9 @@ import { snap } from './snap';
 
 test('demo history enables visit-to-visit comparison', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: /Alex Holm/ }).click();
   await expect(page.getByRole('heading', { name: 'Hello, Alex.' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Switch rep' }).click();
+  await page.getByRole('button', { name: 'User: Alex Holm' }).click();
   await page.getByRole('button', { name: 'Add demo history' }).click();
   await expect(page.getByText('Demo history added')).toBeVisible({ timeout: 30_000 });
 

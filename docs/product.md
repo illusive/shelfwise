@@ -9,7 +9,7 @@ tag-everything flow of the incumbent shelf-recognition tool.
 
 ## Scope (agreed)
 
-In scope: test-rep selection; store search and assigned stores; store overview and history;
+In scope: a default test rep with switching from the user drawer; store search and assigned stores; store overview and history;
 in-app repeated photo capture with import fallback; draft persistence; capture review;
 idempotent submission with real job states and retry; mock analysis behind the agreed
 contract; results summary (shelf and cooler Share of Shelf, comparison, prices, promotions,
@@ -39,7 +39,8 @@ offline sync, ERP/CRM, native apps, route planning, Danish UI (strings centralis
 
 ## Journeys
 
-1. **Pick rep** (first launch) → Home.
+1. **Open the app** → Home as the default rep (Alex). Switch rep from the user drawer (avatar,
+   top right) if needed.
 2. **Start visit:** Home → Stores (assigned first, search all by name/street/postcode/customer
    no.) → Store (latest result, history, or "No visits yet") → _Start visit_ → Camera.
 3. **Capture:** camera stays open; each tap adds a photo (flash, count badge). Tap the

@@ -1,15 +1,14 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
 import { useCurrentRep, useVisitSummaries } from '@/app/data';
 import { aggregateShare, latestPerKey } from '@/domain/aggregate';
 import { isJobActive } from '@/domain/models';
 import { formatLongDay, formatPct, localDateKey } from '@/i18n/format';
 import { t } from '@/i18n/strings';
-import { AlertIcon, CheckIcon, UserIcon } from '@/ui/icons';
-import { Button, IconButton } from '@/ui/primitives/Button';
-import { Screen, Wordmark } from '@/ui/primitives/Screen';
+import { AlertIcon, CheckIcon } from '@/ui/icons';
+import { Button } from '@/ui/primitives/Button';
+import { Screen } from '@/ui/primitives/Screen';
+import { AppHeader } from '../session/AppHeader';
 import { EmptyState, Mono, SectionHeader } from '@/ui/primitives/Text';
-import { RepSheet } from '../session/RepSheet';
 import shared from '../shared/shared.module.css';
 import { VisitRow } from '../shared/VisitRow';
 import styles from './HomePage.module.css';
@@ -18,7 +17,6 @@ export function HomePage() {
   const navigate = useNavigate();
   const { data: rep } = useCurrentRep();
   const { data: summaries = [] } = useVisitSummaries({ repId: rep?.id });
-  const [repSheet, setRepSheet] = useState(false);
 
   const now = new Date();
   const month = localDateKey(now.toISOString()).slice(0, 7);
@@ -37,12 +35,7 @@ export function HomePage() {
 
   return (
     <Screen nav>
-      <div className={shared.spread}>
-        <Wordmark />
-        <IconButton label={t.reps.switch} onClick={() => setRepSheet(true)}>
-          <UserIcon />
-        </IconButton>
-      </div>
+      <AppHeader />
 
       <div className={shared.stackTight}>
         <h1 className={shared.displayTitle}>{t.home.greeting(rep?.firstName ?? '')}</h1>
@@ -129,7 +122,6 @@ export function HomePage() {
           )}
         </p>
       </section>
-      <RepSheet open={repSheet} onOpenChange={setRepSheet} />
     </Screen>
   );
 }

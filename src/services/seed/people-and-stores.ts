@@ -1,5 +1,8 @@
 import type { Rep, Store } from '@/domain/models';
 
+/** The POC runs as this rep by default (matches the Figma "Hello, Alex."). */
+export const DEFAULT_REP_ID = 'rep-alex';
+
 export const seedReps: Rep[] = [
   { id: 'rep-alex', name: 'Alex Holm', firstName: 'Alex', region: 'Copenhagen' },
   { id: 'rep-mette', name: 'Mette Larsen', firstName: 'Mette', region: 'Aarhus' },

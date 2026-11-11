@@ -21,7 +21,8 @@ npm ci
 npm run dev            # http://localhost:5173 (camera works on localhost)
 ```
 
-Open the app, pick a test rep, then optionally use the person icon → **Add demo history**
+The app starts as the default test rep (Alex Holm); switch reps from the user drawer (avatar,
+top right). Optionally use the drawer's **Add demo history**
 to create backdated, analysed visits for comparisons.
 
 ## Run on a phone (Docker, HTTPS on the LAN)
@@ -86,7 +87,7 @@ npm run e2e            # builds (mode e2e) and runs the journey with a fake came
 E2E_BASE_URL=https://localhost:8443 npm run e2e   # same journey against Docker
 ```
 
-The e2e journey covers rep selection, store search, repeated camera capture, removal, import,
+The e2e journey covers the default rep and switching reps, store search, repeated camera capture, removal, import,
 reload recovery, submission, results, rep review, report, photo evidence and archive, plus
 camera-permission denial with the import fallback. Real-device validation (iPhone/Android)
 is manual — see `docs/ux-guidelines.md`.
