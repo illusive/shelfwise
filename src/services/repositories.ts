@@ -23,6 +23,11 @@ export interface Repositories {
     getCurrentRepId(): Promise<string | null>;
     setCurrentRepId(id: string | null): Promise<void>;
   };
+  settings: {
+    /** Rep-level training-data consent; default off. */
+    getTrainingConsent(repId: string): Promise<boolean>;
+    setTrainingConsent(repId: string, on: boolean): Promise<void>;
+  };
   stores: {
     list(): Promise<Store[]>;
     get(id: string): Promise<Store | undefined>;

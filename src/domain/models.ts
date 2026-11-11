@@ -39,6 +39,18 @@ export interface Store {
 
 export type VisitStatus = 'draft' | 'submitted' | 'completed';
 
+/**
+ * Data-use terms recorded on a visit. Consent comes from the rep's setting (default off) and is
+ * re-recorded at submission; it is never applied retroactively to submitted visits.
+ */
+export interface VisitDataUse {
+  /** Photos and labels from this visit may be used to train recognition models. */
+  trainingConsent: boolean;
+  consentRecordedAt: IsoDateTime;
+  /** After this, local originals may be purged and the visit is never exported. */
+  retainUntil: IsoDateTime;
+}
+
 export interface Visit {
   id: string;
   storeId: string;
@@ -52,6 +64,8 @@ export interface Visit {
   updatedAt: IsoDateTime;
   submittedAt: IsoDateTime | null;
   completedAt: IsoDateTime | null;
+  /** Absent on visits created before data-use tracking: treated as no consent. */
+  dataUse?: VisitDataUse;
 }
 
 export type CaptureSource = 'camera' | 'import' | 'demo';
@@ -73,6 +87,26 @@ export interface CapturePlacement {
   rollDeg: number | null;
 }
 
+/** Coarse device family only (no model, version or identifiers: no fingerprinting). */
+export interface DeviceInfo {
+  platform: 'ios' | 'android' | 'macos' | 'windows' | 'linux' | 'other';
+  browser: 'safari' | 'chrome' | 'firefox' | 'edge' | 'samsung' | 'other';
+  mobile: boolean;
+}
+
+/** Camera track settings at capture time, where the browser reports them. */
+export interface CameraSettings {
+  facingMode: 'environment' | 'user' | null;
+  zoom: number | null;
+  torch: boolean | null;
+  /** Stream resolution (the photo's own resolution is `Capture.width/height`). */
+  trackWidth: number | null;
+  trackHeight: number | null;
+}
+
+/** Whether people are visible; `unknown` until someone (or a later check) says otherwise. */
+export type PeoplePresence = 'unknown' | 'yes' | 'no';
+
 export interface Capture {
   id: string;
   visitId: string;
@@ -88,6 +122,13 @@ export interface Capture {
   thumbBlobId: string | null;
   /** Overlap-guide metadata for camera photos; absent for imports and older captures. */
   placement?: CapturePlacement | null;
+  /** When the photo was saved on the device (`capturedAt` is file time for imports). */
+  storedAt?: IsoDateTime;
+  device?: DeviceInfo | null;
+  camera?: CameraSettings | null;
+  containsPeople?: PeoplePresence;
+  /** Set when retention replaced the original with its thumbnail. */
+  originalPurgedAt?: IsoDateTime | null;
 }
 
 export type JobStatus = 'queued' | 'preparing' | 'analysing' | 'completed' | 'failed' | 'cancelled';

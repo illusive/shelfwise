@@ -47,6 +47,22 @@ export const da: Strings = {
     build: (version: string, commit: string, date: string) =>
       `Version ${version} · build ${commit} · ${date}`,
     demoAdded: 'Demohistorik tilføjet',
+    dataUse: 'Brug af data',
+    trainingConsent: 'Brug mine billeder til at forbedre genkendelsen',
+    trainingConsentHint:
+      'Billeder og mærkninger fra besøg, du indsender, må bruges til at træne hyldegenkendelsen. Slået fra som standard. Gælder fra din næste indsendelse, aldrig for besøg, der allerede er indsendt.',
+    devTools: 'Udviklerværktøjer',
+    exportTitle: 'Træningseksport',
+    exportHint:
+      'Zip med analyserede besøg med samtykke til træning: billeder uden metadata, COCO-kladdemærkninger, rettelser og et manifest.',
+    exportVisitLabel: 'Besøg',
+    exportVisit: 'Eksportér besøg',
+    exportAll: (n: number) => `Eksportér alle (${n})`,
+    exportNone: 'Ingen analyserede besøg med samtykke til træning endnu.',
+    exporting: (done: number, total: number) => `Eksporterer billede ${done} af ${total}…`,
+    exportDone: (images: number) =>
+      `${images} ${images === 1 ? 'billede' : 'billeder'} eksporteret`,
+    exportFailed: 'Eksporten mislykkedes',
   },
   home: {
     greeting: (name: string) => `Hej, ${name}.`,

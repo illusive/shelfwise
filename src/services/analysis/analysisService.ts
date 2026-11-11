@@ -87,6 +87,12 @@ export function createAnalysisService(deps: {
         store: { storeId: store.id, chain: store.chain, countryCode: 'DK' },
         catalogueVersion: repos.catalogue.get().version,
         methodVersion: SOS_METHOD_VERSION,
+        dataUse: visit.dataUse
+          ? {
+              trainingConsent: visit.dataUse.trainingConsent,
+              retainUntil: visit.dataUse.retainUntil,
+            }
+          : null,
         images: captures.map((c) => ({
           imageId: c.id,
           sequence: c.sequence,

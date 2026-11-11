@@ -35,17 +35,17 @@ services, then invalidate queries.
 
 All data is on the device in IndexedDB (`ShelfwiseDb`, Dexie):
 
-| Table            | Contents                                                                                                                                                    |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `reps`, `stores` | Seeded (`services/seed`, versioned by `SEED_VERSION`). Stores keep `mustStockProductIds`/`targetPrices` for deferred KPIs.                                  |
-| `visits`         | One record per visit: store, rep, status (`draft`/`submitted`/`completed`), idempotency key, job/result ids, timestamps. Never overwritten by later visits. |
-| `captures`       | Photo metadata: sequence, captured time, source (`camera`/`import`/`demo`), dimensions, blob ids, optional overlap-guide `placement`.                       |
-| `blobs`          | Original JPEG/imported files (full resolution) and ~480 px thumbnails.                                                                                      |
-| `jobs`           | Analysis jobs: status, attempts, real preparation progress, failure.                                                                                        |
-| `results`        | Validated `AnalysisResponse` per job (`result-<jobId>`), plus storage time.                                                                                 |
-| `corrections`    | Rep corrections keyed by result and target (facing key or label id).                                                                                        |
-| `plannedVisits`  | Route plans per rep and store-local day (`[repId+date]`); demo weeks generated at start-up.                                                                 |
-| `meta`           | Current rep id, seed version.                                                                                                                               |
+| Table            | Contents                                                                                                                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reps`, `stores` | Seeded (`services/seed`, versioned by `SEED_VERSION`). Stores keep `mustStockProductIds`/`targetPrices` for deferred KPIs.                                                                                           |
+| `visits`         | One record per visit: store, rep, status (`draft`/`submitted`/`completed`), idempotency key, job/result ids, timestamps, `dataUse` (training consent, retain-until). Never overwritten by later visits.              |
+| `captures`       | Photo metadata: sequence, captured/stored time, source (`camera`/`import`/`demo`), dimensions, blob ids, overlap `placement`, coarse `device`, `camera` settings, `containsPeople`, `originalPurgedAt`. No location. |
+| `blobs`          | Original JPEG/imported files (full resolution) and ~480 px thumbnails.                                                                                                                                               |
+| `jobs`           | Analysis jobs: status, attempts, real preparation progress, failure.                                                                                                                                                 |
+| `results`        | Validated `AnalysisResponse` per job (`result-<jobId>`), plus storage time.                                                                                                                                          |
+| `corrections`    | Rep corrections keyed by result and target (facing key or label id).                                                                                                                                                 |
+| `plannedVisits`  | Route plans per rep and store-local day (`[repId+date]`); demo weeks generated at start-up.                                                                                                                          |
+| `meta`           | Current rep id, seed version, per-rep training consent (`trainingConsent:<repId>`, default off).                                                                                                                     |
 
 The catalogue (`services/seed/catalogue.ts`, version `dk-seed-2026.11`) is code, exposed via
 `repos.catalogue`. Metrics are **not stored**; they are recomputed from the stored response +
@@ -54,6 +54,14 @@ export-friendly (flat, versioned observations).
 
 Photo removal keeps the image blobs until the _Undo_ window ends (`purgeRemoved`); start-up
 runs `sweepOrphanBlobs` for anything left behind.
+
+**Data use and retention.** A visit records the rep's training consent when it starts, and again
+right before submission (`captures.recordDataUse`, run by `analysis.submitVisit`'s
+`beforeSubmit`). Submitted visits are never changed. `retainUntil` = created + `VITE_RETENTION_DAYS`
+(365). At start-up, `applyRetention` replaces the originals of _analysed_ visits past that date
+with their thumbnails, so history, metrics and evidence keep working; drafts and in-flight
+submissions are never touched. Authoritative retention belongs to the backend, which receives
+`dataUse` in every analysis request.
 
 Storage limits: browsers may evict IndexedDB under pressure; the app requests persistent
 storage (`navigator.storage.persist()`) but this is not guaranteed. Photos are stored at full
@@ -97,6 +105,23 @@ and switches itself off independently.
 Only the placement estimate at capture time is persisted (`Capture.placement`). Tests replace
 the worker via `window.__SHELFWISE_VISION__` (e2e: detector ok/fail/slow, alignment aligned/too
 much/too little/no match/slow) and cover the pure logic with synthetic shifted images (unit).
+
+## Training export (developer-only)
+
+`services/training/`: `coco.ts` (pure observation → COCO conversion + corrections layer),
+`manifest.ts`, `jpeg.ts` (metadata segment walker/stripper), `sanitize.ts` (camera JPEGs pass
+through; imports with metadata are re-encoded via canvas, or stripped if decoding fails),
+`exportPackage.ts` (streams photos one by one into an fflate `Zip`, collapsing output into
+16 MB Blobs). Loaded with `import()` only when a developer exports, so fflate is not in the
+main bundle. The UI (`features/session/TrainingExport`) is shown only with `?dev=1` /
+`VITE_DEV_TOOLS`. See docs/model-training.md.
+
+## App updates
+
+`app/pwa.ts` registers the service worker (prompt mode) and checks for updates on
+visibility/focus and every 15 min. `app/updateGate.ts` applies a waiting update (reload) only
+when nothing holds it (`useHoldUpdates`: camera open, export running) and the page is visible.
+`app/build.ts` exposes the version/commit/time stamped at build.
 
 ## Integrations (planned)
 

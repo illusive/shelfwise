@@ -12,6 +12,7 @@ import { seedCatalogue } from './seed/catalogue';
 import { ensureSeeded } from './seed';
 import { ensureWeekPlanned } from './seed/plans';
 import { dateKeyIn } from '@/domain/dates';
+import { isRetentionExpired } from '@/domain/dataUse';
 
 export interface Services {
   repos: Repositories;
@@ -40,6 +41,7 @@ export async function createServices(
   const db = options.db ?? new ShelfwiseDb();
   await ensureSeeded(db);
   await sweepOrphanBlobs(db);
+  await applyRetention(db, new Date());
   await ensureWeekPlanned(db, dateKeyIn(new Date().toISOString()));
   const repos = createDexieRepositories(db, seedCatalogue);
   const blobs = createDexieBlobStore(db);
@@ -48,13 +50,22 @@ export async function createServices(
     repos,
     blobs,
     images: options.images ?? browserImageProcessor,
+    retentionDays: config.retentionDays,
   });
   return {
     repos,
     blobs,
     catalogue: indexCatalogue(seedCatalogue),
     captures,
-    analysis: createAnalysisService({ repos, blobs, provider, beforeSubmit: captures.whenIdle }),
+    analysis: createAnalysisService({
+      repos,
+      blobs,
+      provider,
+      beforeSubmit: async (visitId) => {
+        await captures.whenIdle(visitId);
+        await captures.recordDataUse(visitId);
+      },
+    }),
   };
 }
 
@@ -66,4 +77,36 @@ export async function sweepOrphanBlobs(db: ShelfwiseDb): Promise<number> {
   const orphans = keys.filter((key) => !referenced.has(key));
   await db.blobs.bulkDelete(orphans);
   return orphans.length;
+}
+
+/**
+ * Local retention, deliberately conservative: for analysed visits past `retainUntil`, replace
+ * each full-resolution original with its thumbnail so history, metrics and evidence still work.
+ * Drafts and in-flight submissions are never touched. Real retention is enforced server-side.
+ */
+export async function applyRetention(db: ShelfwiseDb, now: Date): Promise<number> {
+  const expired = (await db.visits.where('status').equals('completed').toArray()).filter((v) =>
+    isRetentionExpired(v, now),
+  );
+  let purged = 0;
+  for (const visit of expired) {
+    const captures = await db.captures.where('visitId').equals(visit.id).toArray();
+    for (const capture of captures) {
+      if (
+        capture.originalPurgedAt ||
+        !capture.thumbBlobId ||
+        capture.blobId === capture.thumbBlobId
+      )
+        continue;
+      await db.transaction('rw', db.captures, db.blobs, async () => {
+        await db.blobs.delete(capture.blobId);
+        await db.captures.update(capture.id, {
+          blobId: capture.thumbBlobId!,
+          originalPurgedAt: now.toISOString(),
+        });
+      });
+      purged += 1;
+    }
+  }
+  return purged;
 }

@@ -42,5 +42,6 @@ analysis provider behind a provider-agnostic, Zod-validated contract.
 - `docs/ui-guidelines.md` — design references, tokens, primitives, motion, invented screens.
 - `docs/analysis-contract.md` — request/response schemas, metric definitions, unknowns.
 - `docs/decisions.md` — decisions, rationale, open questions, known limits.
+- `docs/model-training.md` — training-data flywheel, labelling, evaluation, privacy prerequisites.
 - `.references/` — original brief, approved plan, Figma and competitor material. Local only:
   gitignored and never committed (the repo is public).

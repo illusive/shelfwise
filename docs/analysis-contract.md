@@ -33,6 +33,10 @@ output is validated with `analysisResponseSchema` before storage; metrics are ca
 
 Images are sent alongside (multipart/blob), at original resolution.
 
+The request also carries `dataUse: { trainingConsent, retainUntil } | null` (null for visits
+created before data-use tracking). The server must not keep images or labels for training
+unless `trainingConsent` is true, and must delete them by `retainUntil`.
+
 `placement` comes from the camera's overlap guide: photos in the same `run` were taken left to
 right along one shelf section, in `position` order; `overlap` is the estimated share of this
 photo's width that repeats the previous one (0–1), with a 0–1 `confidence`; `rollDeg` is the
@@ -181,6 +185,31 @@ Price values: price + type, unreadable. Metrics report how many values came from
   "narrative": null
 }
 ```
+
+## Training export package
+
+Developer-only zip (`services/training`, format `shelfwise-training`, **package version
+1.0.0**). It contains analysed visits whose recorded `dataUse.trainingConsent` is true and
+whose `retainUntil` has not passed. Process: docs/model-training.md.
+
+| Path                                   | Contents                                                                                                                                                                                                                                                  |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md`                            | Human-readable summary of the format and the rules.                                                                                                                                                                                                       |
+| `manifest.json`                        | `format`, `packageVersion`, `exportedAt`, `app {name, version, commit}`, `versions {analysisSchema, catalogue[], method[], coco, corrections}`, `scope`, `labelSources`, `counts`, `privacy`, `files[] {path, bytes, sha256}` (every file except itself). |
+| `images/<visitId>/<seq>-<imageId>.jpg` | Photos at original resolution with all metadata removed (no EXIF/XMP/GPS).                                                                                                                                                                                |
+| `metadata/visits.json`                 | Per visit: `visitId`, `storeId`, `chain`, `area`, timestamps, `dataUse`, `analysis {resultId, jobId, source, provider, methodVersion, catalogueVersion, analysedAt, status}`. No rep identity.                                                            |
+| `metadata/images.json`                 | Per image: `imageId`, `visitId`, `file`, `sequence`, `capturedAt`, `storedAt`, `source`, `mimeType`, `width`, `height`, `originalBytes`, `exportedBytes`, `reencoded`, `placement`, `device`, `camera`, `containsPeople`.                                 |
+| `labels/draft.coco.json`               | COCO detection format. Categories: 1 `facing`, 2 `price_label`, 3 `promotion`, 4 `display`. `bbox` = pixels `[x, y, w, h]`. `attributes` holds the provider's details (see below). `provider_score` is kept separately from the label.                    |
+| `labels/corrections.json`              | `{format: "shelfwise-corrections", version, corrections[]}`. Each entry: `correctionId`, `visitId`, `resultId`, `targetKind`, `targetId`, `annotationIds`, `observationIds`, `value`, `createdAt`, `latest`.                                              |
+
+Annotation `attributes` always include `kind`, `observationId`, `source` (`mock`/`live`) and
+`needsReview` (true when the match is not `matched` or a price label is unresolved). Facings
+add `facingKey`, `locationId`, `locationType`, `physicalPositionId`, `matchStatus`,
+`productId`, `brandId`, `brandRelation` and `category`. Price labels add the price fields
+(`status`, `unresolvedReason`, `rawText`, `priceType`, `amountOre`, `deposit`, `pack`,
+`multibuy`, …). Observations without a region are not exported as boxes; they are counted in
+`counts.observationsWithoutBox`. Corrections never alter the draft labels. They reference them,
+and the newest per target has `latest: true`.
 
 ## Live provider requirements (pending)
 

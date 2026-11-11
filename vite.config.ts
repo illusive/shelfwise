@@ -113,7 +113,12 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             react: ['react', 'react-dom', 'react-dom/client'],
             tanstack: ['@tanstack/react-router', '@tanstack/react-query'],
-            ui: ['motion', '@radix-ui/react-dialog', '@radix-ui/react-toggle-group'],
+            ui: [
+              'motion',
+              '@radix-ui/react-dialog',
+              '@radix-ui/react-toggle-group',
+              '@radix-ui/react-switch',
+            ],
             data: ['dexie', 'zod'],
           },
         },

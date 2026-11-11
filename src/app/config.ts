@@ -5,6 +5,10 @@ export interface AppConfig {
   mockFailFirstAttempt: boolean;
   /** Target overlap between consecutive shelf photos (fraction of the photo width). */
   overlapTarget: number;
+  /** Days a visit's photos are kept on the device before originals may be purged. */
+  retentionDays: number;
+  /** Shows developer tools (training export) in the user drawer. */
+  devTools: boolean;
 }
 
 function readNumber(value: string | undefined, fallback: number): number {
@@ -24,5 +28,10 @@ export function readConfig(
       0.5,
       Math.max(0.1, readNumber(env.VITE_OVERLAP_TARGET as string | undefined, 0.25)),
     ),
+    retentionDays: Math.max(
+      1,
+      Math.round(readNumber(env.VITE_RETENTION_DAYS as string | undefined, 365)),
+    ),
+    devTools: env.VITE_DEV_TOOLS === 'true',
   };
 }

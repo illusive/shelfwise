@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { CameraSettings } from '@/domain/models';
 
 export type CameraStatus =
   'starting' | 'ready' | 'denied' | 'unavailable' | 'insecure' | 'interrupted' | 'error';
@@ -14,6 +15,7 @@ const CONSTRAINTS: MediaStreamConstraints = {
 };
 
 type TorchCapabilities = MediaTrackCapabilities & { torch?: boolean };
+type ExtendedSettings = MediaTrackSettings & { zoom?: number; torch?: boolean };
 
 /**
  * Keeps a rear-camera stream open for rapid repeated capture. Stops the stream when the page
@@ -97,5 +99,20 @@ export function useCamera() {
     }
   }, [torch]);
 
-  return { videoRef, status, torch, start, toggleTorch };
+  /** Current track settings for capture metadata (only what the browser reports). */
+  const settings = useCallback((): CameraSettings | null => {
+    const track = streamRef.current?.getVideoTracks()[0];
+    if (!track?.getSettings) return null;
+    const s = track.getSettings() as ExtendedSettings;
+    const facing = s.facingMode === 'environment' || s.facingMode === 'user' ? s.facingMode : null;
+    return {
+      facingMode: facing,
+      zoom: typeof s.zoom === 'number' ? s.zoom : null,
+      torch: typeof s.torch === 'boolean' ? s.torch : torch.supported ? torch.on : null,
+      trackWidth: s.width ?? null,
+      trackHeight: s.height ?? null,
+    };
+  }, [torch]);
+
+  return { videoRef, status, torch, start, toggleTorch, settings };
 }

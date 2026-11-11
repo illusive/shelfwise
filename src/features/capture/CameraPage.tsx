@@ -169,6 +169,7 @@ export function CameraPage({
     const shot = replaceId ? null : placeShot(video);
     const placement = shot?.placement ?? null;
     const view = { width: video.clientWidth, height: video.clientHeight };
+    const cameraSettings = camera.settings();
     if (!replaceId) setPending((p) => p + 1);
     setSaving((n) => n + 1);
     try {
@@ -185,12 +186,21 @@ export function CameraPage({
       }
       if (replaceId) {
         setRetakeId(null);
-        await services.captures.replaceCapture(replaceId, { blob, source: 'camera' });
+        await services.captures.replaceCapture(replaceId, {
+          blob,
+          source: 'camera',
+          camera: cameraSettings,
+        });
         await invalidate();
         if (retakeCaptureId)
           await navigate({ to: '/visits/$visitId/captures', params: { visitId } });
       } else {
-        await services.captures.addCapture(visitId, { blob, source: 'camera', placement });
+        await services.captures.addCapture(visitId, {
+          blob,
+          source: 'camera',
+          placement,
+          camera: cameraSettings,
+        });
         await invalidate();
       }
     } catch {

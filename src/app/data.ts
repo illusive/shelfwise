@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { isTrainingExportable } from '@/domain/dataUse';
 import type { AnalysisJob, Visit } from '@/domain/models';
 import { loadVisitDetail, loadVisitSummaries } from '@/services/visitSummaries';
 import { useServices } from './services-context';
@@ -25,7 +26,38 @@ export const queryKeys = {
   visitDetail: (id: string) => ['visit-detail', id] as const,
   summaries: (filter: { repId?: string; storeId?: string }) => ['summaries', filter] as const,
   plans: (repId: string, from: string, to: string) => ['plans', repId, from, to] as const,
+  trainingConsent: (repId: string) => ['training-consent', repId] as const,
+  exportable: ['training-exportable'] as const,
 };
+
+export function useTrainingConsent(repId: string | undefined) {
+  const services = useServices();
+  return useQuery({
+    queryKey: queryKeys.trainingConsent(repId ?? ''),
+    queryFn: () => services.repos.settings.getTrainingConsent(repId!),
+    enabled: Boolean(repId),
+  });
+}
+
+/** Analysed visits with training consent that may be exported now, newest first. */
+export function useExportableVisits(enabled: boolean) {
+  const services = useServices();
+  return useQuery({
+    queryKey: queryKeys.exportable,
+    enabled,
+    queryFn: async () => {
+      const now = new Date();
+      const [visits, stores] = await Promise.all([
+        services.repos.visits.list(),
+        services.repos.stores.list(),
+      ]);
+      const storeById = new Map(stores.map((s) => [s.id, s]));
+      return visits
+        .filter((v) => isTrainingExportable(v, now))
+        .map((visit) => ({ visit, store: storeById.get(visit.storeId) }));
+    },
+  });
+}
 
 export function useInvalidate() {
   const client = useQueryClient();

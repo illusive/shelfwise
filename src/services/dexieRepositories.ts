@@ -4,6 +4,8 @@ import type { BlobStore, Repositories } from './repositories';
 
 import { CURRENT_REP_KEY } from './seed';
 
+const trainingConsentKey = (repId: string) => `trainingConsent:${repId}`;
+
 export function createDexieRepositories(db: ShelfwiseDb, catalogue: Catalogue): Repositories {
   return {
     reps: {
@@ -18,6 +20,14 @@ export function createDexieRepositories(db: ShelfwiseDb, catalogue: Catalogue): 
       async setCurrentRepId(id) {
         if (id === null) await db.meta.delete(CURRENT_REP_KEY);
         else await db.meta.put({ key: CURRENT_REP_KEY, value: id });
+      },
+    },
+    settings: {
+      async getTrainingConsent(repId) {
+        return (await db.meta.get(trainingConsentKey(repId)))?.value === true;
+      },
+      async setTrainingConsent(repId, on) {
+        await db.meta.put({ key: trainingConsentKey(repId), value: on });
       },
     },
     stores: {

@@ -1,4 +1,13 @@
-import type { Capture, CapturePlacement, CaptureSource, Visit } from '@/domain/models';
+import { recordDataUse } from '@/domain/dataUse';
+import type {
+  CameraSettings,
+  Capture,
+  CapturePlacement,
+  CaptureSource,
+  DeviceInfo,
+  Visit,
+} from '@/domain/models';
+import { currentDevice } from './deviceInfo';
 import { newId, nowIso } from './ids';
 import type { ImageProcessor } from './images';
 import type { BlobStore, Repositories } from './repositories';
@@ -8,6 +17,7 @@ export interface CaptureInput {
   source: CaptureSource;
   capturedAt?: Date;
   placement?: CapturePlacement | null;
+  camera?: CameraSettings | null;
 }
 
 export class DraftLockedError extends Error {
@@ -23,9 +33,14 @@ export function createCaptureService(deps: {
   blobs: BlobStore;
   images: ImageProcessor;
   now?: () => Date;
+  /** Days photos are kept on the device (see docs/decisions.md, data use). */
+  retentionDays?: number;
+  device?: () => DeviceInfo | null;
 }) {
   const { repos, blobs, images } = deps;
   const now = deps.now ?? (() => new Date());
+  const retentionDays = deps.retentionDays ?? 365;
+  const device = deps.device ?? currentDevice;
   // Rapid shutter taps must get consecutive sequence numbers: serialise writes per visit.
   const queues = new Map<string, Promise<unknown>>();
   const enqueue = <T>(visitId: string, task: () => Promise<T>): Promise<T> => {
@@ -62,7 +77,12 @@ export function createCaptureService(deps: {
       mimeType: input.blob.type || 'image/jpeg',
       byteSize: input.blob.size,
       capturedAt: (input.capturedAt ?? now()).toISOString(),
+      storedAt: nowIso(now),
       source: input.source,
+      device: device(),
+      camera: input.camera ?? null,
+      containsPeople: 'unknown' as const,
+      originalPurgedAt: null,
     };
   }
 
@@ -81,6 +101,7 @@ export function createCaptureService(deps: {
       const draft = await repos.visits.findDraft(storeId, repId);
       if (draft) return draft;
       const at = nowIso(now);
+      const consent = await repos.settings.getTrainingConsent(repId);
       const visit: Visit = {
         id: newId('visit'),
         storeId,
@@ -94,6 +115,7 @@ export function createCaptureService(deps: {
         submittedAt: null,
         completedAt: null,
       };
+      visit.dataUse = recordDataUse(visit, consent, at, retentionDays);
       await repos.visits.put(visit);
       return visit;
     },
@@ -113,6 +135,19 @@ export function createCaptureService(deps: {
         await repos.captures.put(capture);
         await touch(visitId);
         return capture;
+      });
+    },
+
+    /**
+     * Re-records the rep's current training consent on a draft just before submission, so the
+     * setting at submission time is what applies. Submitted visits are never changed.
+     */
+    async recordDataUse(visitId: string): Promise<void> {
+      const visit = await repos.visits.get(visitId);
+      if (!visit || visit.status !== 'draft') return;
+      const consent = await repos.settings.getTrainingConsent(visit.repId);
+      await repos.visits.update(visitId, {
+        dataUse: recordDataUse(visit, consent, nowIso(now), retentionDays),
       });
     },
 

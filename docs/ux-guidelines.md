@@ -79,6 +79,13 @@ One tap opens the visit. History is in the archive and on each store page.
   readers can activate it directly. The round × discards the draft after a confirmation sheet; an empty draft (no photos) is
   discarded immediately without asking.
 
+## Data use
+
+The user drawer has _Brug mine billeder til at forbedre genkendelsen_, off by default, with a
+one-line explanation. It applies from the next submission and never to visits already
+submitted. Developer tools (training export) are hidden from reps; they appear only with
+`?dev=1`.
+
 ## Language
 
 Danish by default; English can be chosen in the user drawer and is remembered on the device.

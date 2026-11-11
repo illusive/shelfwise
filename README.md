@@ -65,15 +65,25 @@ Other Docker commands: `npm run docker:logs`, `npm run docker:down`.
 See `.env.example`. All `VITE_*` values are public and bundled into the client — never put
 credentials in them.
 
-| Variable                       | Default         | Purpose                                                                      |
-| ------------------------------ | --------------- | ---------------------------------------------------------------------------- |
-| `VITE_ANALYSIS_PROVIDER`       | `mock`          | `live` is reserved; it falls back to mock until a server-side adapter exists |
-| `VITE_MOCK_LATENCY_MS`         | `2500`          | Simulated analysis duration                                                  |
-| `VITE_MOCK_FAIL_FIRST_ATTEMPT` | `false`         | Fail each job's first attempt (retryable) to demo recovery                   |
-| `VITE_OVERLAP_TARGET`          | `0.25`          | Camera overlap guide target (share of photo width, clamped 0.1–0.5)          |
-| `BASE_PATH`                    | `/`             | Public path the app is served from (`/shelfwise/` on GitHub Pages)           |
-| `LAN_HOST`                     | —               | Docker: IP/hostname added to the self-signed certificate                     |
-| `HTTPS_PORT` / `HTTP_PORT`     | `8443` / `8080` | Docker host ports (HTTP redirects to HTTPS)                                  |
+| Variable                       | Default         | Purpose                                                                        |
+| ------------------------------ | --------------- | ------------------------------------------------------------------------------ |
+| `VITE_ANALYSIS_PROVIDER`       | `mock`          | `live` is reserved; it falls back to mock until a server-side adapter exists   |
+| `VITE_MOCK_LATENCY_MS`         | `2500`          | Simulated analysis duration                                                    |
+| `VITE_MOCK_FAIL_FIRST_ATTEMPT` | `false`         | Fail each job's first attempt (retryable) to demo recovery                     |
+| `VITE_OVERLAP_TARGET`          | `0.25`          | Camera overlap guide target (share of photo width, clamped 0.1–0.5)            |
+| `VITE_RETENTION_DAYS`          | `365`           | Days before a visit's local originals may be purged; sent as `retainUntil`     |
+| `VITE_DEV_TOOLS`               | `false`         | Show developer tools (training export); per device: open the app with `?dev=1` |
+| `BASE_PATH`                    | `/`             | Public path the app is served from (`/shelfwise/` on GitHub Pages)             |
+| `LAN_HOST`                     | —               | Docker: IP/hostname added to the self-signed certificate                       |
+| `HTTPS_PORT` / `HTTP_PORT`     | `8443` / `8080` | Docker host ports (HTTP redirects to HTTPS)                                    |
+
+## Training data (groundwork)
+
+Reps can allow their photos to be used for model training in the user drawer (off by default).
+Developers can export consented, analysed visits as a versioned zip (photos without metadata,
+COCO draft labels, corrections, manifest): open the app with `?dev=1`, then _User drawer →
+Developer tools_. The format is in `docs/analysis-contract.md`; the process and privacy
+prerequisites are in `docs/model-training.md`.
 
 ## Mock vs live analysis
 

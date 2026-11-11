@@ -20,6 +20,8 @@ const config = {
   mockLatencyMs: 0,
   mockFailFirstAttempt: false,
   overlapTarget: 0.25,
+  retentionDays: 365,
+  devTools: false,
 };
 
 let services: Services;

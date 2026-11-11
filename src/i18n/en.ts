@@ -50,6 +50,21 @@ export const en = {
     demoData: 'Add demo history',
     demoDataHint: 'Creates two analysed visits per assigned store with generated photos.',
     demoAdded: 'Demo history added',
+    dataUse: 'Data use',
+    trainingConsent: 'Use my photos to improve recognition',
+    trainingConsentHint:
+      'Photos and labels from visits you submit may be used to train shelf recognition. Off by default. Applies from your next submission, never to visits already submitted.',
+    devTools: 'Developer tools',
+    exportTitle: 'Training export',
+    exportHint:
+      'Zip of analysed visits with training consent: photos without metadata, COCO draft labels, rep corrections and a manifest.',
+    exportVisitLabel: 'Visit',
+    exportVisit: 'Export visit',
+    exportAll: (n: number) => `Export all (${n})`,
+    exportNone: 'No analysed visits with training consent yet.',
+    exporting: (done: number, total: number) => `Exporting photo ${done} of ${total}…`,
+    exportDone: (images: number) => plural(images, 'photo', 'photos') + ' exported',
+    exportFailed: 'Export failed',
     build: (version: string, commit: string, date: string) =>
       `Version ${version} · build ${commit} · ${date}`,
   },

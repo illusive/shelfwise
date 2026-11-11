@@ -231,6 +231,14 @@ export const analysisRequestSchema = z.object({
   store: z.object({ storeId: id, chain: z.string(), countryCode: z.literal('DK') }),
   catalogueVersion: z.string().min(1),
   methodVersion: z.string().min(1),
+  /** Data-use terms the server must honour (training use, retention); null for older visits. */
+  dataUse: z
+    .object({
+      trainingConsent: z.boolean(),
+      retainUntil: z.string().datetime({ offset: true }),
+    })
+    .nullable()
+    .optional(),
   images: z
     .array(
       z.object({

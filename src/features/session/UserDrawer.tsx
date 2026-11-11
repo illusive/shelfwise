@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { BUILD } from '@/app/build';
 import { formatBuildDate } from '@/i18n/format';
-import { useCurrentRep, useInvalidate, useReps } from '@/app/data';
+import { useCurrentRep, useInvalidate, useReps, useTrainingConsent } from '@/app/data';
+import { devToolsEnabled } from '@/app/devTools';
 import { useServices } from '@/app/services-context';
 import { t } from '@/i18n/strings';
 import { addDemoHistory } from '@/services/demoData';
@@ -11,9 +12,11 @@ import { Sheet } from '@/ui/primitives/Sheet';
 import { SectionHeader } from '@/ui/primitives/Text';
 import { useToast } from '@/ui/primitives/Toast';
 import { Segmented } from '@/ui/primitives/Segmented';
+import { Switch } from '@/ui/primitives/Switch';
 import { LANGUAGES, setLanguage, useLanguage, type Language } from '@/i18n/language';
 import shared from '../shared/shared.module.css';
 import { Avatar } from './Avatar';
+import { TrainingExport } from './TrainingExport';
 import styles from './session.module.css';
 
 /** User drawer: shows the current test rep, switches rep, and seeds demo history. */
@@ -31,6 +34,14 @@ export function UserDrawer({
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const language = useLanguage();
+  const { data: consent = false } = useTrainingConsent(current?.id);
+  const devTools = devToolsEnabled();
+
+  const setConsent = async (on: boolean) => {
+    if (!current) return;
+    await services.repos.settings.setTrainingConsent(current.id, on);
+    await invalidate();
+  };
 
   const choose = async (id: string) => {
     if (id !== current?.id) {
@@ -72,6 +83,15 @@ export function UserDrawer({
         onChange={setLanguage}
         options={LANGUAGES.map((l) => ({ value: l, label: t.reps.languages[l] }))}
       />
+      <SectionHeader title={t.reps.dataUse} />
+      <Switch
+        label={t.reps.trainingConsent}
+        hint={t.reps.trainingConsentHint}
+        checked={consent}
+        disabled={!current}
+        onCheckedChange={(on) => void setConsent(on)}
+        testId="training-consent"
+      />
       <SectionHeader title={t.reps.switch} />
       <ul className={styles.reps}>
         {reps.map((rep) => (
@@ -99,6 +119,7 @@ export function UserDrawer({
         </Button>
         <p className={shared.muted}>{t.reps.demoDataHint}</p>
       </div>
+      {devTools && open && <TrainingExport />}
       <p className={styles.build} data-testid="app-version">
         {t.reps.build(BUILD.version, BUILD.commit, formatBuildDate(BUILD.builtAt))}
       </p>

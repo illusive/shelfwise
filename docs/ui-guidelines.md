@@ -24,7 +24,7 @@
 `Screen` (page shell + fixed action + bottom nav, entry transition), `TopBar`, `Wordmark`,
 `BottomNav`, `Sheet` (Radix Dialog + spring), `Segmented` (Radix ToggleGroup), `Eyebrow` (mono
 caps + step dashes), `Mono`, `Badge`, `Notice` (white card, tinted icon badge for the tone, title + muted text, optional compact secondary `Button` action), `SectionHeader`, `EmptyState`,
-`Divider`, `BlobImage`, `Toast` (optional action, e.g. _Undo_), `SwipeToConfirm`. Shared feature components: `AppHeader` + `UserDrawer` + `Avatar`, `VisitRow`, `PriceRow`,
+`Divider`, `BlobImage`, `Toast` (optional action, e.g. _Undo_), `SwipeToConfirm`, `Switch` (Radix Switch in a white setting row: label + muted hint, 48 × 28 track, primary when on with a lime thumb, 44 px target). Shared feature components: `AppHeader` + `UserDrawer` + `Avatar`, `VisitRow`, `PriceRow`,
 `ShareHero`, `FacingGrid`, `EvidenceCrop`, `PhotoWall`, `Lightbox`, `SubmitBar`.
 
 ## Field-app patterns (extensions following the user's other app)
@@ -113,8 +113,9 @@ bar sits above the safe-area inset.
 
 ## Screens invented beyond Figma (for review)
 
-1. User drawer (current rep, language, switch rep, _Add demo history_, build stamp in mono at
-   the bottom) opened from the top-right avatar.
+1. User drawer (current rep, language, data-use switch, switch rep, _Add demo history_,
+   developer-only training export in a dashed panel, build stamp in mono at the bottom) opened
+   from the top-right avatar.
 1. Home planned visits: day strip + Figma-style list rows.
 1. Shared store header on all store-related screens.
 1. Report gate sheet when unresolved items remain.

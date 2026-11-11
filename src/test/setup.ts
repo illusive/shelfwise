@@ -22,3 +22,15 @@ Object.defineProperty(window, 'matchMedia', {
 // Most tests assert English copy; Danish is covered explicitly.
 beforeEach(() => setLanguage('en'));
 afterEach(() => cleanup());
+
+// jsdom's Blob lacks arrayBuffer() (every supported browser has it).
+if (!Blob.prototype.arrayBuffer) {
+  Blob.prototype.arrayBuffer = function arrayBuffer(this: Blob) {
+    return new Promise<ArrayBuffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(this);
+    });
+  };
+}

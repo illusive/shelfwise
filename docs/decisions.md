@@ -124,6 +124,21 @@ safe: never while the camera is open (`useHoldUpdates`) or the app is hidden. Ph
 saved to IndexedDB as they are taken, so a reload loses nothing. The user drawer shows
 `Version · build <commit> · <build time>` so testers can confirm which build they are on.
 
+## Training-data groundwork (11 Nov 2026)
+
+In-app only: no backend, no uploads and no training yet. Process and prerequisites:
+docs/model-training.md.
+
+| Topic      | Decision                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Consent    | Rep-level setting in the user drawer, **default off**. It is recorded on each visit at start and re-recorded at submission. Submitted visits are never changed retroactively. Visits created before this have no terms and never qualify. It is a technical switch: the legal basis and wording need HR/legal and the data agreement.                                              |
+| Retention  | `retainUntil` = created + 365 days (`VITE_RETENTION_DAYS`). Local cleanup only where safe: originals of _analysed_ visits past the date are replaced by thumbnails, and drafts or in-flight submissions are untouched. Expired visits are never exported. Real retention and deletion are the backend's job; `dataUse` is sent with every analysis request.                        |
+| People     | `containsPeople` per capture, `unknown` by default. There's no in-app tagging yet; labellers set it, and blur or exclude before labelling.                                                                                                                                                                                                                                         |
+| Metadata   | Resolution, captured/stored time, source, overlap placement, coarse device family (platform/browser/mobile only, no versions or models, no fingerprinting), camera settings where reported (facing, zoom, torch, stream size). **No location**, and EXIF from imports never leaves the device.                                                                                     |
+| Export     | Developer-only (`?dev=1` or `VITE_DEV_TOOLS`), not in the rep UI. Versioned zip (`shelfwise-training` 1.0.0): photos, manifest with hashes, per-image metadata, COCO draft labels (class-agnostic `facing` plus label/promo/display; brand/product in attributes; provider score kept separate) and corrections as a separate layer. No rep identity. fflate (MIT), lazily loaded. |
+| Mock data  | Exported mock labels are marked `source: "mock"` and must never be used to train or evaluate.                                                                                                                                                                                                                                                                                      |
+| Model path | Unchanged: train our own Apache-licensed class-agnostic detector (YOLOX-nano / RT-DETR-S, licence-clean init) on these packages after human verification (see the licence review above).                                                                                                                                                                                           |
+
 ## Open questions
 
 - Backend/hosting choice and Foundry model/endpoint (and request/response limits).
@@ -132,6 +147,8 @@ saved to IndexedDB as they are taken, so a reload loses nothing. The user drawer
   royalunibrew.dk/brands/alle-brands during the build and must be validated against it.
 - Representative photo sets and acceptance targets (SoS error, price read rate, overlap).
 - Is 25 % the right overlap target for the analysis/stitching approach chosen later?
+- Training data: legal basis and wording for rep consent, store permission, retention period
+  (365 days assumed), and who may hold exported packages.
 - Overall SoS alongside shelf/cooler — implemented as proposed; confirm it's wanted.
 - Category depth: top-level only, or beer styles too (the incumbent tool reports by style)?
 - Should comparisons be limited to the same rep, or any rep (current)?
