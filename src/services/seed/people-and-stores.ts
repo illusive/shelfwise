@@ -1,0 +1,52 @@
+import type { Rep, Store } from '@/domain/models';
+
+export const seedReps: Rep[] = [
+  { id: 'rep-alex', name: 'Alex Holm', firstName: 'Alex', region: 'Copenhagen' },
+  { id: 'rep-mette', name: 'Mette Larsen', firstName: 'Mette', region: 'Aarhus' },
+  { id: 'rep-jonas', name: 'Jonas Kristensen', firstName: 'Jonas', region: 'Odense' },
+];
+
+const TZ = 'Europe/Copenhagen';
+
+const store = (
+  id: string,
+  chain: string,
+  name: string,
+  area: string,
+  street: string,
+  postcode: string,
+  city: string,
+  customerNumber: string,
+  assignedRepIds: string[],
+): Store => ({
+  id,
+  chain,
+  name,
+  area,
+  address: { street, postcode, city },
+  customerNumber,
+  timeZone: TZ,
+  assignedRepIds,
+  mustStockProductIds: [],
+  targetPrices: [],
+});
+
+/** Fictional customer numbers; near-identical names are deliberate to test disambiguation. */
+export const seedStores: Store[] = [
+  store('st-netto-norrebrogade-112', 'Netto', 'Netto Nørrebrogade', 'Nørrebro', 'Nørrebrogade 112', '2200', 'København N', '410112', ['rep-alex']),
+  store('st-netto-norrebrogade-34', 'Netto', 'Netto Nørrebrogade', 'Nørrebro', 'Nørrebrogade 34', '2200', 'København N', '410034', ['rep-alex']),
+  store('st-fotex-vesterbrogade', 'Føtex', 'Føtex Vesterbrogade', 'Vesterbro', 'Vesterbrogade 47', '1620', 'København V', '420047', ['rep-alex']),
+  store('st-fotex-food-vesterbro', 'Føtex', 'Føtex Food Vesterbro', 'Vesterbro', 'Istedgade 92', '1650', 'København V', '420092', []),
+  store('st-rema-amagerbrogade', 'Rema 1000', 'Rema 1000 Amagerbrogade', 'Amager', 'Amagerbrogade 150', '2300', 'København S', '430150', ['rep-alex']),
+  store('st-coop365-frederiksberg', 'Coop 365', 'Coop 365discount Frederiksberg', 'Frederiksberg', 'Falkoner Allé 21', '2000', 'Frederiksberg', '440021', ['rep-alex']),
+  store('st-meny-osterbro', 'Meny', 'Meny Østerbro', 'Østerbro', 'Østerbrogade 128', '2100', 'København Ø', '450128', ['rep-alex']),
+  store('st-lidl-valby', 'Lidl', 'Lidl Valby', 'Valby', 'Valby Langgade 68', '2500', 'Valby', '460068', []),
+  store('st-superbrugsen-osterbro', 'SuperBrugsen', 'SuperBrugsen Østerbro', 'Østerbro', 'Nordre Frihavnsgade 30', '2100', 'København Ø', '470030', []),
+  store('st-bilka-hundige', 'Bilka', 'Bilka Hundige', 'Greve', 'Over Bølgen 1', '2670', 'Greve', '480001', []),
+  store('st-netto-aarhus-c', 'Netto', 'Netto Aarhus C', 'Aarhus C', 'Frederiks Allé 55', '8000', 'Aarhus C', '410855', ['rep-mette']),
+  store('st-fotex-aarhus-sct-clemens', 'Føtex', 'Føtex Aarhus Sct. Clemens', 'Aarhus C', 'Sct. Clemens Torv 1', '8000', 'Aarhus C', '420801', ['rep-mette']),
+  store('st-kvickly-aarhus-vest', 'Kvickly', 'Kvickly Aarhus Vest', 'Hasle', 'Vestergårdsvej 15', '8210', 'Aarhus V', '490015', ['rep-mette']),
+  store('st-rema-odense-c', 'Rema 1000', 'Rema 1000 Odense C', 'Odense C', 'Vesterbro 20', '5000', 'Odense C', '430520', ['rep-jonas']),
+  store('st-meny-odense', 'Meny', 'Meny Odense', 'Odense M', 'Hjallesevej 92', '5230', 'Odense M', '450592', ['rep-jonas']),
+  store('st-spar-odense', 'Spar', 'Spar Odense Sankt Jørgens', 'Odense C', 'Sankt Jørgens Gade 44', '5000', 'Odense C', '500044', ['rep-jonas']),
+];

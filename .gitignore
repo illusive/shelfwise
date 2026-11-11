@@ -1,0 +1,12 @@
+node_modules
+dist
+dev-dist
+coverage
+playwright-report
+test-results
+blob-report
+certs/*.pem
+.env
+.env.local
+.DS_Store
+*.log
