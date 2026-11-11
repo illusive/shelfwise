@@ -50,7 +50,7 @@ export function Sheet({
                 <div className={styles.header}>
                   <Dialog.Title className={styles.title}>{title}</Dialog.Title>
                   <Dialog.Close asChild>
-                    <IconButton label={t.common.close}>
+                    <IconButton label={t.common.close} tone="outline">
                       <CloseIcon />
                     </IconButton>
                   </Dialog.Close>

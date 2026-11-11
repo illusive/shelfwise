@@ -27,6 +27,21 @@ caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `E
 `Divider`, `BlobImage`, `Toast` (optional action, e.g. _Undo_), `SwipeToConfirm`. Shared feature components: `AppHeader` + `UserDrawer` + `Avatar`, `VisitRow`, `PriceRow`,
 `ShareHero`, `FacingGrid`, `EvidenceCrop`, `PhotoWall`, `Lightbox`, `SubmitBar`.
 
+## Field-app patterns (extensions following the user's other app)
+
+- **StoreHeader** (`features/shared/StoreHeader`): full-bleed dark-green header with outlined back
+  button, white logo circle (`StoreLogo`), name, two-line Danish address and status chips. Used
+  on every store-related screen, followed by a `PageTitle`.
+- **Planned visit card** (`features/home/PlannedVisitCard`): numbered route dot joined to a
+  dark-green card by the shared goo filter (`GooFilter`, rendered once at the app root); logo
+  circle, name, address, "days since last visit" pill and tag chips. **DayStrip**: Monday–Sunday,
+  selected day filled, today ringed, dot when visits are planned.
+- **Close/back controls** in modals, the lightbox, the camera and headers use `IconButton`
+  tones `outline`/`outline-light` (circular border, 44 px touch target).
+- **Lightbox**: icon-only actions (previous, retake, remove, next) and a zoom toggle/double-tap
+  that shows the photo at full resolution with panning. The camera's captures sheet opens the
+  same lightbox.
+
 ## Navigation (extension following the user's other field app)
 
 The Figma's full-width tab bar is replaced by a floating, inset, dark-green bar of connected
@@ -64,6 +79,8 @@ bar sits above the safe-area inset.
   "Vesterbrogade 12, 1. sal, 1620 København V"; customer numbers are not shown.
 - Results open on _Overall_ (order Overall · Shelves · Coolers); the "Saved to store" line was
   dropped.
+- No Mock badge or simulated-analysis notices (user decision; see `docs/decisions.md`).
+- Home shows planned visits instead of the hero banner and recent visits.
 - Draft screens use a swipe-to-analyse bar with a round discard button instead of a primary
   button; with more than one photo, a photo wall (≈3 per row) replaces the large lead image.
 - Bottom navigation follows the user's other app (see Navigation).
@@ -72,15 +89,18 @@ bar sits above the safe-area inset.
 
 1. User drawer (current rep, language, switch rep, _Add demo history_) opened from the top-right
    avatar.
-2. Stores: assigned + full-catalogue search with address disambiguation.
-3. Store overview (no draft): latest result card, history, empty state, _Start visit_.
-4. Camera blocking states (denied, unavailable, insecure, interrupted), captures sheet, tips sheet.
-5. Photo wall with quick remove (+ _Undo_ toast), full-screen lightbox with _Retake_/_Remove_/back,
+1. Home planned visits: day strip + numbered route cards.
+1. Shared store header on all store-related screens.
+1. Report gate sheet when unresolved items remain.
+1. Stores: assigned + full-catalogue search with address disambiguation.
+1. Store overview (no draft): latest result card, history, empty state, _Start visit_.
+1. Camera blocking states (denied, unavailable, insecure, interrupted), captures sheet, tips sheet.
+1. Photo wall with quick remove (+ _Undo_ toast), full-screen lightbox with _Retake_/_Remove_/back,
    and the swipe-to-analyse bar with discard confirmation.
-6. Processing / failure screen with job id, attempts, steps, retry and edit.
-7. Results extensions: Overall/Shelves/Coolers toggle, unavailable/qualified states, category
+1. Processing / failure screen with job id, attempts, steps, retry and edit.
+1. Results extensions: Overall/Shelves/Coolers toggle, unavailable/qualified states, category
    breakdown, review notice, promotions and displays.
-8. Full product report (coverage, SoS table, client products, prices by group, promotions,
+1. Full product report (coverage, SoS table, client products, prices by group, promotions,
    photos).
-9. Photo viewer with evidence boxes and legend.
-10. Quick review (unresolved products and prices).
+1. Photo viewer with evidence boxes and legend.
+1. Quick review (unresolved products and prices).

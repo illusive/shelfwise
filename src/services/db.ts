@@ -1,6 +1,14 @@
 import Dexie, { type Table } from 'dexie';
 import type { Correction } from '@/domain/corrections';
-import type { AnalysisJob, Capture, Rep, Store, StoredResult, Visit } from '@/domain/models';
+import type {
+  AnalysisJob,
+  Capture,
+  PlannedVisit,
+  Rep,
+  Store,
+  StoredResult,
+  Visit,
+} from '@/domain/models';
 
 export interface StoredBlob {
   id: string;
@@ -23,6 +31,7 @@ export class ShelfwiseDb extends Dexie {
   results!: Table<StoredResult, string>;
   corrections!: Table<Correction, string>;
   meta!: Table<MetaEntry, string>;
+  plannedVisits!: Table<PlannedVisit, string>;
 
   constructor(name = 'shelfwise') {
     super(name);
@@ -37,5 +46,6 @@ export class ShelfwiseDb extends Dexie {
       corrections: 'id, resultId',
       meta: 'key',
     });
+    this.version(2).stores({ plannedVisits: 'id, [repId+date], storeId' });
   }
 }

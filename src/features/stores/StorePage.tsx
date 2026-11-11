@@ -1,25 +1,20 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
 import { useCurrentRep, useStore, useVisitDetail, useVisitSummaries } from '@/app/data';
-import {
-  formatPct,
-  formatRelativeDay,
-  formatTime,
-  padSequence,
-  formatAddress,
-} from '@/i18n/format';
+import { formatPct, formatRelativeDay, formatTime, padSequence } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import type { VisitSummary } from '@/services/visitSummaries';
 import { CameraIcon, CheckIcon, ChevronRightIcon, LockIcon, PlusIcon } from '@/ui/icons';
 import { BlobImage } from '@/ui/primitives/BlobImage';
 import { Button } from '@/ui/primitives/Button';
-import { Screen, TopBar } from '@/ui/primitives/Screen';
-import { EmptyState, Eyebrow, MockBadge, Notice, SectionHeader } from '@/ui/primitives/Text';
+import { Screen } from '@/ui/primitives/Screen';
+import { EmptyState, Notice, SectionHeader } from '@/ui/primitives/Text';
 import { ImportPhotos } from '../capture/ImportPhotos';
 import { Lightbox } from '../capture/Lightbox';
 import { PhotoWall } from '../capture/PhotoWall';
 import { SubmitBar } from '../visit/SubmitBar';
 import shared from '../shared/shared.module.css';
+import { StoreHeader } from '../shared/StoreHeader';
 import { VisitRow } from '../shared/VisitRow';
 import { useVisitActions } from '../visit/useVisitActions';
 import styles from './stores.module.css';
@@ -49,29 +44,20 @@ export function StorePage({ storeId }: { storeId: string }) {
     draft ? draft.visit.id : (await actions.startVisit(store.id, rep.id)).id;
 
   const header = (
-    <>
-      <TopBar
-        title={t.store.title}
-        subtitle={t.store.subtitle}
-        onBack={() => void navigate({ to: '/' })}
-      />
-      <Eyebrow steps={{ current: 1, total: 3 }}>{t.store.eyebrow}</Eyebrow>
-      <div className={shared.stackTight}>
-        <h1 className={shared.storeTitle} data-testid="store-name">
-          {store.name}
-        </h1>
-        <p className={shared.muted}>{formatAddress(store.address)}</p>
-        <div className={shared.spread}>
-          <span className={styles.status}>
-            <span className={`${styles.dot} ${draft ? '' : styles.dotIdle}`} />
-            {draft ? t.store.inProgress : t.store.noVisit}
-          </span>
-          <Link to="/stores" className={styles.changeStore}>
-            {t.store.change}
-          </Link>
-        </div>
-      </div>
-    </>
+    <StoreHeader
+      store={store}
+      onBack={() => void navigate({ to: '/' })}
+      right={
+        <Link to="/stores" className={styles.changeStore}>
+          {t.store.change}
+        </Link>
+      }
+    >
+      <span className={styles.statusPill} data-active={Boolean(draft)}>
+        <span className={styles.dot} />
+        {draft ? t.store.inProgress : t.store.noVisit}
+      </span>
+    </StoreHeader>
   );
 
   if (draft) {
@@ -90,6 +76,7 @@ export function StorePage({ storeId }: { storeId: string }) {
 
   return (
     <Screen
+      header={header}
       action={
         <div className={shared.stack}>
           <Button block size="lg" withArrow onClick={() => void begin()}>
@@ -98,7 +85,6 @@ export function StorePage({ storeId }: { storeId: string }) {
         </div>
       }
     >
-      {header}
       {pending.map((s) => (
         <Notice
           key={s.visit.id}
@@ -147,10 +133,7 @@ function LatestResult({ summary }: { summary: VisitSummary }) {
       params={{ visitId: visit.id }}
       className={`${shared.card} ${styles.latest}`}
     >
-      <div className={shared.spread}>
-        <SectionHeader title={t.store.latest} />
-        <MockBadge source={metrics.source} />
-      </div>
+      <SectionHeader title={t.store.latest} />
       <div className={shared.spread}>
         <div className={shared.stackTight}>
           <span className={styles.latestShare}>{share(metrics.scopes.overall.sos.sharePct)}</span>
@@ -194,6 +177,7 @@ function DraftHub({
 
   return (
     <Screen
+      header={header}
       action={
         <SubmitBar
           photoCount={captures.length}
@@ -203,7 +187,6 @@ function DraftHub({
         />
       }
     >
-      {header}
       <section className={shared.stack}>
         <SectionHeader
           title={t.store.captures}

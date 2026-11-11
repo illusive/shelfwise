@@ -1,11 +1,20 @@
+/* Two equal columns: both filters stay on one row on narrow phones (e.g. iPhone 15). */
 .filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-2);
-  flex-wrap: wrap;
+}
+
+.filters label,
+.filters select {
+  width: 100%;
+  min-width: 0;
 }
 
 .filters select {
-  max-width: 220px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .group {
@@ -27,4 +36,11 @@
   font-size: var(--font-size-21);
   font-weight: var(--font-weight-medium);
   letter-spacing: -0.02em;
+}
+
+.groupName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
 }

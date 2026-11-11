@@ -14,6 +14,7 @@ import { Sheet } from '@/ui/primitives/Sheet';
 import { useToast } from '@/ui/primitives/Toast';
 import { useVisitActions } from '../visit/useVisitActions';
 import { ImportPhotos } from './ImportPhotos';
+import { Lightbox } from './Lightbox';
 import { useCamera, type CameraStatus } from './useCamera';
 import styles from './CameraPage.module.css';
 
@@ -48,6 +49,7 @@ export function CameraPage({
   const [retakeId, setRetakeId] = useState<string | null>(retakeCaptureId ?? null);
   const [stripOpen, setStripOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
+  const [viewId, setViewId] = useState<string | null>(null);
 
   const captures = detail?.captures ?? [];
   const count = captures.length + pending;
@@ -125,7 +127,7 @@ export function CameraPage({
       <div className={styles.shadeTop} aria-hidden="true" />
 
       <header className={styles.top}>
-        <IconButton label={t.common.close} onClick={() => void close()}>
+        <IconButton label={t.common.close} tone="outline-light" onClick={() => void close()}>
           <CloseIcon />
         </IconButton>
         <div className={styles.titleBlock}>
@@ -279,27 +281,37 @@ export function CameraPage({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
               >
-                <BlobImage
-                  blobId={c.thumbBlobId}
-                  fallbackBlobId={c.blobId}
-                  alt={t.store.capture(padSequence(c.sequence))}
-                  className={styles.stripImage}
-                />
+                <button
+                  type="button"
+                  className={styles.stripOpen}
+                  aria-label={t.captures.open(padSequence(c.sequence))}
+                  onClick={() => {
+                    setStripOpen(false);
+                    setViewId(c.id);
+                  }}
+                >
+                  <BlobImage
+                    blobId={c.thumbBlobId}
+                    fallbackBlobId={c.blobId}
+                    alt=""
+                    className={styles.stripImage}
+                  />
+                </button>
                 <span className={styles.stripLabel}>{padSequence(c.sequence)}</span>
                 <div className={styles.stripActions}>
-                  <Button
-                    variant="secondary"
-                    icon={<RefreshIcon size={16} />}
+                  <IconButton
+                    label={t.camera.retake}
+                    tone="outline-light"
                     onClick={() => {
                       setRetakeId(c.id);
                       setStripOpen(false);
                     }}
                   >
-                    {t.camera.retake}
-                  </Button>
+                    <RefreshIcon size={18} />
+                  </IconButton>
                   <IconButton
                     label={t.captures.remove(padSequence(c.sequence))}
-                    tone="dark"
+                    tone="outline-light"
                     onClick={() => void remove(c)}
                   >
                     <TrashIcon size={18} />
@@ -310,6 +322,22 @@ export function CameraPage({
           </AnimatePresence>
         </ul>
       </Sheet>
+
+      <Lightbox
+        captures={captures}
+        openId={viewId}
+        timeZone={detail?.store.timeZone ?? 'Europe/Copenhagen'}
+        editable={!locked}
+        onOpenChange={setViewId}
+        onRetake={(c) => {
+          setViewId(null);
+          setRetakeId(c.id);
+        }}
+        onRemove={(c) => {
+          setViewId(null);
+          void remove(c);
+        }}
+      />
 
       <Sheet open={tipsOpen} onOpenChange={setTipsOpen} title={t.camera.tips}>
         <ul className={styles.tips}>

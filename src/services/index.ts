@@ -10,6 +10,8 @@ import { browserImageProcessor, type ImageProcessor } from './images';
 import type { BlobStore, Repositories } from './repositories';
 import { seedCatalogue } from './seed/catalogue';
 import { ensureSeeded } from './seed';
+import { ensureWeekPlanned } from './seed/plans';
+import { dateKeyIn } from '@/domain/dates';
 
 export interface Services {
   repos: Repositories;
@@ -38,6 +40,7 @@ export async function createServices(
   const db = options.db ?? new ShelfwiseDb();
   await ensureSeeded(db);
   await sweepOrphanBlobs(db);
+  await ensureWeekPlanned(db, dateKeyIn(new Date().toISOString()));
   const repos = createDexieRepositories(db, seedCatalogue);
   const blobs = createDexieBlobStore(db);
   const provider = options.provider ?? createProvider(config);

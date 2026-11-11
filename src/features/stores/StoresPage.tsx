@@ -9,6 +9,7 @@ import { Screen } from '@/ui/primitives/Screen';
 import { AppHeader } from '../session/AppHeader';
 import { EmptyState, SectionHeader } from '@/ui/primitives/Text';
 import shared from '../shared/shared.module.css';
+import { StoreLogo } from '../shared/StoreLogo';
 import { matchesStore } from './search';
 import styles from './stores.module.css';
 
@@ -43,9 +44,7 @@ export function StoresPage() {
         return (
           <li key={store.id}>
             <Link to="/stores/$storeId" params={{ storeId: store.id }} className={styles.storeRow}>
-              <span className={styles.chain} aria-hidden="true">
-                {store.chain.slice(0, 2)}
-              </span>
+              <StoreLogo store={store} size="sm" />
               <span className={styles.storeBody}>
                 <span className={styles.storeName}>{store.name}</span>
                 <span className={styles.storeAddress}>{formatAddress(store.address)}</span>

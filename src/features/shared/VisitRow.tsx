@@ -5,7 +5,7 @@ import { t } from '@/i18n/strings';
 import type { VisitSummary } from '@/services/visitSummaries';
 import { ChevronRightIcon } from '@/ui/icons';
 import { BlobImage } from '@/ui/primitives/BlobImage';
-import { Badge, MockBadge } from '@/ui/primitives/Text';
+import { Badge } from '@/ui/primitives/Text';
 import shared from './shared.module.css';
 import styles from './VisitRow.module.css';
 
@@ -70,7 +70,6 @@ export function VisitRow({
           <>
             <span className={styles.pct}>{share === null ? '—' : formatPct(share)}</span>
             <span className={styles.pctLabel}>{t.common.shelfShare}</span>
-            {metrics && <MockBadge source={metrics.source} />}
           </>
         )}
       </div>

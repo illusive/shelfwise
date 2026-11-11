@@ -7,9 +7,11 @@ import { formatDkk, padSequence } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { ArrowLeftIcon, ArrowRightIcon } from '@/ui/icons';
 import { useBlobUrl } from '@/ui/primitives/useBlobUrl';
-import { Screen, TopBar } from '@/ui/primitives/Screen';
-import { Badge, EmptyState, MockBadge, Mono, Notice } from '@/ui/primitives/Text';
+import { Screen } from '@/ui/primitives/Screen';
+import { Badge, EmptyState, Mono } from '@/ui/primitives/Text';
+import { PageTitle } from '../shared/PageTitle';
 import shared from '../shared/shared.module.css';
+import { StoreHeader } from '../shared/StoreHeader';
 import { priceLabelName, productName } from './labels';
 import styles from './PhotoPage.module.css';
 
@@ -98,12 +100,17 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
   };
 
   return (
-    <Screen>
-      <TopBar
+    <Screen
+      header={
+        <StoreHeader
+          store={detail.store}
+          onBack={() => void navigate({ to: '/visits/$visitId/report', params: { visitId } })}
+        />
+      }
+    >
+      <PageTitle
         title={t.photo.title(padSequence(capture.sequence))}
-        subtitle={t.photo.of(index + 1, captures.length)}
-        onBack={() => void navigate({ to: '/visits/$visitId/report', params: { visitId } })}
-        right={<MockBadge source={metrics.source} />}
+        aside={t.photo.of(index + 1, captures.length)}
       />
       <div className={shared.spread}>
         <Badge tone="dark">
@@ -200,7 +207,6 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
           <ArrowRightIcon />
         </button>
       </div>
-      {metrics.source === 'mock' && <Notice tone="info" title={t.photo.mockBoxes} />}
     </Screen>
   );
 }

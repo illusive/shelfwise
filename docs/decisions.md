@@ -44,6 +44,18 @@ during the build. Each rule has one home; link here rather than restating.
 | Demo data               | _Add demo history_ renders shelf images on a canvas and stores backdated mock results through the same contract.                                          |
 | Docker certs            | Named volume (no host file sharing needed); `npm run docker:certs` loads host/mkcert certs.                                                               |
 
+## Field-app alignment (user requests, Nov 2026)
+
+| Topic          | Decision                                                                                                                                                                                                                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Home           | Shows the rep's **planned visits** (week day-strip + numbered route list), not recent visits; the Figma hero banner and recent-visits list were dropped. History lives in the archive and store pages.                                                                                                             |
+| Planned visits | New `PlannedVisit` model (rep, store, store-local date, route order, tags) behind `repos.plannedVisits`; demo plans are generated per week at start-up (`src/services/seed/plans.ts`) and can be replaced by an API. Tapping a plan opens that visit (starts/resumes the draft; completed → results).              |
+| Store header   | One shared full-bleed header (logo, name, two-line address, status) on every store-related screen; the "Store visit" title, slogan, eyebrow and three-step progress dashes were removed.                                                                                                                           |
+| Store logos    | Real chain logos bundled for demo data only; they are trademarks of their owners and are listed with sources in `docs/logo-sources.md`. Replace before production use.                                                                                                                                             |
+| Mock indicator | **User-directed override of the brief's "mocked results clearly identifiable":** the Mock badge, the simulated-analysis notice and the mock-boxes notice are no longer shown. Results still store `source: "mock"` so they remain distinguishable in data, and a live provider must keep setting `source: "live"`. |
+| Report gate    | Opening the full report with unresolved items asks the rep to review them first (or continue). The review notice sits directly under the page title.                                                                                                                                                               |
+| Wording        | Swipe bar reads "Analysér …"; discard confirmation's cancel is "Annuller".                                                                                                                                                                                                                                         |
+
 ## Open questions
 
 - Backend/hosting choice and Foundry model/endpoint (and request/response limits).

@@ -20,7 +20,7 @@ export function SubmitBar({ photoCount, submitting, onSubmit, onDiscard }: Submi
   return (
     <div className={styles.bar}>
       <SwipeToConfirm
-        label={t.store.swipeToAnalyse(photoCount)}
+        label={t.store.analyse(photoCount)}
         disabled={photoCount === 0 || submitting}
         onConfirm={onSubmit}
       />

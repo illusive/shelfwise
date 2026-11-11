@@ -1,13 +1,15 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useVisitDetail } from '@/app/data';
-import { formatAddress, formatLongDay } from '@/i18n/format';
+import { formatLongDay } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { CameraIcon, PlusIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
-import { Screen, TopBar } from '@/ui/primitives/Screen';
-import { EmptyState, Eyebrow, Mono, Notice, SectionHeader } from '@/ui/primitives/Text';
+import { Screen } from '@/ui/primitives/Screen';
+import { EmptyState, Notice, SectionHeader } from '@/ui/primitives/Text';
+import { PageTitle } from '../shared/PageTitle';
 import shared from '../shared/shared.module.css';
+import { StoreHeader } from '../shared/StoreHeader';
 import { SubmitBar } from '../visit/SubmitBar';
 import { useVisitActions } from '../visit/useVisitActions';
 import { ImportPhotos } from './ImportPhotos';
@@ -35,6 +37,12 @@ export function CapturesPage({ visitId }: { visitId: string }) {
 
   return (
     <Screen
+      header={
+        <StoreHeader
+          store={store}
+          onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
+        />
+      }
       action={
         editable ? (
           <SubmitBar
@@ -46,18 +54,10 @@ export function CapturesPage({ visitId }: { visitId: string }) {
         ) : undefined
       }
     >
-      <TopBar
-        title={t.captures.title}
-        onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
+      <PageTitle
+        title={t.captures.heading}
+        sub={formatLongDay(visit.createdAt, tz).toUpperCase()}
       />
-      <Eyebrow steps={{ current: 2, total: 3 }}>{t.captures.eyebrow}</Eyebrow>
-      <div className={shared.stackTight}>
-        <h1 className={shared.displayTitle}>{t.captures.heading}</h1>
-        <Mono>{formatLongDay(visit.createdAt, tz).toUpperCase()}</Mono>
-        <p className={shared.muted} data-testid="captures-store">
-          {store.name} · {formatAddress(store.address)}
-        </p>
-      </div>
 
       {!editable && (
         <Notice

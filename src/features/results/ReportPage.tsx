@@ -2,12 +2,14 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import type { SosScope } from '@/domain/sos';
-import { formatPct, padSequence, formatAddress } from '@/i18n/format';
+import { formatPct, padSequence } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { BlobImage } from '@/ui/primitives/BlobImage';
-import { Screen, TopBar } from '@/ui/primitives/Screen';
-import { Badge, Divider, EmptyState, MockBadge, Mono, SectionHeader } from '@/ui/primitives/Text';
+import { Screen } from '@/ui/primitives/Screen';
+import { Badge, Divider, EmptyState, Mono, SectionHeader } from '@/ui/primitives/Text';
+import { PageTitle } from '../shared/PageTitle';
 import shared from '../shared/shared.module.css';
+import { StoreHeader } from '../shared/StoreHeader';
 import { productName, productPack, sortPrices } from './labels';
 import { PriceRow } from './PriceRow';
 import styles from './results.module.css';
@@ -41,13 +43,15 @@ export function ReportPage({ visitId }: { visitId: string }) {
   const imageIssues = new Map(result.response.images.map((i) => [i.imageId, i]));
 
   return (
-    <Screen>
-      <TopBar
-        title={t.report.title}
-        subtitle={`${store.name} · ${formatAddress(store.address)}`}
-        onBack={() => void navigate({ to: '/visits/$visitId/results', params: { visitId } })}
-        right={<MockBadge source={metrics.source} />}
-      />
+    <Screen
+      header={
+        <StoreHeader
+          store={store}
+          onBack={() => void navigate({ to: '/visits/$visitId/results', params: { visitId } })}
+        />
+      }
+    >
+      <PageTitle title={t.report.title} />
 
       <section className={shared.stackTight}>
         <SectionHeader title={t.report.coverage} />

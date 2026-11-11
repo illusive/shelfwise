@@ -24,6 +24,15 @@ export function createDexieRepositories(db: ShelfwiseDb, catalogue: Catalogue): 
       list: () => db.stores.toArray(),
       get: (id) => db.stores.get(id),
     },
+    plannedVisits: {
+      async listForRep(repId, from, to) {
+        const plans = await db.plannedVisits
+          .where('[repId+date]')
+          .between([repId, from], [repId, to], true, true)
+          .toArray();
+        return plans.sort((a, b) => a.date.localeCompare(b.date) || a.order - b.order);
+      },
+    },
     catalogue: {
       get: () => catalogue,
     },

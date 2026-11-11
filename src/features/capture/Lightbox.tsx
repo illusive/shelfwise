@@ -1,11 +1,19 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 import type { Capture } from '@/domain/models';
 import { formatTime, padSequence } from '@/i18n/format';
 import { t } from '@/i18n/strings';
-import { ArrowLeftIcon, ArrowRightIcon, RefreshIcon, TrashIcon } from '@/ui/icons';
-import { BlobImage } from '@/ui/primitives/BlobImage';
-import { Button, IconButton } from '@/ui/primitives/Button';
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  RefreshIcon,
+  TrashIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from '@/ui/icons';
+import { IconButton } from '@/ui/primitives/Button';
+import { useBlobUrl } from '@/ui/primitives/useBlobUrl';
 import styles from './Lightbox.module.css';
 
 export interface LightboxProps {
@@ -19,7 +27,7 @@ export interface LightboxProps {
   onRemove: (capture: Capture) => void;
 }
 
-/** Full-screen photo view with back, retake and remove. */
+/** Full-screen photo view: back, previous/next, full-size zoom, retake and remove. */
 export function Lightbox({
   captures,
   openId,
@@ -52,8 +60,8 @@ export function Lightbox({
               >
                 <header className={styles.top}>
                   <Dialog.Close asChild>
-                    <IconButton label={t.common.back}>
-                      <ArrowLeftIcon />
+                    <IconButton label={t.common.back} tone="outline-light">
+                      <ArrowLeftIcon size={20} />
                     </IconButton>
                   </Dialog.Close>
                   <div className={styles.title}>
@@ -66,57 +74,101 @@ export function Lightbox({
                     </span>
                   </div>
                 </header>
-                <div className={styles.stage}>
-                  <BlobImage
-                    blobId={capture.blobId}
-                    alt={t.store.capture(padSequence(capture.sequence))}
-                    className={styles.image}
-                    fit="contain"
-                  />
-                  {index > 0 && (
-                    <IconButton
-                      label={t.photo.previous}
-                      tone="dark"
-                      className={`${styles.nav} ${styles.prev}`}
-                      onClick={() => go(-1)}
-                    >
-                      <ArrowLeftIcon />
-                    </IconButton>
+                <ZoomableImage key={capture.id} capture={capture} />
+                <footer className={styles.actions}>
+                  <IconButton
+                    label={t.photo.previous}
+                    tone="outline-light"
+                    disabled={index <= 0}
+                    onClick={() => go(-1)}
+                  >
+                    <ArrowLeftIcon size={20} />
+                  </IconButton>
+                  {editable && (
+                    <>
+                      <IconButton
+                        label={t.camera.retake}
+                        tone="outline-light"
+                        onClick={() => onRetake(capture)}
+                      >
+                        <RefreshIcon size={20} />
+                      </IconButton>
+                      <IconButton
+                        label={t.camera.remove}
+                        tone="outline-light"
+                        className={styles.danger}
+                        onClick={() => onRemove(capture)}
+                      >
+                        <TrashIcon size={20} />
+                      </IconButton>
+                    </>
                   )}
-                  {index < captures.length - 1 && (
-                    <IconButton
-                      label={t.photo.next}
-                      tone="dark"
-                      className={`${styles.nav} ${styles.next}`}
-                      onClick={() => go(1)}
-                    >
-                      <ArrowRightIcon />
-                    </IconButton>
-                  )}
-                </div>
-                {editable && (
-                  <footer className={styles.actions}>
-                    <Button
-                      variant="secondary"
-                      icon={<RefreshIcon size={18} />}
-                      onClick={() => onRetake(capture)}
-                    >
-                      {t.camera.retake}
-                    </Button>
-                    <Button
-                      variant="danger"
-                      icon={<TrashIcon size={18} />}
-                      onClick={() => onRemove(capture)}
-                    >
-                      {t.camera.remove}
-                    </Button>
-                  </footer>
-                )}
+                  <IconButton
+                    label={t.photo.next}
+                    tone="outline-light"
+                    disabled={index >= captures.length - 1}
+                    onClick={() => go(1)}
+                  >
+                    <ArrowRightIcon size={20} />
+                  </IconButton>
+                </footer>
               </motion.div>
             </Dialog.Content>
           </Dialog.Portal>
         )}
       </AnimatePresence>
     </Dialog.Root>
+  );
+}
+
+/**
+ * Fits the photo to the screen; the zoom toggle (or a double-tap) shows it at full
+ * resolution — one image pixel per device pixel — and the rep can pan around.
+ */
+function ZoomableImage({ capture }: { capture: Capture }) {
+  const url = useBlobUrl(capture.blobId);
+  const stage = useRef<HTMLDivElement>(null);
+  const [zoomed, setZoomed] = useState(false);
+  const fullWidth = Math.max(
+    capture.width / (window.devicePixelRatio || 1),
+    (stage.current?.clientWidth ?? 0) * 2,
+  );
+
+  // Centre the view on zoom-in.
+  useEffect(() => {
+    const el = stage.current;
+    if (!el || !zoomed) return;
+    el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2;
+    el.scrollTop = (el.scrollHeight - el.clientHeight) / 2;
+  }, [zoomed]);
+
+  return (
+    <div className={styles.stageWrap}>
+      <div
+        ref={stage}
+        className={styles.stage}
+        data-zoomed={zoomed}
+        onDoubleClick={() => setZoomed((z) => !z)}
+      >
+        {url && (
+          <img
+            src={url}
+            alt={t.store.capture(padSequence(capture.sequence))}
+            className={styles.image}
+            style={zoomed ? { width: fullWidth, maxWidth: 'none', height: 'auto' } : undefined}
+            draggable={false}
+          />
+        )}
+      </div>
+      <IconButton
+        label={zoomed ? t.common.zoomOut : t.common.zoomIn}
+        tone="dark"
+        className={styles.zoom}
+        aria-pressed={zoomed}
+        onClick={() => setZoomed((z) => !z)}
+      >
+        {zoomed ? <ZoomOutIcon /> : <ZoomInIcon />}
+      </IconButton>
+    </div>
   );
 }

@@ -1,20 +1,16 @@
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
 import { useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
-import { formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { CheckIcon, ChevronRightIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
 import { Screen, TopBar } from '@/ui/primitives/Screen';
-import {
-  Divider,
-  EmptyState,
-  Eyebrow,
-  MockBadge,
-  Notice,
-  SectionHeader,
-} from '@/ui/primitives/Text';
+import { Divider, EmptyState, Notice, SectionHeader } from '@/ui/primitives/Text';
+import { PageTitle } from '../shared/PageTitle';
 import shared from '../shared/shared.module.css';
+import { StoreHeader } from '../shared/StoreHeader';
+import { Sheet } from '@/ui/primitives/Sheet';
 import { sortPrices } from './labels';
 import { PriceRow } from './PriceRow';
 import { ShareHero } from './ShareHero';
@@ -24,6 +20,7 @@ export function ResultsPage({ visitId }: { visitId: string }) {
   const navigate = useNavigate();
   const { catalogue } = useServices();
   const { data: detail, isPending } = useVisitDetail(visitId);
+  const [gateOpen, setGateOpen] = useState(false);
 
   if (isPending) return null;
   if (!detail?.metrics || !detail.visit.completedAt) {
@@ -47,33 +44,52 @@ export function ResultsPage({ visitId }: { visitId: string }) {
     return true;
   });
 
+  const openReport = () => {
+    if (unresolved > 0) setGateOpen(true);
+    else void navigate({ to: '/visits/$visitId/report', params: { visitId } });
+  };
+  const reviewNotice =
+    unresolved > 0 ? (
+      <Notice
+        title={t.results.reviewNeeded(unresolved)}
+        action={
+          <Link
+            to="/visits/$visitId/review"
+            params={{ visitId }}
+            className={styles.reviewLink}
+            data-testid="review-link"
+          >
+            {t.results.review} →
+          </Link>
+        }
+      >
+        {t.results.reviewHint}
+      </Notice>
+    ) : null;
+
   return (
     <Screen
+      header={
+        <StoreHeader
+          store={store}
+          onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
+        />
+      }
       action={
-        <Button
-          block
-          size="lg"
-          withArrow
-          onClick={() => void navigate({ to: '/visits/$visitId/report', params: { visitId } })}
-        >
+        <Button block size="lg" withArrow onClick={openReport}>
           {t.results.fullReport}
         </Button>
       }
     >
-      <TopBar
+      <PageTitle
         title={t.results.title}
-        onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
-        right={
-          <span className={shared.footnote}>
+        aside={
+          <>
             <CheckIcon size={14} /> {t.results.saved}
-          </span>
+          </>
         }
-        subtitle={`${store.name} · ${formatAddress(store.address)}`}
       />
-      <div className={shared.spread}>
-        <Eyebrow>{t.results.summary}</Eyebrow>
-        <MockBadge source={metrics.source} />
-      </div>
+      {reviewNotice}
 
       <ShareHero
         metrics={metrics}
@@ -89,24 +105,6 @@ export function ResultsPage({ visitId }: { visitId: string }) {
         )}{' '}
         · {t.results.coverage(metrics.coverage.imagesSubmitted, metrics.coverage.imagesUsable)}
       </p>
-
-      {unresolved > 0 && (
-        <Notice
-          title={t.results.reviewNeeded(unresolved)}
-          action={
-            <Link
-              to="/visits/$visitId/review"
-              params={{ visitId }}
-              className={styles.reviewLink}
-              data-testid="review-link"
-            >
-              {t.results.review} →
-            </Link>
-          }
-        >
-          {t.results.reviewHint}
-        </Notice>
-      )}
 
       <Divider />
       <section className={shared.stackTight}>
@@ -157,6 +155,30 @@ export function ResultsPage({ visitId }: { visitId: string }) {
         <p className={shared.footnote}>{t.results.capturedAreaOnly}</p>
         <p className={shared.footnote}>{t.results.disclaimer}</p>
       </div>
+      <Sheet
+        open={gateOpen}
+        onOpenChange={setGateOpen}
+        title={t.results.reportGateTitle(unresolved)}
+        description={t.results.reportGateBody}
+      >
+        <div className={shared.stack}>
+          <Button
+            block
+            size="lg"
+            onClick={() => void navigate({ to: '/visits/$visitId/review', params: { visitId } })}
+          >
+            {t.results.review}
+          </Button>
+          <Button
+            block
+            size="lg"
+            variant="secondary"
+            onClick={() => void navigate({ to: '/visits/$visitId/report', params: { visitId } })}
+          >
+            {t.results.reportGateSkip}
+          </Button>
+        </div>
+      </Sheet>
     </Screen>
   );
 }

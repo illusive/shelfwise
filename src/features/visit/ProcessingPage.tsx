@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import { isJobActive, type JobStatus } from '@/domain/models';
-import { formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { AlertIcon, CheckIcon, RefreshIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
-import { Screen, TopBar } from '@/ui/primitives/Screen';
-import { EmptyState, Eyebrow, Mono, Notice } from '@/ui/primitives/Text';
+import { Screen } from '@/ui/primitives/Screen';
+import { EmptyState, Mono, Notice } from '@/ui/primitives/Text';
+import { PageTitle } from '../shared/PageTitle';
 import shared from '../shared/shared.module.css';
+import { StoreHeader } from '../shared/StoreHeader';
 import styles from './ProcessingPage.module.css';
 
 type StepState = 'done' | 'active' | 'waiting' | 'failed';
@@ -52,11 +53,14 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
 
   if (visit.status === 'draft' || !job) {
     return (
-      <Screen>
-        <TopBar
-          title={t.processing.title}
-          onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
-        />
+      <Screen
+        header={
+          <StoreHeader
+            store={store}
+            onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
+          />
+        }
+      >
         <EmptyState title={t.store.inProgress} />
       </Screen>
     );
@@ -104,6 +108,12 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
 
   return (
     <Screen
+      header={
+        <StoreHeader
+          store={store}
+          onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
+        />
+      }
       action={
         failed ? (
           <div className={shared.stack}>
@@ -125,20 +135,11 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
         ) : undefined
       }
     >
-      <TopBar
+      <PageTitle
         title={t.processing.title}
-        onBack={() => void navigate({ to: '/stores/$storeId', params: { storeId: store.id } })}
+        aside={t.counts.photos(captures.length)}
+        sub={`${t.processing.job(job.id)} · ${t.processing.attempts(Math.max(1, job.attempts))}`}
       />
-      <Eyebrow steps={{ current: 3, total: 3 }}>{t.processing.eyebrow}</Eyebrow>
-      <div className={shared.stackTight}>
-        <h1 className={shared.storeTitle}>{store.name}</h1>
-        <p className={shared.muted}>
-          {formatAddress(store.address)} · {t.counts.photos(captures.length)}
-        </p>
-        <Mono>
-          {t.processing.job(job.id)} · {t.processing.attempts(Math.max(1, job.attempts))}
-        </Mono>
-      </div>
 
       <ol
         className={styles.steps}
@@ -171,11 +172,6 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
       {failed && (
         <Notice tone="danger" title={t.processing.status.failed}>
           {t.failures[job.failure?.code ?? ''] ?? job.failure?.message} {t.processing.failedHint}
-        </Notice>
-      )}
-      {services.analysis.providerSource === 'mock' && (
-        <Notice tone="info" title={t.common.mockLong}>
-          {t.processing.mockNote}
         </Notice>
       )}
     </Screen>

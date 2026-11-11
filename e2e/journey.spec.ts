@@ -12,7 +12,7 @@ test('rep finds a store, captures, reviews, submits and sees results', async ({ 
   await snap(page, '01-home');
 
   // Store selection: search the wider catalogue; similar names are disambiguated by address.
-  await page.getByRole('button', { name: 'Start a store visit' }).click();
+  await page.getByRole('button', { name: 'Visit another store' }).click();
   await page.getByRole('searchbox').fill('nørrebrogade 34');
   await expect(page.getByText('2 matching stores')).toHaveCount(0);
   await expect(page.getByText('1 matching stores')).toBeVisible();
@@ -66,7 +66,6 @@ test('rep finds a store, captures, reviews, submits and sees results', async ({ 
   await snap(page, '06-processing');
   await expect(page).toHaveURL(/\/results$/, { timeout: 20_000 });
   await expect(page.getByTestId('sos-value').first()).toBeVisible();
-  await expect(page.getByText('Mock', { exact: true }).first()).toBeVisible();
   await expect(page.getByTestId('sos-value')).toHaveAttribute('data-scope', 'overall');
   await page.getByRole('radio', { name: /Coolers/ }).click();
   await expect(page.getByTestId('sos-value')).toHaveAttribute('data-scope', 'cooler');
@@ -87,6 +86,12 @@ test('rep finds a store, captures, reviews, submits and sees results', async ({ 
 
   // Full report and photo evidence.
   await page.getByRole('button', { name: 'View full product report' }).click();
+  // Unresolved items left: the app suggests reviewing them before the report.
+  const gate = page.getByRole('dialog', { name: /need(s)? attention/ });
+  if (await gate.isVisible().catch(() => false)) {
+    await snap(page, '08b-report-gate');
+    await gate.getByRole('button', { name: 'Go to report anyway' }).click();
+  }
   await expect(page.getByRole('heading', { name: 'Product report' })).toBeVisible();
   await snap(page, '09-report');
   await page
@@ -152,11 +157,25 @@ test('a draft can be discarded after confirming', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Discard draft' }).click();
   await expect(page.getByRole('dialog', { name: 'Discard this visit?' })).toBeVisible();
-  await page.getByRole('button', { name: 'Keep visit' }).click();
+  await page.getByRole('button', { name: 'Cancel' }).click();
   await expect(page.getByTestId('captures-count')).toHaveText('1 photo');
 
   await page.getByRole('button', { name: 'Discard draft' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Discard draft' }).click();
   await expect(page.getByText('Draft discarded')).toBeVisible();
   await expect(page.getByText('No visit in progress')).toBeVisible();
+});
+
+test("today's planned visits lead straight into the visit", async ({ page }) => {
+  await page.goto('./');
+  await expect(page.getByRole('heading', { name: "Today's visits" })).toBeVisible();
+  const first = page.getByTestId('planned-visit').first();
+  await expect(first).toBeVisible();
+  const storeName = await first.getByTestId('planned-store-name').textContent();
+  await snap(page, '19-home-plan');
+  await first.click();
+  await expect(page.getByTestId('store-name')).toHaveText(storeName!);
+  await expect(page.getByText('Visit in progress')).toBeVisible();
+  await page.goto('./');
+  await expect(page.getByTestId('planned-visit').first()).toContainText('In progress');
 });

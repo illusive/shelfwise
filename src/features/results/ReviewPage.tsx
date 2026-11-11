@@ -10,14 +10,16 @@ import type {
   PriceCorrectionValue,
 } from '@/domain/corrections';
 import type { NormalisedPrice } from '@/domain/pricing';
-import { formatPack, parseDkkInput, formatAddress } from '@/i18n/format';
+import { formatPack, parseDkkInput } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { newId } from '@/services/ids';
 import { CheckIcon, SearchIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
-import { Screen, TopBar } from '@/ui/primitives/Screen';
+import { Screen } from '@/ui/primitives/Screen';
 import { EmptyState, Mono, Notice } from '@/ui/primitives/Text';
+import { PageTitle } from '../shared/PageTitle';
 import shared from '../shared/shared.module.css';
+import { StoreHeader } from '../shared/StoreHeader';
 import { EvidenceCrop } from './EvidenceCrop';
 import { productName } from './labels';
 import styles from './ReviewPage.module.css';
@@ -87,6 +89,7 @@ export function ReviewPage({ visitId }: { visitId: string }) {
 
   return (
     <Screen
+      header={<StoreHeader store={detail.store} onBack={back} />}
       action={
         <Button
           block
@@ -99,11 +102,7 @@ export function ReviewPage({ visitId }: { visitId: string }) {
         </Button>
       }
     >
-      <TopBar
-        title={t.review.title}
-        subtitle={`${detail.store.name} · ${formatAddress(detail.store.address)}`}
-        onBack={back}
-      />
+      <PageTitle title={t.review.title} />
       <p className={shared.muted}>{t.review.intro}</p>
       {current ? (
         <>

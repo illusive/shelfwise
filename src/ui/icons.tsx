@@ -134,3 +134,15 @@ export const FilterIcon = (p: IconProps) => (
     <path d="M4 7h16M7 12h10M10 17h4" />
   </Icon>
 );
+export const ZoomInIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m16 16 4 4M11 8.5v5M8.5 11h5" />
+  </Icon>
+);
+export const ZoomOutIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m16 16 4 4M8.5 11h5" />
+  </Icon>
+);

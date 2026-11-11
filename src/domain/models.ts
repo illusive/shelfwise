@@ -103,3 +103,16 @@ export interface StoredResult {
 export function isJobActive(status: JobStatus): boolean {
   return status === 'queued' || status === 'preparing' || status === 'analysing';
 }
+
+export type VisitTag = 'campaign' | 'upsell' | 'display' | 'new-listing';
+
+/** A store visit planned for a rep on a given (store-local) day, in route order. */
+export interface PlannedVisit {
+  id: string;
+  repId: string;
+  storeId: string;
+  /** YYYY-MM-DD in the store's time zone. */
+  date: string;
+  order: number;
+  tags: VisitTag[];
+}

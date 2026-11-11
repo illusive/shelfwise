@@ -8,6 +8,8 @@ import styles from './Screen.module.css';
 
 export interface ScreenProps {
   children: ReactNode;
+  /** Full-bleed header above the padded content (e.g. the store header). */
+  header?: ReactNode;
   /** Fixed action area above the home indicator (Figma "Analyze action"). */
   action?: ReactNode;
   nav?: boolean;
@@ -16,13 +18,23 @@ export interface ScreenProps {
 }
 
 /** Page shell: scrollable content with a short, interruptible entry transition. */
-export function Screen({ children, action, nav = false, tone = 'paper', className }: ScreenProps) {
+export function Screen({
+  children,
+  header,
+  action,
+  nav = false,
+  tone = 'paper',
+  className,
+}: ScreenProps) {
   return (
     <div
       className={`${styles.screen} ${styles[tone]}`}
       data-has-action={Boolean(action)}
       data-has-nav={nav}
+
+      data-has-header={Boolean(header)}
     >
+      {header}
       <motion.main
         className={`${styles.content} ${className ?? ''}`}
         initial={{ opacity: 0, y: 8 }}

@@ -38,16 +38,6 @@ export function BottomNav() {
   const { pathname } = useLocation();
   return (
     <nav className={styles.nav} aria-label={t.nav.label}>
-      <svg className={styles.defs} aria-hidden="true" focusable="false">
-        <filter id="shelfwise-goo">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-          <feColorMatrix
-            in="blur"
-            mode="matrix"
-            values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 22 -10"
-          />
-        </filter>
-      </svg>
       <div className={styles.bar}>
         <div className={styles.goo} aria-hidden="true">
           <span className={styles.neck} />

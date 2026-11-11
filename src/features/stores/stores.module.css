@@ -52,21 +52,34 @@
   font-size: var(--font-size-12);
 }
 
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-round);
-  background: var(--color-primary);
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.12);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
 }
 
-.dotIdle {
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-round);
   background: var(--color-sage);
+}
+
+.statusPill[data-active='true'] .dot {
+  background: var(--color-accent);
 }
 
 .changeStore {
   font-size: var(--font-size-12);
   font-weight: var(--font-weight-semibold);
-  padding: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 1.5px currentColor;
 }
 
 .lead {

@@ -12,10 +12,12 @@ test('demo history enables visit-to-visit comparison', async ({ page }) => {
   await page.getByRole('button', { name: 'Add demo history' }).click();
   await expect(page.getByText('Demo history added')).toBeVisible({ timeout: 30_000 });
 
-  // Recent visits now show analysed (mock) visits with a shelf share.
+  // History lives in the archive; open the newest analysed visit.
+  await page.goto('archive');
+  await page.getByLabel('Period').selectOption('all');
   const firstVisit = page.getByRole('link', { name: /shelf share/ }).first();
   await expect(firstVisit).toBeVisible();
-  await snap(page, '12-home-history');
+  await snap(page, '12-archive-history');
   await firstVisit.click();
   await expect(page).toHaveURL(/\/results$/);
   await expect(page.getByTestId('sos-value').first()).toBeVisible();

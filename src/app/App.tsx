@@ -3,6 +3,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import { MotionConfig } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { createServices, type Services } from '@/services';
+import { GooFilter } from '@/ui/primitives/GooFilter';
 import { ToastProvider } from '@/ui/primitives/Toast';
 import { useLanguage } from '@/i18n/language';
 import { readConfig } from './config';
@@ -55,6 +56,7 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <MotionConfig reducedMotion="user">
           <ToastProvider>
+            <GooFilter />
             {/* Remount on language change so every screen re-reads its strings. */}
             <RouterProvider key={language} router={router} />
           </ToastProvider>

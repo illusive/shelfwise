@@ -123,3 +123,33 @@
 .tone-plain {
   background: transparent;
 }
+
+.tone-outline,
+.tone-outline-light {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+  width: 40px;
+  height: 40px;
+  margin: 2px;
+}
+
+.tone-outline {
+  color: var(--color-primary);
+}
+
+.tone-outline-light {
+  color: var(--color-surface);
+}
+
+/* Keep a 44px touch target around the 40px outlined circle. */
+.tone-outline,
+.tone-outline-light {
+  position: relative;
+}
+
+.tone-outline::after,
+.tone-outline-light::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+}

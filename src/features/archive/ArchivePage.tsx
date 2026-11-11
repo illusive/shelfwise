@@ -10,6 +10,7 @@ import { AppHeader } from '../session/AppHeader';
 import { EmptyState } from '@/ui/primitives/Text';
 import shared from '../shared/shared.module.css';
 import { VisitRow } from '../shared/VisitRow';
+import { StoreLogo } from '../shared/StoreLogo';
 import { matchesStore } from '../stores/search';
 import styles from './ArchivePage.module.css';
 
@@ -108,7 +109,10 @@ export function ArchivePage() {
                 params={{ storeId: store.id }}
                 className={styles.groupHead}
               >
-                <span className={styles.groupTitle}>{store.name}</span>
+                <span className={styles.groupName}>
+                  <StoreLogo store={store} size="sm" />
+                  <span className={styles.groupTitle}>{store.name}</span>
+                </span>
                 <ChevronRightIcon size={18} className={shared.chevron} />
               </Link>
               <p className={shared.muted}>

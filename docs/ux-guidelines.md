@@ -39,12 +39,19 @@ failure. Toasts are reserved for removals (with _Undo_ for about 6 s) and failur
 can measure: job created, _n of N photos ready_, analysing (indeterminate) — never fake
 percentages.
 
+## Home and planned visits
+
+Home answers "what do I have to do": the week strip selects a day and the numbered list shows that
+day's route with days since the last visit and tags (campaign, upsell, display, new listing).
+One tap opens the visit. History is in the archive and on each store page.
+
 ## Draft actions
 
 - Photos are removed directly from the photo wall (× on each photo); the toast offers _Undo_,
   which restores the photo with its number. Images are deleted only when the toast expires
   (left-over images are swept at the next start).
-- Tapping a photo opens it full screen with _Retake_, _Remove_ and back.
+- Tapping a photo opens it full screen (icons: previous, retake, remove, next; zoom to full
+  resolution by button or double-tap). The camera's captures sheet uses the same lightbox.
 - Analysis starts by swiping the bar to the end (no accidental taps); keyboard and screen
   readers can activate it directly. The round × discards the draft after a confirmation sheet.
 
@@ -56,6 +63,7 @@ Danish by default; English can be chosen in the user drawer and is remembered on
 
 - Drafts and photos are saved to IndexedDB on capture; reload, navigation away or closing the
   tab keeps them (subject to browser storage eviction).
+- Opening the full report with unresolved items first offers the quick review.
 - Submission is idempotent; failures keep the visit and photos, offer _Retry analysis_
   (same job) or _Edit photos_ (reopens the draft).
 - Jobs interrupted by reload resume automatically.

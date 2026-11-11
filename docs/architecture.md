@@ -44,6 +44,7 @@ All data is on the device in IndexedDB (`ShelfwiseDb`, Dexie):
 | `jobs`           | Analysis jobs: status, attempts, real preparation progress, failure.                                                                                        |
 | `results`        | Validated `AnalysisResponse` per job (`result-<jobId>`), plus storage time.                                                                                 |
 | `corrections`    | Rep corrections keyed by result and target (facing key or label id).                                                                                        |
+| `plannedVisits`  | Route plans per rep and store-local day (`[repId+date]`); demo weeks generated at start-up.                                                                 |
 | `meta`           | Current rep id, seed version.                                                                                                                               |
 
 The catalogue (`services/seed/catalogue.ts`, version `dk-seed-2026.11`) is code, exposed via

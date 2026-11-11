@@ -22,6 +22,7 @@ test('opens in Danish by default and switches language from the user drawer', as
 test('Danish store addresses follow street, floor, postcode and city', async ({ page }) => {
   await page.goto('stores');
   await page.getByRole('link', { name: /Meny Østerbro/ }).click();
-  await expect(page.getByText('Østerbrogade 128, 1. sal, 2100 København Ø')).toBeVisible();
+  await expect(page.getByText('Østerbrogade 128, 1. sal', { exact: true })).toBeVisible();
+  await expect(page.getByText('2100 København Ø', { exact: true })).toBeVisible();
   await snap(page, '18-store-da');
 });

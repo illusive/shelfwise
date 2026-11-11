@@ -1,6 +1,14 @@
 import type { Catalogue } from '@/domain/catalogue';
 import type { Correction } from '@/domain/corrections';
-import type { AnalysisJob, Capture, Rep, Store, StoredResult, Visit } from '@/domain/models';
+import type {
+  AnalysisJob,
+  Capture,
+  PlannedVisit,
+  Rep,
+  Store,
+  StoredResult,
+  Visit,
+} from '@/domain/models';
 
 /**
  * Persistence boundary. Features depend on these interfaces only, so the IndexedDB
@@ -18,6 +26,10 @@ export interface Repositories {
   stores: {
     list(): Promise<Store[]>;
     get(id: string): Promise<Store | undefined>;
+  };
+  plannedVisits: {
+    /** Inclusive date range (YYYY-MM-DD), ordered by date then route order. */
+    listForRep(repId: string, from: string, to: string): Promise<PlannedVisit[]>;
   };
   catalogue: {
     get(): Catalogue;

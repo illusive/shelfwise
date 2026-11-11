@@ -2,7 +2,7 @@ import type { ImageIssue, LocationType, WarningCode } from '@/contracts/analysis
 import type { Container } from '@/domain/catalogue';
 import type { Category } from '@/domain/categories';
 import type { ComparisonReason } from '@/domain/comparison';
-import type { JobStatus } from '@/domain/models';
+import type { JobStatus, VisitTag } from '@/domain/models';
 import type { SosReason } from '@/domain/sos';
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -17,12 +17,12 @@ export const en = {
     retry: 'Try again',
     viewAll: 'View all',
     shelfShare: 'shelf share',
-    mock: 'Mock',
-    mockLong: 'Mock analysis — not from real recognition',
     loading: 'Loading…',
     notFound: 'Not found',
     save: 'Save',
     undo: 'Undo',
+    zoomIn: 'View full size',
+    zoomOut: 'Fit to screen',
     today: 'Today',
     yesterday: 'Yesterday',
     step: (i: number, n: number) => `Step ${i} of ${n}`,
@@ -58,12 +58,27 @@ export const en = {
     storesVisited: 'Stores visited this month',
     overallShare: 'Shelf share this month',
     overallShareHint: 'Client facings ÷ all facings, latest visit per store',
-    recent: 'Recent visits',
     upToDate: 'All visits are up to date',
     processing: (n: number) => `${n} analysis in progress`,
     failed: (n: number) => `${n} analysis needs attention`,
     empty: 'No visits yet. Start with your first store.',
+    todaysVisits: "Today's visits",
+    dayVisits: (day: string) => `Visits ${day}`,
+    plannedCount: (n: number) => plural(n, 'visit', 'visits'),
+    noPlanned: 'No visits planned for this day.',
+    daysSince: (n: number) => plural(n, 'day', 'days'),
+    newStore: 'New',
+    visited: 'Visited',
+    inProgress: 'In progress',
+    otherVisit: 'Visit another store',
+    week: 'Week',
   },
+  tags: {
+    campaign: 'Campaign',
+    upsell: 'Upsell',
+    display: 'Display',
+    'new-listing': 'New listing',
+  } satisfies Record<VisitTag, string>,
   stores: {
     title: 'Stores',
     search: 'Search stores, streets or postcodes',
@@ -75,9 +90,6 @@ export const en = {
     neverVisited: 'Not visited yet',
   },
   store: {
-    title: 'Store visit',
-    subtitle: 'A fresh look at your shelves.',
-    eyebrow: 'Store visit',
     inProgress: 'Visit in progress',
     processing: 'Analysis in progress',
     noVisit: 'No visit in progress',
@@ -90,7 +102,6 @@ export const en = {
     importPhotos: 'Import photos',
     privacy: 'Photos stay on this device until analysed.',
     analyse: (n: number) => `Analyze ${n === 1 ? 'shelf' : `${n} captures`}`,
-    swipeToAnalyse: (n: number) => `Swipe to analyze ${n === 1 ? 'shelf' : `${n} captures`}`,
     start: 'Start visit',
     latest: 'Latest results',
     history: 'Visit history',
@@ -101,7 +112,7 @@ export const en = {
     discardConfirm: (n: number) =>
       `The draft and its ${plural(n, 'photo', 'photos')} will be deleted from this device.`,
     discardYes: 'Discard draft',
-    discardNo: 'Keep visit',
+    discardNo: 'Cancel',
     discarded: 'Draft discarded',
   },
   camera: {
@@ -141,7 +152,6 @@ export const en = {
   },
   captures: {
     title: 'Daily captures',
-    eyebrow: 'Capture review',
     heading: "Today's captures",
     count: (n: number) => plural(n, 'photo', 'photos'),
     removeHint: 'Tap × to remove',
@@ -157,7 +167,6 @@ export const en = {
   },
   processing: {
     title: 'Analysis',
-    eyebrow: 'Analysis job',
     submitted: 'Submitted — job created',
     status: {
       queued: 'Waiting to start',
@@ -169,7 +178,6 @@ export const en = {
     } satisfies Record<JobStatus, string>,
     preparing: (done: number, total: number) => `${done} of ${total} photos ready`,
     analysingHint: 'You can leave this screen — the visit is saved and will finish here.',
-    mockNote: 'Mock provider: results are simulated.',
     failedHint: 'Your photos are safe on this device.',
     retry: 'Retry analysis',
     edit: 'Edit photos',
@@ -190,7 +198,6 @@ export const en = {
   results: {
     title: 'Shelf analysis',
     saved: 'Saved',
-    summary: 'Summary',
     sos: 'Share of shelf',
     scope: { overall: 'Overall', shelf: 'Shelves', cooler: 'Coolers' } as Record<
       'shelf' | 'cooler' | 'overall',
@@ -213,6 +220,9 @@ export const en = {
     reviewNeeded: (n: number) => `${n} ${n === 1 ? 'item needs' : 'items need'} a closer look`,
     reviewHint: 'Confirm or correct unresolved products and prices.',
     review: 'Review now',
+    reportGateTitle: (n: number) => `${plural(n, 'item needs', 'items need')} attention`,
+    reportGateBody: 'Review them first, so the report includes your corrections?',
+    reportGateSkip: 'Go to report anyway',
     displays: (n: number, client: number) =>
       `${plural(n, 'display', 'displays')} · ${client} with client brands`,
     displaysHint: 'Displays are counted separately and excluded from share of shelf.',
@@ -288,7 +298,6 @@ export const en = {
     legendCompetitor: 'Competitor',
     legendUnknown: 'Unresolved',
     legendPrice: 'Price label',
-    mockBoxes: 'Mock boxes are illustrative and do not match the photo content.',
     noLocation: 'Not analysed',
   },
   review: {

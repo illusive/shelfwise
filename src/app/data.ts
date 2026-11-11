@@ -24,6 +24,7 @@ export const queryKeys = {
   store: (id: string) => ['store', id] as const,
   visitDetail: (id: string) => ['visit-detail', id] as const,
   summaries: (filter: { repId?: string; storeId?: string }) => ['summaries', filter] as const,
+  plans: (repId: string, from: string, to: string) => ['plans', repId, from, to] as const,
 };
 
 export function useInvalidate() {
@@ -84,5 +85,14 @@ export function useVisitSummaries(filter: { repId?: string; storeId?: string }) 
     queryFn: () => loadVisitSummaries(services, filter),
     refetchInterval: (query) =>
       query.state.data?.some((s) => isAwaitingResult(s.visit, s.job)) ? 1000 : false,
+  });
+}
+
+export function usePlannedVisits(repId: string | undefined, from: string, to: string) {
+  const { repos } = useServices();
+  return useQuery({
+    queryKey: queryKeys.plans(repId ?? '', from, to),
+    queryFn: () => repos.plannedVisits.listForRep(repId!, from, to),
+    enabled: Boolean(repId),
   });
 }

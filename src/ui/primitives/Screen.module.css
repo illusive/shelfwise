@@ -81,3 +81,7 @@
   font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
 }
+
+.screen[data-has-header='true'] .content {
+  padding-top: var(--space-5);
+}

@@ -1,5 +1,6 @@
 import type { Address } from '@/domain/models';
 import type { PackSize } from '@/domain/catalogue';
+import { dateKeyIn } from '@/domain/dates';
 import { getLanguage, TEXT_LOCALE } from './language';
 import { t } from './strings';
 
@@ -49,12 +50,7 @@ export function formatLongDay(iso: string, timeZone = DEFAULT_TIME_ZONE): string
 
 /** Calendar date in the store's time zone, as YYYY-MM-DD. */
 export function localDateKey(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(iso));
+  return dateKeyIn(iso, timeZone);
 }
 
 /** "Today"/"I dag", "Yesterday"/"I går", "7 Nov" or "7 Nov 2025", by the store's local date. */
@@ -110,4 +106,33 @@ export function formatAddress(address: Address): string {
   return [address.street, address.floor, `${address.postcode} ${address.city}`]
     .filter(Boolean)
     .join(', ');
+}
+
+/** Two-line Danish address: "Vesterbrogade 12, 1. sal" / "1620 København V". */
+export function formatAddressLines(address: Address): [string, string] {
+  return [
+    [address.street, address.floor].filter(Boolean).join(', '),
+    `${address.postcode} ${address.city}`,
+  ];
+}
+
+function capitalise(text: string): string {
+  return text.charAt(0).toLocaleUpperCase(TEXT_LOCALE[getLanguage()]) + text.slice(1);
+}
+
+/** Short weekday for a YYYY-MM-DD key, e.g. "Man" / "Mon". */
+export function formatWeekdayShort(dateKey: string): string {
+  const text = new Intl.DateTimeFormat(TEXT_LOCALE[getLanguage()], {
+    weekday: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(`${dateKey}T12:00:00Z`));
+  return capitalise(text.replace('.', ''));
+}
+
+/** Long weekday for a YYYY-MM-DD key, e.g. "torsdag" / "Thursday". */
+export function formatWeekdayLong(dateKey: string): string {
+  return new Intl.DateTimeFormat(TEXT_LOCALE[getLanguage()], {
+    weekday: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${dateKey}T12:00:00Z`));
 }

@@ -42,8 +42,9 @@ with English selectable).
 
 1. **Open the app** → Home as the default rep (Alex). Switch rep from the user drawer (avatar,
    top right) if needed.
-2. **Start visit:** Home → Stores (assigned first, search all by name/street/postcode/customer
-   no.) → Store (latest result, history, or "No visits yet") → _Start visit_ → Camera.
+2. **Today's plan:** Home shows the week day-strip and the rep's numbered planned visits for the
+   selected day. Tapping a visit opens it directly (starts or resumes the draft; finished visits
+   open their results). _Visit another store_ → Stores (search all) for unplanned visits.
 3. **Capture:** camera stays open; each tap adds a photo (flash, count badge). Tap the
    thumbnail to remove/retake without leaving the camera. _Done_ → Daily captures.
 4. **Review & submit:** remove (×), retake, add, import; _Analyze N captures_ → Processing
@@ -66,7 +67,8 @@ Met with the mock provider (verified by unit tests and the Playwright journey):
 - Shelf and cooler SoS are produced or explicitly unavailable; overlap does not inflate counts.
 - Results separate unique products, facings, prices, promotions and unresolved items.
 - Findings trace to photos (evidence boxes); visits persist and compare with disclosure.
-- Mocked results are clearly identifiable.
+- Mocked results are identifiable in the stored data (`source: "mock"`); the UI badge was
+  removed at the user's request (see `docs/decisions.md`).
 
 Not met yet (blocked, see `docs/decisions.md`): live analysis of real store photos; validation
 on real devices; recognition quality and coverage evaluated against agreed examples/targets.

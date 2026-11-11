@@ -47,7 +47,8 @@ export function Button({
 
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
-  tone?: 'light' | 'dark' | 'plain';
+  /** `outline`/`outline-light`: circular border, used for close/back controls in modals and headers. */
+  tone?: 'light' | 'dark' | 'plain' | 'outline' | 'outline-light';
 }
 
 export function IconButton({

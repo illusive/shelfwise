@@ -47,16 +47,6 @@ export function Badge({
   );
 }
 
-/** Mocked results must always be identifiable, including in history. */
-export function MockBadge({ source }: { source: 'mock' | 'live' }) {
-  if (source !== 'mock') return null;
-  return (
-    <span title={t.common.mockLong}>
-      <Badge tone="mock">{t.common.mock}</Badge>
-    </span>
-  );
-}
-
 export function Notice({
   tone = 'warning',
   title,
