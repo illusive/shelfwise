@@ -146,3 +146,10 @@ export const ZoomOutIcon = (p: IconProps) => (
     <path d="m16 16 4 4M8.5 11h5" />
   </Icon>
 );
+export const ScanIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16" />
+    <rect x="9" y="7.5" width="2.6" height="9" rx="1" />
+    <rect x="13" y="9.5" width="2.6" height="7" rx="1" />
+  </Icon>
+);

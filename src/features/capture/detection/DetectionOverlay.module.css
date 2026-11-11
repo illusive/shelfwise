@@ -1,0 +1,56 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  height: calc(100% - 178px - var(--safe-bottom));
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: var(--radius-md);
+  background: rgb(216 237 148 / 0.08);
+}
+
+/* Rounded corner brackets in the brand lime, sized to the box. */
+.box i {
+  position: absolute;
+  width: min(14px, 34%);
+  height: min(14px, 26%);
+  border: 0 solid var(--color-accent);
+  filter: drop-shadow(0 0 2px rgb(16 43 36 / 0.5));
+}
+
+.box i[data-c='tl'] {
+  top: 0;
+  left: 0;
+  border-top-width: 2.5px;
+  border-left-width: 2.5px;
+  border-top-left-radius: var(--radius-md);
+}
+
+.box i[data-c='tr'] {
+  top: 0;
+  right: 0;
+  border-top-width: 2.5px;
+  border-right-width: 2.5px;
+  border-top-right-radius: var(--radius-md);
+}
+
+.box i[data-c='bl'] {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 2.5px;
+  border-left-width: 2.5px;
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.box i[data-c='br'] {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 2.5px;
+  border-right-width: 2.5px;
+  border-bottom-right-radius: var(--radius-md);
+}

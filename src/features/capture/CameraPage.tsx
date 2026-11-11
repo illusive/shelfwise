@@ -7,13 +7,16 @@ import type { Capture } from '@/domain/models';
 import { padSequence, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { captureVideoFrame } from '@/services/images';
-import { CloseIcon, InfoIcon, LightningIcon, RefreshIcon, TrashIcon } from '@/ui/icons';
+import { CloseIcon, InfoIcon, LightningIcon, RefreshIcon, TrashIcon, ScanIcon } from '@/ui/icons';
 import { BlobImage } from '@/ui/primitives/BlobImage';
 import { Button, IconButton } from '@/ui/primitives/Button';
 import { Sheet } from '@/ui/primitives/Sheet';
 import { useToast } from '@/ui/primitives/Toast';
 import { useVisitActions } from '../visit/useVisitActions';
 import { ImportPhotos } from './ImportPhotos';
+import { DetectionOverlay } from './detection/DetectionOverlay';
+import { useLiveDetectionSetting } from './detection/settings';
+import { useLiveDetection } from './detection/useLiveDetection';
 import { Lightbox } from './Lightbox';
 import { useCamera, type CameraStatus } from './useCamera';
 import styles from './CameraPage.module.css';
@@ -50,6 +53,25 @@ export function CameraPage({
   const [stripOpen, setStripOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
+  const [liveOn, setLiveOn] = useLiveDetectionSetting();
+  // Load only once the camera runs; pause while sheets/lightbox cover the preview.
+  const live = useLiveDetection(camera.videoRef, {
+    enabled: liveOn && camera.status === 'ready',
+    paused: stripOpen || tipsOpen || viewId !== null,
+  });
+  const [inView, setInView] = useState(0);
+  const liveText =
+    live.status === 'running'
+      ? inView
+        ? t.camera.live.count(inView)
+        : t.camera.live.none
+      : live.status === 'loading'
+        ? t.camera.live.loading
+        : live.status === 'slow'
+          ? t.camera.live.slow
+          : live.status === 'unavailable'
+            ? t.camera.live.unavailable
+            : null;
 
   const captures = detail?.captures ?? [];
   const count = captures.length + pending;
@@ -124,6 +146,13 @@ export function CameraPage({
         autoPlay
         aria-hidden="true"
       />
+      {live.status === 'running' && (
+        <DetectionOverlay
+          tracks={live.tracks}
+          videoRef={camera.videoRef}
+          onVisibleCount={setInView}
+        />
+      )}
       <div className={styles.shadeTop} aria-hidden="true" />
 
       <header className={styles.top}>
@@ -145,6 +174,14 @@ export function CameraPage({
         <IconButton label={t.camera.tips} onClick={() => setTipsOpen(true)}>
           <InfoIcon />
         </IconButton>
+        <IconButton
+          label={t.camera.live.toggle}
+          aria-pressed={liveOn}
+          className={liveOn ? styles.liveOn : undefined}
+          onClick={() => setLiveOn(!liveOn)}
+        >
+          <ScanIcon />
+        </IconButton>
         {camera.torch.supported && (
           <IconButton
             label={t.camera.torch}
@@ -159,6 +196,19 @@ export function CameraPage({
       {camera.status === 'ready' && (
         <>
           <p className={styles.tip}>{t.camera.tip[count === 0 ? 0 : 1]}</p>
+          {liveText && (
+            <p
+              className={styles.liveChip}
+              data-testid="live-chip"
+              data-status={live.status}
+              data-backend={live.backend ?? undefined}
+              data-avg-ms={live.averageMs === null ? undefined : Math.round(live.averageMs)}
+              aria-live="polite"
+            >
+              <span className={styles.liveDot} aria-hidden="true" />
+              {liveText}
+            </p>
+          )}
           <div className={styles.frame} aria-hidden="true">
             <span className={styles.corner} data-pos="tl" />
             <span className={styles.corner} data-pos="tr" />

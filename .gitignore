@@ -13,3 +13,6 @@ certs/*.pem
 
 # Client/reference material: kept locally, never committed (public repo)
 .references/
+
+# Copied from node_modules at build time (vite.config.ts)
+public/mediapipe/

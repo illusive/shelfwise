@@ -1,8 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { samplePhoto, swipeToConfirm, useEnglish } from './helpers';
+import { samplePhoto, stubDetector, swipeToConfirm, preferEnglish } from './helpers';
 import { snap } from './snap';
 
-test.beforeEach(async ({ page }) => useEnglish(page));
+test.beforeEach(async ({ page }) => {
+  await preferEnglish(page);
+  await stubDetector(page);
+});
 
 test('rep finds a store, captures, reviews, submits and sees results', async ({ page }) => {
   await page.goto('./');
@@ -111,7 +114,8 @@ test('rep finds a store, captures, reviews, submits and sees results', async ({ 
 test('camera permission denial offers the import fallback', async ({ browser }) => {
   const context = await browser.newContext({ permissions: [] });
   const page = await context.newPage();
-  await useEnglish(page);
+  await preferEnglish(page);
+  await stubDetector(page);
   await page.addInitScript(() => {
     navigator.mediaDevices.getUserMedia = () =>
       Promise.reject(new DOMException('Denied', 'NotAllowedError'));

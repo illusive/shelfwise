@@ -150,6 +150,14 @@ export const en = {
     captures: 'Captures',
     remove: 'Remove',
     retake: 'Retake',
+    live: {
+      toggle: 'Live detection',
+      count: (n: number) => `${n} ${n === 1 ? 'drink' : 'drinks'} in view`,
+      none: 'Looking for drinks…',
+      loading: 'Starting live detection…',
+      unavailable: 'Live detection is not available on this device',
+      slow: 'Live detection turned off — this device is too slow',
+    },
   },
   captures: {
     title: 'Daily captures',

@@ -337,3 +337,40 @@
   justify-content: flex-end;
   gap: var(--space-2);
 }
+
+.liveOn {
+  color: var(--color-accent);
+}
+
+.liveChip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(178px + var(--safe-bottom) + var(--space-4));
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: calc(100% - 2 * var(--gutter));
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-pill);
+  background: rgb(16 43 36 / 0.82);
+  color: var(--color-surface);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  z-index: var(--z-camera-ui);
+}
+
+.liveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-round);
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(216 237 148 / 0.25);
+}
+
+.liveChip[data-status='slow'] .liveDot,
+.liveChip[data-status='unavailable'] .liveDot {
+  background: var(--color-sage);
+  box-shadow: none;
+}

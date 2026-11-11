@@ -142,6 +142,14 @@ export const da: Strings = {
     captures: 'Billeder',
     remove: 'Fjern',
     retake: 'Tag om',
+    live: {
+      toggle: 'Live-genkendelse',
+      count: (n: number) => `${n} ${n === 1 ? 'drikkevare' : 'drikkevarer'} i billedet`,
+      none: 'Leder efter drikkevarer…',
+      loading: 'Starter live-genkendelse…',
+      unavailable: 'Live-genkendelse er ikke tilgængelig på denne enhed',
+      slow: 'Live-genkendelse slået fra — enheden er for langsom',
+    },
   },
   captures: {
     title: 'Dagens billeder',

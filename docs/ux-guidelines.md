@@ -16,6 +16,11 @@
   shelf/cooler labels appear after analysis.
 - The last-photo thumbnail opens a sheet of all captures with _Retake_ (replaces that capture,
   keeps its number) and _Remove_ — without leaving the camera.
+- **Live detection (optional):** soft lime corner brackets mark bottles/cans the phone can see and
+  a chip reads "N drikkevarer i billedet". It only helps framing — it is not the analysis and does
+  not affect results. It loads after the camera starts, can be toggled off (remembered), pauses
+  behind sheets, switches itself off on slow devices, and never delays the shutter. Reduced motion:
+  static boxes, no animation.
 - Tips rotate from "Fit the full shelf and its price labels" to "Move along and overlap the
   last photo slightly"; the (i) sheet adds framing, level, overlap and cooler-reflection
   advice.

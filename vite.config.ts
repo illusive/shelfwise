@@ -2,7 +2,26 @@ import { fileURLToPath, URL } from 'node:url';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type PluginOption } from 'vite';
+import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { VitePWA } from 'vite-plugin-pwa';
+
+/** Copies the MediaPipe wasm runtime into public/ so it is served locally (no CDN). */
+function mediapipeAssets(): PluginOption {
+  return {
+    name: 'shelfwise-mediapipe-assets',
+    configResolved() {
+      const from = 'node_modules/@mediapipe/tasks-vision/wasm';
+      const to = 'public/mediapipe/wasm';
+      mkdirSync(to, { recursive: true });
+      for (const file of ['vision_wasm_module_internal.js', 'vision_wasm_module_internal.wasm']) {
+        const src = `${from}/${file}`;
+        const dest = `${to}/${file}`;
+        if (!existsSync(dest) || statSync(dest).size !== statSync(src).size)
+          copyFileSync(src, dest);
+      }
+    },
+  };
+}
 
 // `npm run dev:lan` (mode "lan") serves self-signed HTTPS on the LAN so phones get a
 // secure context for getUserMedia. Docker Compose is the preferred LAN setup.
@@ -10,6 +29,7 @@ export default defineConfig(({ mode }) => {
   // GitHub Pages serves the app under /shelfwise/; Docker and dev serve it at /.
   const base = process.env.BASE_PATH ?? '/';
   const plugins: PluginOption[] = [
+    mediapipeAssets(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -40,6 +60,15 @@ export default defineConfig(({ mode }) => {
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Live detection assets (~19 MB) load lazily and are cached on first use, not precached.
+        globIgnores: ['mediapipe/**', 'models/**'],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/(mediapipe|models)\//.test(url.pathname),
+            handler: 'CacheFirst',
+            options: { cacheName: 'shelfwise-detection', expiration: { maxEntries: 8 } },
+          },
+        ],
         navigateFallback: 'index.html',
       },
     }),
@@ -66,5 +95,6 @@ export default defineConfig(({ mode }) => {
     },
     server: { port: 5173 },
     preview: { port: 4173 },
+    worker: { format: 'es' },
   };
 });

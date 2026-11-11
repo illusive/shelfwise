@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { useEnglish } from './helpers';
+import { preferEnglish } from './helpers';
 import { snap } from './snap';
 
-test.beforeEach(async ({ page }) => useEnglish(page));
+test.beforeEach(async ({ page }) => preferEnglish(page));
 
 test('demo history enables visit-to-visit comparison', async ({ page }) => {
   await page.goto('./');

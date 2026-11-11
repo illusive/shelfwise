@@ -79,6 +79,14 @@ device until a live backend exists.
 6. UI polls IndexedDB while a submitted visit awaits its result (TanStack Query
    `refetchInterval`).
 
+## Live detection (camera, optional)
+
+`features/capture/detection/`: `useLiveDetection` grabs a 480 px frame from the preview at most
+every 125 ms (`InferenceGovernor`), posts it as an `ImageBitmap` to `detector.worker.ts`
+(MediaPipe `ObjectDetector`, CPU delegate), and feeds detections through `updateTracks`
+(IoU matching + EMA smoothing). Nothing is persisted. Tests replace the detector via
+`window.__SHELFWISE_DETECTOR__` (e2e) and cover the pure tracking/throttling logic (unit).
+
 ## Integrations (planned)
 
 - **Live analysis:** a small backend (hosting TBD) receives request + images, calls Microsoft AI

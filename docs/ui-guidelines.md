@@ -23,7 +23,7 @@
 `Button` (primary with lime arrow circle, secondary, ghost, accent pill, danger), `IconButton`,
 `Screen` (page shell + fixed action + bottom nav, entry transition), `TopBar`, `Wordmark`,
 `BottomNav`, `Sheet` (Radix Dialog + spring), `Segmented` (Radix ToggleGroup), `Eyebrow` (mono
-caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `EmptyState`,
+caps + step dashes), `Mono`, `Badge`, `Notice` (white card, tinted icon badge for the tone, title + muted text, optional compact secondary `Button` action), `SectionHeader`, `EmptyState`,
 `Divider`, `BlobImage`, `Toast` (optional action, e.g. _Undo_), `SwipeToConfirm`. Shared feature components: `AppHeader` + `UserDrawer` + `Avatar`, `VisitRow`, `PriceRow`,
 `ShareHero`, `FacingGrid`, `EvidenceCrop`, `PhotoWall`, `Lightbox`, `SubmitBar`.
 
@@ -46,6 +46,14 @@ caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `E
 - **Lightbox**: icon-only actions (previous, retake, remove, next) and a zoom toggle/double-tap
   that shows the photo at full resolution with panning. The camera's captures sheet opens the
   same lightbox.
+
+## Live detection overlay (camera)
+
+`DetectionOverlay`: rounded corner brackets (2.5 px, `--color-accent`, faint lime fill) per tracked
+drink, positioned through the preview's `object-fit: cover` mapping, eased (~140 ms) between
+updates and smoothed by an EMA tracker; boxes fade in/out and dim while briefly lost. Chip above the
+shutter: dark translucent pill with a lime dot. Toggle: scan icon in the camera top bar (lime when
+on). Under reduced motion boxes are static.
 
 ## Navigation (extension following the user's other field app)
 
