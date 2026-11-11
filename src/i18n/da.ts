@@ -44,6 +44,8 @@ export const da: Strings = {
     languages: { da: 'Dansk', en: 'English' },
     demoData: 'Tilføj demohistorik',
     demoDataHint: 'Opretter to analyserede besøg pr. tildelt butik med genererede billeder.',
+    build: (version: string, commit: string, date: string) =>
+      `Version ${version} · build ${commit} · ${date}`,
     demoAdded: 'Demohistorik tilføjet',
   },
   home: {
@@ -146,6 +148,7 @@ export const da: Strings = {
     guide: {
       toggle: 'Overlapguide',
       newSection: 'Ny sektion',
+      first: 'Tag første billede — så hjælper vi med overlap til det næste',
       previous: 'Forrige billede',
       aligned: 'Godt overlap — tag billedet',
       moveRight: 'For meget overlap — flyt længere til højre',

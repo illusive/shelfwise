@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { BUILD } from '@/app/build';
+import { formatBuildDate } from '@/i18n/format';
 import { useCurrentRep, useInvalidate, useReps } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import { t } from '@/i18n/strings';
@@ -97,6 +99,9 @@ export function UserDrawer({
         </Button>
         <p className={shared.muted}>{t.reps.demoDataHint}</p>
       </div>
+      <p className={styles.build} data-testid="app-version">
+        {t.reps.build(BUILD.version, BUILD.commit, formatBuildDate(BUILD.builtAt))}
+      </p>
     </Sheet>
   );
 }

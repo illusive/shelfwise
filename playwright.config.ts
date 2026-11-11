@@ -19,6 +19,7 @@ export default defineConfig({
   projects: [
     {
       name: 'mobile-chrome',
+      testIgnore: /webkit\//,
       use: {
         ...devices['Pixel 7'],
         permissions: ['camera'],
@@ -27,6 +28,12 @@ export default defineConfig({
           args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'],
         },
       },
+    },
+    {
+      // Safari engine with the iPhone 15 profile and WebKit's mock camera (see e2e/webkit/).
+      name: 'iphone-webkit',
+      testMatch: /webkit\/.*\.spec\.ts/,
+      use: { ...devices['iPhone 15'] },
     },
   ],
   webServer: external

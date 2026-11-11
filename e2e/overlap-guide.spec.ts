@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { preferEnglish, stubVision, type AlignmentStub } from './helpers';
+import { expectStripPicture, preferEnglish, stubVision, type AlignmentStub } from './helpers';
 import { snap } from './snap';
 
 /** Answers the motion-permission prompt (iOS-style `DeviceMotionEvent.requestPermission`). */
@@ -44,7 +44,10 @@ async function placements(page: Page) {
 test('aligned: the previous-photo strip and guide confirm the overlap', async ({ page }) => {
   await openCamera(page, 'aligned');
   await expect(page.getByTestId('overlap-guide')).toHaveCount(0);
+  await expect(page.getByTestId('guide-first-hint')).toBeVisible();
   await shoot(page);
+  await expectStripPicture(page);
+  await expect(page.getByTestId('guide-first-hint')).toHaveCount(0);
   const guide = page.getByTestId('overlap-guide');
   await expect(guide).toHaveAttribute('data-status', 'aligned');
   await expect(page.getByTestId('guide-hint')).toHaveText('Good overlap — take the photo');

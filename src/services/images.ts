@@ -50,5 +50,11 @@ export async function captureVideoFrame(video: HTMLVideoElement): Promise<Blob> 
   const ctx = canvas.getContext('2d');
   if (!ctx || canvas.width === 0) throw new Error('Camera frame not ready');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  return canvasToBlob(canvas, PHOTO_MIME, PHOTO_QUALITY);
+  try {
+    return await canvasToBlob(canvas, PHOTO_MIME, PHOTO_QUALITY);
+  } finally {
+    // iOS caps total canvas memory; a 4K canvas left for GC can make later canvases fail.
+    canvas.width = 0;
+    canvas.height = 0;
+  }
 }

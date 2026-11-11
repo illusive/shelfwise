@@ -50,6 +50,8 @@ export const en = {
     demoData: 'Add demo history',
     demoDataHint: 'Creates two analysed visits per assigned store with generated photos.',
     demoAdded: 'Demo history added',
+    build: (version: string, commit: string, date: string) =>
+      `Version ${version} · build ${commit} · ${date}`,
   },
   home: {
     greeting: (name: string) => `Hello, ${name}.`,
@@ -154,6 +156,7 @@ export const en = {
     guide: {
       toggle: 'Overlap guide',
       newSection: 'New section',
+      first: 'Take the first photo — then we will help you overlap the next',
       previous: 'Previous photo',
       aligned: 'Good overlap — take the photo',
       moveRight: 'Too much overlap — move further right',

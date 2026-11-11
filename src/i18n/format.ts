@@ -43,6 +43,11 @@ export function formatTime(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
   return parts(iso, timeZone, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 }
 
+/** e.g. "10 Nov 13:50" — when a build was made. */
+export function formatBuildDate(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
+  return `${parts(iso, timeZone, { day: 'numeric', month: 'short' })} ${formatTime(iso, timeZone)}`;
+}
+
 /** e.g. "Tuesday, 10 Nov" */
 export function formatLongDay(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
   return parts(iso, timeZone, { weekday: 'long', day: 'numeric', month: 'short' });

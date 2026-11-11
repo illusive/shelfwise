@@ -104,3 +104,23 @@ describe('guide logic', () => {
     expect(nextPlacement(b, 11_000, 2, true)).toMatchObject({ run: 4, position: 1 });
   });
 });
+
+describe('strip frames', () => {
+  it('rejects unpainted (black) frames but keeps plain surfaces', async () => {
+    const { isBlank } = await import('../vision/frames');
+    const gray = (v: number) => ({ width: 4, height: 4, data: new Float32Array(16).fill(v) });
+    expect(isBlank(gray(0))).toBe(true);
+    expect(isBlank(gray(0.02))).toBe(true);
+    expect(isBlank(gray(0.45))).toBe(false);
+  });
+
+  it('crops like object-fit: cover', async () => {
+    const { coverCrop } = await import('../vision/frames');
+    // 16:9 landscape video in a portrait view: only the centre band is visible.
+    const crop = coverCrop(3840, 2160, 393, 481);
+    expect(crop.sh).toBe(2160);
+    expect(crop.sw).toBeCloseTo((2160 * 393) / 481, 5);
+    expect(crop.sx).toBeCloseTo((3840 - crop.sw) / 2, 5);
+    expect(crop.sy).toBe(0);
+  });
+});

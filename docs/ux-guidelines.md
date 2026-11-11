@@ -30,6 +30,8 @@
   the strip. _Ny sektion_ starts a new run; a 2-minute pause does too. It never takes photos by
   itself, never delays the shutter, pauses behind sheets and switches itself off on slow devices.
   Reduced motion: static marker and level.
+- Before the first photo of a run (guide on), the tip reads "Tag første billede — så hjælper vi
+  med overlap til det næste", so the rep knows the strip comes after the first shot.
 - **Level:** a small horizon line under the tip turns lime when the phone is level. iOS asks for
   motion access from the tap that opens the camera (or _Vis vaterpas_); if refused or missing,
   the level is simply not shown.
@@ -38,6 +40,8 @@
 - Tips rotate from "Fit the full shelf and its price labels" to "Move along and overlap the
   last photo slightly"; the (i) sheet adds framing, level, overlap and cooler-reflection
   advice.
+- App updates apply themselves (a quick reload) when the app is opened or brought back, but
+  never while the camera is open. The drawer's footer shows the build.
 - The camera stops when the app is hidden and restarts when visible (no background camera).
 - Fallbacks: permission denied, no camera, insecure context (HTTP) and interruptions show a
   plain explanation with _Try again_/_Resume camera_ and _Import photos_ (multi-select).

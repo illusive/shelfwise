@@ -52,7 +52,7 @@ persisted in `localStorage` (`src/i18n/language.ts`). No user-facing literals in
 | Animation             | `motion` (`motion/react`), wrapped in `MotionConfig reducedMotion="user"` |
 | Validation            | `zod` (v3 API)                                                            |
 | Storage               | `dexie` (IndexedDB)                                                       |
-| PWA                   | `vite-plugin-pwa` (generateSW, autoUpdate)                                |
+| PWA                   | `vite-plugin-pwa` (generateSW, prompt + `src/app/pwa.ts` safe auto-apply) |
 | Tests                 | Vitest + Testing Library + fake-indexeddb; Playwright                     |
 
 Avoid adding overlapping libraries; prefer platform APIs.

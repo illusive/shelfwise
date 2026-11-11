@@ -18,10 +18,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "e2e:install": "playwright install chromium",
+    "e2e:install": "playwright install chromium webkit",
     "check": "npm run lint && npm run typecheck && npm run test",
     "certs": "sh scripts/certs.sh",
-    "docker:up": "docker compose up -d --build",
+    "docker:up": "APP_COMMIT=$(git rev-parse --short HEAD) docker compose up -d --build",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f web",
     "docker:certs": "sh scripts/certs.sh && docker compose cp certs/. web:/etc/nginx/certs && docker compose restart web"

@@ -138,6 +138,8 @@ test('rep can be switched from the user drawer', async ({ page }) => {
   await page.getByRole('button', { name: 'User: Alex Holm' }).click();
   await expect(page.getByRole('dialog', { name: 'User' })).toBeVisible();
   await snap(page, '16-user-drawer');
+  // Testers can tell which build they run (installed PWAs update on next open).
+  await expect(page.getByTestId('app-version')).toHaveText(/^Version \d+\.\d+\.\d+ · build \w+ · /);
   await page.getByRole('button', { name: /Mette Larsen/ }).click();
   await expect(page.getByRole('heading', { name: 'Hello, Mette.' })).toBeVisible();
 

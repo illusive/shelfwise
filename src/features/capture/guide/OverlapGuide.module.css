@@ -3,6 +3,9 @@
   inset: 0 0 auto 0;
   height: calc(100% - 178px - var(--safe-bottom));
   pointer-events: none;
+  /* Own layer above the <video> (iOS composites video separately). */
+  z-index: 2;
+  transform: translateZ(0);
 }
 
 .strip {

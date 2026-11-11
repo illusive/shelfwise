@@ -113,8 +113,8 @@ bar sits above the safe-area inset.
 
 ## Screens invented beyond Figma (for review)
 
-1. User drawer (current rep, language, switch rep, _Add demo history_) opened from the top-right
-   avatar.
+1. User drawer (current rep, language, switch rep, _Add demo history_, build stamp in mono at
+   the bottom) opened from the top-right avatar.
 1. Home planned visits: day strip + Figma-style list rows.
 1. Shared store header on all store-related screens.
 1. Report gate sheet when unresolved items remain.

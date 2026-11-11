@@ -1,8 +1,9 @@
+import { execSync } from 'node:child_process';
 import { fileURLToPath, URL } from 'node:url';
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type PluginOption } from 'vite';
-import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
 import { VitePWA } from 'vite-plugin-pwa';
 
 /** Copies the MediaPipe wasm runtime into public/ so it is served locally (no CDN). */
@@ -25,6 +26,28 @@ function mediapipeAssets(): PluginOption {
 
 // `npm run dev:lan` (mode "lan") serves self-signed HTTPS on the LAN so phones get a
 // secure context for getUserMedia. Docker Compose is the preferred LAN setup.
+/** Build stamp shown in the user drawer, so testers can tell which build they run. */
+export function buildDefines() {
+  let commit = process.env.APP_COMMIT || process.env.GITHUB_SHA?.slice(0, 7) || '';
+  if (!commit) {
+    try {
+      commit = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+        .toString()
+        .trim();
+    } catch {
+      commit = 'dev';
+    }
+  }
+  const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+    version: string;
+  };
+  return {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __APP_COMMIT__: JSON.stringify(commit),
+    __APP_BUILT_AT__: JSON.stringify(new Date().toISOString()),
+  };
+}
+
 export default defineConfig(({ mode }) => {
   // GitHub Pages serves the app under /shelfwise/; Docker and dev serve it at /.
   const base = process.env.BASE_PATH ?? '/';
@@ -32,8 +55,9 @@ export default defineConfig(({ mode }) => {
     mediapipeAssets(),
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      // Updates are applied by src/app/pwa.ts only when no capture is in progress.
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['favicon.svg', 'icons/*', 'hero-shelf.svg'],
       manifest: {
         name: 'Shelfwise',
@@ -70,6 +94,7 @@ export default defineConfig(({ mode }) => {
           },
         ],
         navigateFallback: 'index.html',
+        clientsClaim: true,
       },
     }),
   ];
@@ -78,6 +103,7 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     plugins,
+    define: buildDefines(),
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },

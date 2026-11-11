@@ -83,3 +83,33 @@ export async function stubVision(
 export async function stubDetector(page: Page, mode: DetectorStub = 'ok') {
   await stubVision(page, { detector: mode });
 }
+
+/** Asserts the previous-photo strip is shown and holds a picture (not blank/black pixels). */
+export async function expectStripPicture(page: Page) {
+  const canvas = page.getByTestId('overlap-guide').locator('canvas');
+  await expect(canvas).toBeVisible();
+  const stats = await canvas.evaluate((c: HTMLCanvasElement) => {
+    const { data } = c.getContext('2d')!.getImageData(0, 0, c.width, c.height);
+    let max = 0;
+    let opaque = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const v = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      if (v > max) max = v;
+      if (data[i + 3] > 0) opaque += 1;
+    }
+    const box = c.getBoundingClientRect();
+    return {
+      width: c.width,
+      height: c.height,
+      max,
+      opaque,
+      shownWidth: box.width,
+      viewWidth: window.innerWidth,
+    };
+  });
+  expect(stats.width).toBeGreaterThan(10);
+  expect(stats.opaque).toBe(stats.width * stats.height);
+  expect(stats.max).toBeGreaterThan(30);
+  // Pinned left at the 25% target width.
+  expect(stats.shownWidth / stats.viewWidth).toBeCloseTo(0.25, 1);
+}

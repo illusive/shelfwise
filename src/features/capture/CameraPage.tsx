@@ -1,9 +1,10 @@
 import { useNavigate } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { readConfig } from '@/app/config';
 import { useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
+import { useHoldUpdates } from '@/app/updateGate';
 import type { Capture, CapturePlacement } from '@/domain/models';
 import { padSequence, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
@@ -30,7 +31,7 @@ import { LevelIndicator } from './guide/LevelIndicator';
 import { useTilt } from './guide/motion';
 import { guideHint } from './guide/hints';
 import { OverlapGuide } from './guide/OverlapGuide';
-import { grabStrip } from './vision/frames';
+import { grabStrip, releaseCanvas, stripFromPhoto, type Strip } from './vision/frames';
 import { useVision } from './vision/useVision';
 import { Lightbox } from './Lightbox';
 import { useCamera, type CameraStatus } from './useCamera';
@@ -84,26 +85,34 @@ export function CameraPage({
   const target = OVERLAP_TARGET;
   // Right edge of the last photo in the current left-to-right run (guidance only).
   const [strip, setStrip] = useState<HTMLCanvasElement | null>(null);
+  const stripRef = useRef<HTMLCanvasElement | null>(null);
+  const shotRef = useRef(0);
   const runRef = useRef<RunState | null>(null);
   const newRunRef = useRef(false);
   const { setReference } = vision;
+  // An app update never reloads the page while the camera is open.
+  useHoldUpdates();
+  const showStrip = useCallback(
+    (next: Strip | null) => {
+      if (stripRef.current !== next?.display) releaseCanvas(stripRef.current);
+      stripRef.current = next?.display ?? null;
+      setReference(next?.gray ?? null);
+      setStrip(next?.display ?? null);
+    },
+    [setReference],
+  );
+  useEffect(() => () => releaseCanvas(stripRef.current), []);
   useEffect(() => {
     if (!strip) return;
-    const timer = setTimeout(() => {
-      setStrip(null);
-      setReference(null);
-    }, RUN_GAP_MS);
+    const timer = setTimeout(() => showStrip(null), RUN_GAP_MS);
     return () => clearTimeout(timer);
-  }, [strip, setReference]);
+  }, [strip, showStrip]);
   useEffect(() => {
-    if (!guideOn) {
-      setStrip(null);
-      setReference(null);
-    }
-  }, [guideOn, setReference]);
+    if (!guideOn) showStrip(null);
+  }, [guideOn, showStrip]);
   const newSection = () => {
-    setStrip(null);
-    setReference(null);
+    shotRef.current += 1;
+    showStrip(null);
     newRunRef.current = true;
   };
   const [inView, setInView] = useState(0);
@@ -157,11 +166,23 @@ export function CameraPage({
     navigator.vibrate?.(8);
     const replaceId = retakeId;
     // Placement and the guide strip are taken synchronously, from the frame being captured.
-    const placement = replaceId ? null : placeShot(video);
+    const shot = replaceId ? null : placeShot(video);
+    const placement = shot?.placement ?? null;
+    const view = { width: video.clientWidth, height: video.clientHeight };
     if (!replaceId) setPending((p) => p + 1);
     setSaving((n) => n + 1);
     try {
       const blob = await captureVideoFrame(video);
+      // The live frame could not be read for the guide: build the strip from the photo.
+      if (shot?.stripPending) {
+        const id = shotRef.current;
+        void stripFromPhoto(blob, view.width, view.height, target)
+          .then((next) => {
+            if (id === shotRef.current) showStrip(next);
+            else releaseCanvas(next.display);
+          })
+          .catch(() => undefined);
+      }
       if (replaceId) {
         setRetakeId(null);
         await services.captures.replaceCapture(replaceId, { blob, source: 'camera' });
@@ -180,7 +201,9 @@ export function CameraPage({
     }
   };
 
-  const placeShot = (video: HTMLVideoElement): CapturePlacement => {
+  const placeShot = (
+    video: HTMLVideoElement,
+  ): { placement: CapturePlacement; stripPending: boolean } => {
     const previousRun = Math.max(0, ...captures.map((c) => c.placement?.run ?? 0));
     const run = nextPlacement(runRef.current, Date.now(), previousRun, newRunRef.current);
     newRunRef.current = false;
@@ -193,17 +216,17 @@ export function CameraPage({
       a.overlap !== null &&
       a.confidence >= DEFAULT_GUIDE.minConfidence;
     const round = (n: number) => Math.round(n * 1000) / 1000;
+    let stripPending = false;
     if (guideOn) {
+      shotRef.current += 1;
       try {
-        const next = grabStrip(video, target);
-        setReference(next.gray);
-        setStrip(next.display);
+        showStrip(grabStrip(video, target));
       } catch {
-        setStrip(null);
-        setReference(null);
+        showStrip(null);
+        stripPending = true;
       }
     }
-    return {
+    const placement: CapturePlacement = {
       run: run.run,
       position: run.position,
       overlap: measured ? round(Math.min(1, a.overlap!)) : null,
@@ -211,6 +234,7 @@ export function CameraPage({
       rollDeg:
         tilt.status === 'active' && tilt.roll !== null ? Math.round(tilt.roll * 10) / 10 : null,
     };
+    return { placement, stripPending };
   };
 
   const remove = async (capture: Capture) => {
@@ -301,6 +325,10 @@ export function CameraPage({
               aria-live="polite"
             >
               {guideHint(vision.alignment, target)}
+            </p>
+          ) : guideOn ? (
+            <p className={styles.tip} data-testid="guide-first-hint">
+              {t.camera.guide.first}
             </p>
           ) : (
             <p className={styles.tip}>{t.camera.tip[count === 0 ? 0 : 1]}</p>

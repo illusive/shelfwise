@@ -91,7 +91,7 @@ credentials in them.
 
 ```sh
 npm run check          # ESLint + tsc + Vitest (domain, contract, services, formatters)
-npm run e2e:install    # once: Playwright Chromium
+npm run e2e:install    # once: Playwright Chromium + WebKit
 npm run e2e            # builds (mode e2e) and runs the journey with a fake camera
 E2E_BASE_URL=https://localhost:8443 npm run e2e   # same journey against Docker
 ```
@@ -100,7 +100,9 @@ The e2e journey covers the default rep and switching reps, store search, repeate
 reload recovery, submission, results, rep review, report, photo evidence and archive, plus
 camera-permission denial with the import fallback. Camera specs stub the vision worker to cover
 live detection (ok/off/failing/slow) and the overlap guide (aligned, too far, too much overlap,
-no match, slow, sensors denied) — capture must work in every case. Real-device validation (iPhone/Android)
+no match, slow, sensors denied) — capture must work in every case. `e2e/webkit/` runs the
+overlap strip in WebKit with the iPhone 15 profile (persistent context, since WebKit's ephemeral
+test contexts can't store Blobs in IndexedDB). Real-device validation (iPhone/Android)
 is manual — see `docs/ux-guidelines.md`.
 
 ## Build
@@ -110,4 +112,6 @@ npm run build && npm run preview   # http://localhost:4173
 ```
 
 Output is a static PWA in `dist/` (service worker precaches the app shell; data stays in
-IndexedDB on the device).
+IndexedDB on the device). Installed apps pick up a new deploy the next time they are opened or
+brought to the foreground (not while the camera is open); the user drawer shows the build
+(`Version · build <commit>`). Docker builds are stamped via `npm run docker:up`.
