@@ -1,0 +1,240 @@
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.heroHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.heroTitle {
+  font-size: var(--font-size-17);
+  font-weight: var(--font-weight-semibold);
+}
+
+.client {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+}
+
+.heroValueRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.heroValue {
+  font-size: var(--font-size-86);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+}
+
+.delta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+}
+
+.deltaLabel {
+  font-size: var(--font-size-11);
+  color: var(--color-text-muted);
+}
+
+.facingsOf {
+  font-size: var(--font-size-12);
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  gap: 4px;
+}
+
+.cell {
+  aspect-ratio: 1.5 / 1;
+  border-radius: var(--radius-xs);
+  background: var(--color-line-soft);
+}
+
+.cell[data-kind='client'] {
+  background: var(--color-primary);
+}
+
+.cell[data-kind='competitor'] {
+  background: var(--color-sage);
+}
+
+.cell[data-kind='unknown'] {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-line-soft) 0 3px,
+    var(--color-surface-muted) 3px 6px
+  );
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.legendItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.legendLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-10);
+  color: var(--color-text-muted);
+}
+
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  background: var(--color-line-soft);
+}
+
+.swatch[data-kind='client'] {
+  background: var(--color-primary);
+}
+
+.swatch[data-kind='competitor'] {
+  background: var(--color-sage);
+}
+
+.legendValue {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-13);
+}
+
+.qualifiers {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  font-size: var(--font-size-11);
+}
+
+.unavailable {
+  padding: var(--space-6) 0;
+}
+
+.unavailableTitle {
+  font-size: var(--font-size-36);
+  letter-spacing: var(--tracking-display);
+  color: var(--color-text-muted);
+}
+
+.reason {
+  font-size: var(--font-size-12);
+  color: var(--color-text-muted);
+}
+
+.toggle {
+  border: 0;
+  background: none;
+  padding: var(--space-2) 0;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-12);
+  min-height: var(--tap-min);
+}
+
+.categories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.categoryRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-12);
+}
+
+.bar {
+  height: 6px;
+  border-radius: var(--radius-round);
+  background: var(--color-surface-muted);
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.categoryCount {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-10);
+}
+
+.crop {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-deep);
+  background-repeat: no-repeat;
+}
+
+/* Price lists */
+.priceHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-10);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.priceName {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+}
+
+.priceSub {
+  font-size: var(--font-size-11);
+  color: var(--color-text-muted);
+}
+
+.priceValue {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-17);
+  white-space: nowrap;
+  text-align: right;
+}
+
+.priceDetail {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-10);
+  color: var(--color-text-muted);
+  text-align: right;
+}

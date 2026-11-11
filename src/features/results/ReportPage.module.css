@@ -1,0 +1,68 @@
+.warnings {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--font-size-12);
+  color: var(--color-warning-text);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-12);
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-1);
+  text-align: right;
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.table th:first-child {
+  text-align: left;
+}
+
+.table thead th {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-9);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.table td {
+  font-family: var(--font-mono);
+}
+
+.groupLabel {
+  letter-spacing: var(--tracking-mono-caps);
+}
+
+.photos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.photo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.photoImage {
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+}
+
+.photoLabel {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-10);
+}
+
+.photoIssue {
+  font-size: var(--font-size-10);
+  color: var(--color-warning-text);
+}

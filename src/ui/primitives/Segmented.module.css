@@ -1,0 +1,32 @@
+.root {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 3px;
+  gap: 3px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.item {
+  min-height: 36px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  transition: background-color var(--duration-base) var(--ease-out), color var(--duration-base);
+}
+
+.item[data-state='on'] {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.hint {
+  margin-left: var(--space-1);
+  font-family: var(--font-mono);
+  font-weight: 400;
+  opacity: 0.8;
+}

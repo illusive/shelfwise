@@ -232,7 +232,7 @@ export function generateMockAnalysis(
     for (const b of blocks) {
       for (let c = b.startCol; c <= b.endCol; c++) {
         const r = random();
-        positionState.set(`${b.row}:${c}`, r < 0.06 ? 'unknown' : r < 0.1 ? 'candidate' : 'clear');
+        positionState.set(`${b.row}:${c}`, r < 0.03 ? 'unknown' : r < 0.07 ? 'candidate' : 'clear');
       }
     }
 
@@ -258,7 +258,7 @@ export function generateMockAnalysis(
         for (let c = Math.max(b.startCol, startCol); c <= Math.min(b.endCol, endCol); c++) {
           const local = c - startCol;
           const state = positionState.get(`${b.row}:${c}`) ?? 'clear';
-          const inGlare = glare && local >= 2 && local <= 4 && b.row <= 2;
+          const inGlare = glare && local >= 2 && local <= 3 && b.row <= 1;
           let match: ProductMatch;
           if (inGlare || state === 'unknown') {
             match = { status: 'unknown', productId: null, brandId: null, category: random() < 0.5 ? b.product.category : null, providerScore: null };

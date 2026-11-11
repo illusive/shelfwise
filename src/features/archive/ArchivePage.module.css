@@ -1,0 +1,30 @@
+.filters {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.filters select {
+  max-width: 220px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--tap-min);
+}
+
+.groupTitle {
+  font-size: var(--font-size-21);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.02em;
+}

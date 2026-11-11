@@ -16,6 +16,7 @@ export type PriceBasis = 'ex-deposit' | 'incl-deposit' | 'as-displayed';
 
 export interface NormalisedPrice {
   labelId: string;
+  physicalLabelId: string | null;
   imageId: string;
   region: Region | null;
   locationId: string | null;
@@ -111,6 +112,7 @@ export function normalisePrice(
 
   return {
     labelId: label.labelId,
+    physicalLabelId: label.physicalLabelId,
     imageId: label.imageId,
     region: label.region,
     locationId: label.locationId,

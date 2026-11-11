@@ -1,0 +1,125 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out),
+    opacity var(--duration-base);
+  user-select: none;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lg {
+  min-height: 56px;
+  font-size: var(--font-size-15);
+  border-radius: var(--radius-md);
+}
+
+.block {
+  display: flex;
+  width: 100%;
+}
+
+.withArrow {
+  justify-content: space-between;
+  padding-right: var(--space-2);
+  padding-left: var(--space-4);
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon {
+  display: inline-flex;
+}
+
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-round);
+  background: var(--color-accent);
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.primary {
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+
+.secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border-color: var(--color-line);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-primary);
+  padding: 0 var(--space-2);
+}
+
+.accent {
+  background: var(--color-accent);
+  color: var(--color-primary);
+  border-radius: var(--radius-pill);
+}
+
+.danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: 0;
+  border-radius: var(--radius-round);
+  background: transparent;
+  color: inherit;
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.iconButton:active {
+  transform: scale(0.94);
+}
+
+.tone-light {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+.tone-dark {
+  background: rgb(16 43 36 / 0.6);
+  color: var(--color-surface);
+}
+
+.tone-plain {
+  background: transparent;
+}
