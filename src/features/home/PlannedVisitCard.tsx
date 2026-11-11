@@ -55,12 +55,7 @@ export function PlannedVisitCard({
           </Badge>
         ) : status === 'in-progress' ? (
           <Badge tone="warning">{t.home.inProgress}</Badge>
-        ) : daysSince === null ? (
-          <>
-            <span className={styles.big}>{t.home.newStore}</span>
-            <span className={styles.label}>{t.home.firstVisit}</span>
-          </>
-        ) : (
+        ) : daysSince === null ? null : (
           <>
             <span className={styles.big}>{daysSince}</span>
             <span className={styles.label}>{t.home.daysSinceLabel(daysSince)}</span>

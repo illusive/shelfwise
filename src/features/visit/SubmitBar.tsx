@@ -28,7 +28,11 @@ export function SubmitBar({ photoCount, submitting, onSubmit, onDiscard }: Submi
         type="button"
         className={styles.discard}
         aria-label={t.store.discard}
-        onClick={() => setConfirming(true)}
+        onClick={() => {
+          // Nothing captured yet: nothing to lose, so discard without asking.
+          if (photoCount === 0) void onDiscard();
+          else setConfirming(true);
+        }}
       >
         <CloseIcon size={22} />
       </button>

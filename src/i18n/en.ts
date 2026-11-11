@@ -67,8 +67,6 @@ export const en = {
     plannedCount: (n: number) => plural(n, 'visit', 'visits'),
     noPlanned: 'No visits planned for this day.',
     daysSince: (n: number) => plural(n, 'day', 'days'),
-    newStore: 'New',
-    firstVisit: 'first visit',
     daysSinceLabel: (n: number): string => (n === 1 ? 'day since visit' : 'days since visit'),
     stop: (n: number) => `Stop ${n}`,
     visited: 'Visited',

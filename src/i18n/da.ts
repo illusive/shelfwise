@@ -62,8 +62,6 @@ export const da: Strings = {
     plannedCount: (n: number) => plural(n, 'besøg', 'besøg'),
     noPlanned: 'Ingen besøg planlagt denne dag.',
     daysSince: (n: number) => plural(n, 'dag', 'dage'),
-    newStore: 'Ny',
-    firstVisit: 'første besøg',
     daysSinceLabel: (n: number) => (n === 1 ? 'dag siden besøg' : 'dage siden besøg'),
     stop: (n: number) => `Stop ${n}`,
     visited: 'Besøgt',

@@ -34,8 +34,8 @@ caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `E
   on every store-related screen, followed by a `PageTitle`.
 - **Planned visits on Home** use the original Figma list-row language (like "Recent visits"):
   round chain logo with a small route-number badge, store name, street (+ floor) and mono
-  postcode/city line, a right-aligned value (days since the last visit, or "Ny/New — first
-  visit"; visited/in-progress as badges) and a chevron, separated by dividers. Visit tags are kept
+  postcode/city line, a right-aligned value (days since the last visit, empty for stores never visited; visited/in-progress as
+  badges) and a chevron, separated by dividers. Visit tags are kept
   in the data but not shown. **DayStrip**: Monday–Sunday, selected day filled, today ringed, dot
   when visits are planned. The heading is a standard `SectionHeader` with the visit count.
 - **Store logos** (`StoreLogo`, metadata in `features/shared/storeLogos.ts`): the logo fills the

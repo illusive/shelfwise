@@ -53,7 +53,8 @@ One tap opens the visit. History is in the archive and on each store page.
 - Tapping a photo opens it full screen (icons: previous, retake, remove, next; zoom to full
   resolution by button or double-tap). The camera's captures sheet uses the same lightbox.
 - Analysis starts by swiping the bar to the end (no accidental taps); keyboard and screen
-  readers can activate it directly. The round × discards the draft after a confirmation sheet.
+  readers can activate it directly. The round × discards the draft after a confirmation sheet; an empty draft (no photos) is
+  discarded immediately without asking.
 
 ## Language
 

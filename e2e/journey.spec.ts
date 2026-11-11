@@ -179,3 +179,14 @@ test("today's planned visits lead straight into the visit", async ({ page }) => 
   await page.goto('./');
   await expect(page.getByTestId('planned-visit').first()).toContainText('In progress');
 });
+
+test('an empty draft is discarded without confirmation', async ({ page }) => {
+  await page.goto('stores');
+  await page.getByRole('link', { name: /Lidl Valby/ }).click();
+  await page.getByRole('button', { name: 'Start visit' }).click();
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByText('Visit in progress')).toBeVisible();
+  await page.getByRole('button', { name: 'Discard draft' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByText('No visit in progress')).toBeVisible();
+});
