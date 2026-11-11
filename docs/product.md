@@ -18,7 +18,8 @@ archive.
 
 Out of scope for now: live recognition (blocked), out-of-stock/must-stock and price
 compliance (deferred; data model ready), export/manager reporting, catalogue/store admin,
-offline sync, ERP/CRM, native apps, route planning, Danish UI (strings centralised).
+offline sync, ERP/CRM, native apps, route planning, further languages (UI is Danish by default
+with English selectable).
 
 ## Terminology
 

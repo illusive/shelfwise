@@ -4,6 +4,7 @@ import { MotionConfig } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { createServices, type Services } from '@/services';
 import { ToastProvider } from '@/ui/primitives/Toast';
+import { useLanguage } from '@/i18n/language';
 import { readConfig } from './config';
 import { router } from './router';
 import { ServicesProvider } from './services-context';
@@ -18,6 +19,11 @@ const queryClient = new QueryClient({
 export function App() {
   const [services, setServices] = useState<Services | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const language = useLanguage();
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,7 +55,8 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <MotionConfig reducedMotion="user">
           <ToastProvider>
-            <RouterProvider router={router} />
+            {/* Remount on language change so every screen re-reads its strings. */}
+            <RouterProvider key={language} router={router} />
           </ToastProvider>
         </MotionConfig>
       </QueryClientProvider>

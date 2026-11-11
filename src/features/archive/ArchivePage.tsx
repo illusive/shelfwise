@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCurrentRep, useVisitSummaries } from '@/app/data';
-import { localDateKey } from '@/i18n/format';
+import { localDateKey, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import type { VisitSummary } from '@/services/visitSummaries';
 import { ChevronDownIcon, ChevronRightIcon, SearchIcon } from '@/ui/icons';
@@ -72,14 +72,14 @@ export function ArchivePage() {
             <option value="all">{t.archive.allStores}</option>
             {storeOptions.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name} · {s.address.street}
+                {s.name} · {formatAddress(s.address)}
               </option>
             ))}
           </select>
           <ChevronDownIcon size={16} className={shared.selectIcon} />
         </label>
         <label className={shared.selectWrap}>
-          <span className="visually-hidden">Period</span>
+          <span className="visually-hidden">{t.archive.periodLabel}</span>
           <select
             className={shared.select}
             value={period}
@@ -112,7 +112,7 @@ export function ArchivePage() {
                 <ChevronRightIcon size={18} className={shared.chevron} />
               </Link>
               <p className={shared.muted}>
-                {store.address.street} · {t.archive.visitsInPeriod(items.length)}
+                {formatAddress(store.address)} · {t.archive.visitsInPeriod(items.length)}
               </p>
               <ul className={shared.list}>
                 {items.map((s) => (

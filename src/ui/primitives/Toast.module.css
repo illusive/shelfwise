@@ -5,16 +5,27 @@
   top: calc(var(--safe-top) + var(--space-4));
   display: flex;
   justify-content: center;
+  padding: 0 var(--gutter);
   pointer-events: none;
   z-index: var(--z-toast);
 }
 
 .toast {
-  padding: var(--space-2) var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: calc(var(--app-max-width) - 2 * var(--gutter));
+  min-height: 40px;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
-  font-size: var(--font-size-12);
+  font-size: var(--font-size-13);
   font-weight: var(--font-weight-semibold);
   box-shadow: var(--shadow-float);
+  pointer-events: auto;
+}
+
+.toast:not(:has(.action)) {
+  padding-right: var(--space-4);
 }
 
 .default {
@@ -25,4 +36,15 @@
 .danger {
   background: var(--color-danger);
   color: var(--color-surface);
+}
+
+.action {
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-primary);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
 }

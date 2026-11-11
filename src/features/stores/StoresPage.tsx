@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useCurrentRep, useStores, useVisitSummaries } from '@/app/data';
 import type { Store } from '@/domain/models';
-import { formatRelativeDay } from '@/i18n/format';
+import { formatRelativeDay, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { ChevronRightIcon, SearchIcon } from '@/ui/icons';
 import { Screen } from '@/ui/primitives/Screen';
@@ -48,11 +48,8 @@ export function StoresPage() {
               </span>
               <span className={styles.storeBody}>
                 <span className={styles.storeName}>{store.name}</span>
-                <span className={styles.storeAddress}>
-                  {store.address.street} · {store.address.postcode} {store.address.city}
-                </span>
+                <span className={styles.storeAddress}>{formatAddress(store.address)}</span>
                 <span className={styles.storeMeta}>
-                  {t.stores.customerNo(store.customerNumber)} ·{' '}
                   {drafts.has(store.id)
                     ? t.store.inProgress
                     : last

@@ -1,26 +1,24 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import { useVisitDetail } from '@/app/data';
-import type { Capture } from '@/domain/models';
-import { formatLongDay, formatTime, padSequence } from '@/i18n/format';
+import { formatAddress, formatLongDay } from '@/i18n/format';
 import { t } from '@/i18n/strings';
-import { CameraIcon, CloseIcon, PlusIcon, RefreshIcon, TrashIcon } from '@/ui/icons';
-import { BlobImage } from '@/ui/primitives/BlobImage';
-import { Button, IconButton } from '@/ui/primitives/Button';
+import { CameraIcon, PlusIcon } from '@/ui/icons';
+import { Button } from '@/ui/primitives/Button';
 import { Screen, TopBar } from '@/ui/primitives/Screen';
-import { Sheet } from '@/ui/primitives/Sheet';
 import { EmptyState, Eyebrow, Mono, Notice, SectionHeader } from '@/ui/primitives/Text';
 import shared from '../shared/shared.module.css';
+import { SubmitBar } from '../visit/SubmitBar';
 import { useVisitActions } from '../visit/useVisitActions';
 import { ImportPhotos } from './ImportPhotos';
-import styles from './CapturesPage.module.css';
+import { Lightbox } from './Lightbox';
+import { PhotoWall } from './PhotoWall';
 
 export function CapturesPage({ visitId }: { visitId: string }) {
   const navigate = useNavigate();
   const { data: detail, isPending } = useVisitDetail(visitId);
   const actions = useVisitActions();
-  const [inspect, setInspect] = useState<Capture | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   if (isPending) return null;
   if (!detail)
@@ -39,15 +37,12 @@ export function CapturesPage({ visitId }: { visitId: string }) {
     <Screen
       action={
         editable ? (
-          <Button
-            block
-            size="lg"
-            withArrow
-            disabled={captures.length === 0 || actions.submitting}
-            onClick={() => void actions.submit(visitId)}
-          >
-            {t.store.analyse(captures.length)}
-          </Button>
+          <SubmitBar
+            photoCount={captures.length}
+            submitting={actions.submitting}
+            onSubmit={() => actions.submit(visitId)}
+            onDiscard={() => actions.discardDraft(visitId, store.id)}
+          />
         ) : undefined
       }
     >
@@ -60,7 +55,7 @@ export function CapturesPage({ visitId }: { visitId: string }) {
         <h1 className={shared.displayTitle}>{t.captures.heading}</h1>
         <Mono>{formatLongDay(visit.createdAt, tz).toUpperCase()}</Mono>
         <p className={shared.muted} data-testid="captures-store">
-          {store.name} · {store.address.street}
+          {store.name} · {formatAddress(store.address)}
         </p>
       </div>
 
@@ -86,49 +81,13 @@ export function CapturesPage({ visitId }: { visitId: string }) {
             {t.captures.emptyHint}
           </EmptyState>
         ) : (
-          <ul className={styles.grid}>
-            <AnimatePresence initial={false}>
-              {captures.map((c) => (
-                <motion.li
-                  key={c.id}
-                  layout
-                  className={styles.item}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <button
-                    type="button"
-                    className={styles.imageButton}
-                    onClick={() => setInspect(c)}
-                  >
-                    <BlobImage
-                      blobId={c.thumbBlobId}
-                      fallbackBlobId={c.blobId}
-                      alt={t.store.capture(padSequence(c.sequence))}
-                      className={styles.image}
-                    />
-                  </button>
-                  {editable && (
-                    <IconButton
-                      label={t.captures.remove(padSequence(c.sequence))}
-                      tone="light"
-                      className={styles.remove}
-                      onClick={() => void actions.removeCapture(c.id)}
-                    >
-                      <CloseIcon size={18} />
-                    </IconButton>
-                  )}
-                  <span className={styles.label}>{t.store.capture(padSequence(c.sequence))}</span>
-                  <Mono>
-                    {formatTime(c.capturedAt, tz)}
-                    {c.source === 'import' ? ` · ${t.captures.imported}` : ''}
-                  </Mono>
-                </motion.li>
-              ))}
-            </AnimatePresence>
-          </ul>
+          <PhotoWall
+            captures={captures}
+            timeZone={tz}
+            editable={editable}
+            onOpen={(c) => setOpenId(c.id)}
+            onRemove={(c) => void actions.removeCapture(c.id)}
+          />
         )}
         {editable && (
           <>
@@ -140,48 +99,23 @@ export function CapturesPage({ visitId }: { visitId: string }) {
         )}
       </section>
 
-      <Sheet
-        open={inspect !== null}
-        onOpenChange={(open) => !open && setInspect(null)}
-        title={inspect ? t.store.capture(padSequence(inspect.sequence)) : ''}
-      >
-        {inspect && (
-          <>
-            <BlobImage
-              blobId={inspect.blobId}
-              alt={t.store.capture(padSequence(inspect.sequence))}
-              className={styles.full}
-              fit="contain"
-            />
-            {editable && (
-              <div className={shared.spread}>
-                <Button
-                  variant="secondary"
-                  icon={<RefreshIcon size={18} />}
-                  onClick={() =>
-                    void navigate({
-                      to: '/visits/$visitId/retake/$captureId',
-                      params: { visitId, captureId: inspect.id },
-                    })
-                  }
-                >
-                  {t.camera.retake}
-                </Button>
-                <Button
-                  variant="danger"
-                  icon={<TrashIcon size={18} />}
-                  onClick={() => {
-                    void actions.removeCapture(inspect.id);
-                    setInspect(null);
-                  }}
-                >
-                  {t.camera.remove}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </Sheet>
+      <Lightbox
+        captures={captures}
+        openId={openId}
+        timeZone={tz}
+        editable={editable}
+        onOpenChange={setOpenId}
+        onRetake={(c) =>
+          void navigate({
+            to: '/visits/$visitId/retake/$captureId',
+            params: { visitId, captureId: c.id },
+          })
+        }
+        onRemove={(c) => {
+          setOpenId(null);
+          void actions.removeCapture(c.id);
+        }}
+      />
     </Screen>
   );
 }

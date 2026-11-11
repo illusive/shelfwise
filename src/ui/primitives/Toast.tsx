@@ -2,22 +2,53 @@ import { AnimatePresence, motion } from 'motion/react';
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import styles from './Toast.module.css';
 
-interface ToastMessage {
-  id: number;
-  text: string;
-  tone: 'default' | 'danger';
+export interface ToastOptions {
+  tone?: 'default' | 'danger';
+  /** e.g. Undo. Toasts with an action stay up longer. */
+  action?: { label: string; onClick: () => void };
+  /** Called when the toast goes away without its action being used. */
+  onExpire?: () => void;
 }
 
-const ToastContext = createContext<(text: string, tone?: ToastMessage['tone']) => void>(() => {});
+interface ToastMessage extends ToastOptions {
+  id: number;
+  text: string;
+}
+
+type ShowToast = (text: string, toneOrOptions?: ToastOptions['tone'] | ToastOptions) => void;
+
+const ToastContext = createContext<ShowToast>(() => {});
+
+export const TOAST_MS = 2200;
+export const ACTION_TOAST_MS = 6000;
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState<ToastMessage | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const show = useCallback((text: string, tone: ToastMessage['tone'] = 'default') => {
+  const active = useRef<ToastMessage | null>(null);
+
+  const dismiss = useCallback((expired: boolean) => {
     clearTimeout(timer.current);
-    setMessage({ id: Date.now(), text, tone });
-    timer.current = setTimeout(() => setMessage(null), 2200);
+    const current = active.current;
+    active.current = null;
+    setMessage(null);
+    if (expired) current?.onExpire?.();
   }, []);
+
+  const show = useCallback<ShowToast>(
+    (text, toneOrOptions) => {
+      const options =
+        typeof toneOrOptions === 'string' ? { tone: toneOrOptions } : (toneOrOptions ?? {});
+      // A new toast replaces the current one; the replaced toast counts as expired.
+      if (active.current) dismiss(true);
+      const next = { id: Date.now(), text, ...options };
+      active.current = next;
+      setMessage(next);
+      timer.current = setTimeout(() => dismiss(true), options.action ? ACTION_TOAST_MS : TOAST_MS);
+    },
+    [dismiss],
+  );
+
   return (
     <ToastContext.Provider value={show}>
       {children}
@@ -26,13 +57,25 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           {message && (
             <motion.div
               key={message.id}
-              className={`${styles.toast} ${styles[message.tone]}`}
+              className={`${styles.toast} ${styles[message.tone ?? 'default']}`}
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.16 }}
             >
-              {message.text}
+              <span>{message.text}</span>
+              {message.action && (
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => {
+                    message.action!.onClick();
+                    dismiss(false);
+                  }}
+                >
+                  {message.action.label}
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

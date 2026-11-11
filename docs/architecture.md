@@ -51,6 +51,9 @@ The catalogue (`services/seed/catalogue.ts`, version `dk-seed-2026.11`) is code,
 corrections, so the calculation method stays explicit (`SOS_METHOD_VERSION`) and results stay
 export-friendly (flat, versioned observations).
 
+Photo removal keeps the image blobs until the _Undo_ window ends (`purgeRemoved`); start-up
+runs `sweepOrphanBlobs` for anything left behind.
+
 Storage limits: browsers may evict IndexedDB under pressure; the app requests persistent
 storage (`navigator.storage.persist()`) but this is not guaranteed. Photos are stored at full
 camera resolution (~1–4 MB each). This is not an offline-sync system: data does not leave the

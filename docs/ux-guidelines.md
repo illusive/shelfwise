@@ -26,7 +26,8 @@
 
 ## Navigation
 
-Bottom navigation on Home, Stores and Archive. Visit screens use a top bar with back. Flow:
+Floating bottom navigation on Home, Stores and Archive (see `docs/ui-guidelines.md`). Visit
+screens use a top bar with back. Flow:
 Store → Camera → Daily captures → Processing → Results → Report → Photo / Quick review. A draft
 is resumable from Home ("Resume visit · store") and the store page.
 
@@ -34,9 +35,22 @@ is resumable from Home ("Resume visit · store") and the store page.
 
 Every list/screen covers loading (blank, to avoid flashes on fast local reads), empty
 (dashed empty state with guidance), partial (qualified measures, unusable photos), success and
-failure. Toasts are reserved for removals and failures. Processing shows only states the system
+failure. Toasts are reserved for removals (with _Undo_ for about 6 s) and failures. Processing shows only states the system
 can measure: job created, _n of N photos ready_, analysing (indeterminate) — never fake
 percentages.
+
+## Draft actions
+
+- Photos are removed directly from the photo wall (× on each photo); the toast offers _Undo_,
+  which restores the photo with its number. Images are deleted only when the toast expires
+  (left-over images are swept at the next start).
+- Tapping a photo opens it full screen with _Retake_, _Remove_ and back.
+- Analysis starts by swiping the bar to the end (no accidental taps); keyboard and screen
+  readers can activate it directly. The round × discards the draft after a confirmation sheet.
+
+## Language
+
+Danish by default; English can be chosen in the user drawer and is remembered on the device.
 
 ## Recovery
 

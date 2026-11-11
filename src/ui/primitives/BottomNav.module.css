@@ -1,41 +1,126 @@
+/* Floating, inset bar of connected blobs; see docs/ui-guidelines.md (navigation). */
 .nav {
+  --side: 54px;
+  --centre: 66px;
+  --gap: 12px;
+
   position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: var(--app-max-width);
-  height: calc(var(--nav-height) + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  background: var(--color-paper);
-  border-top: 1px solid var(--color-line-soft);
+  left: 0;
+  right: 0;
+  bottom: calc(var(--safe-bottom) + var(--space-3));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
   z-index: var(--z-nav);
 }
 
-.item {
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.bar {
   position: relative;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: var(--gap);
+  pointer-events: auto;
+  filter: drop-shadow(0 8px 18px rgb(16 43 36 / 0.28));
+}
+
+/* Shapes merged by the SVG goo filter; icons/links sit above, unfiltered. */
+.goo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  filter: url('#shelfwise-goo');
+}
+
+.blob,
+.blobCentre,
+.neck {
+  background: var(--color-primary);
+}
+
+.blob {
+  width: var(--side);
+  height: var(--side);
+  border-radius: var(--radius-round);
+  flex-shrink: 0;
+}
+
+.blobCentre {
+  width: var(--centre);
+  height: var(--centre);
+  border-radius: var(--radius-round);
+  flex-shrink: 0;
+}
+
+.neck {
+  position: absolute;
+  left: calc(var(--side) / 2);
+  right: calc(var(--side) / 2);
+  top: 50%;
+  height: 20px;
+  transform: translateY(-50%);
+}
+
+.item,
+.itemCentre {
+  position: relative;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  font-size: var(--font-size-10);
-  color: var(--color-text-muted);
-  min-height: var(--tap-min);
+  flex-shrink: 0;
+  border-radius: var(--radius-round);
+  color: var(--color-surface);
+  transition: color var(--duration-base) var(--ease-out);
 }
 
-.item[data-status='active'] {
+.item {
+  width: var(--side);
+  height: var(--side);
+}
+
+.itemCentre {
+  width: var(--centre);
+  height: var(--centre);
+}
+
+.item[data-active='true'],
+.itemCentre[data-active='true'] {
   color: var(--color-primary);
-  font-weight: var(--font-weight-bold);
 }
 
-.item[data-status='active']::before {
-  content: '';
+.item:focus-visible,
+.itemCentre:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.icon {
+  position: relative;
+  z-index: 1;
+}
+
+.indicator,
+.indicatorCentre {
   position: absolute;
-  top: -1px;
-  width: 32px;
-  height: 2px;
-  background: var(--color-primary);
+  border-radius: var(--radius-round);
+  background: var(--color-surface);
+}
+
+.indicator {
+  inset: 6px;
+}
+
+/* Centre: white disc with a dark-green inner ring. */
+.indicatorCentre {
+  inset: 7px;
+  box-shadow:
+    inset 0 0 0 3px var(--color-surface),
+    inset 0 0 0 5px var(--color-primary);
 }

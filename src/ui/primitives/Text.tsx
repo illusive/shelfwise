@@ -14,7 +14,7 @@ export function Eyebrow({
     <div className={styles.eyebrowRow}>
       <span className={styles.eyebrow}>{children}</span>
       {steps && (
-        <span className={styles.steps} aria-label={`Step ${steps.current} of ${steps.total}`}>
+        <span className={styles.steps} aria-label={t.common.step(steps.current, steps.total)}>
           {Array.from({ length: steps.total }, (_, i) => (
             <span key={i} className={styles.step} data-active={i < steps.current} />
           ))}

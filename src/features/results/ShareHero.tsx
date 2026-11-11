@@ -4,11 +4,14 @@ import type { ScopeMetrics, VisitMetrics } from '@/domain/metrics';
 import type { SosScope } from '@/domain/sos';
 import { formatPct, formatPp } from '@/i18n/format';
 import { t } from '@/i18n/strings';
-import { InfoIcon } from '@/ui/icons';
+import { ChevronDownIcon, InfoIcon } from '@/ui/icons';
 import { Segmented } from '@/ui/primitives/Segmented';
 import { Badge } from '@/ui/primitives/Text';
 import { FacingGrid } from './FacingGrid';
 import styles from './results.module.css';
+import { useReveal } from './useReveal';
+
+const SCOPES: SosScope[] = ['overall', 'shelf', 'cooler'];
 
 interface LegendItem {
   kind: 'client' | 'competitor' | 'unknown';
@@ -43,12 +46,12 @@ export function ShareHero({
   previous: VisitMetrics | null;
   clientName: string;
 }) {
-  const initial: SosScope = metrics.scopes.shelf.sos.sharePct !== null ? 'shelf' : 'cooler';
-  const [scope, setScope] = useState<SosScope>(initial);
+  const [scope, setScope] = useState<SosScope>('overall');
   const [showCategories, setShowCategories] = useState(false);
   const current = metrics.scopes[scope];
   const { sos } = current;
   const comparison = compareSos(metrics, previous, scope);
+  const progress = useReveal(scope);
 
   return (
     <section className={styles.hero} aria-labelledby="sos-title">
@@ -62,7 +65,7 @@ export function ShareHero({
         label={t.results.sos}
         value={scope}
         onChange={setScope}
-        options={(['shelf', 'cooler', 'overall'] as const).map((s) => ({
+        options={SCOPES.map((s) => ({
           value: s,
           label: t.results.scope[s],
           hint: metrics.scopes[s].sos.sharePct === null ? '—' : undefined,
@@ -78,7 +81,7 @@ export function ShareHero({
         <>
           <div className={styles.heroValueRow}>
             <p className={styles.heroValue} data-testid="sos-value" data-scope={scope}>
-              {formatPct(sos.sharePct)}
+              {formatPct(sos.sharePct * progress)}
             </p>
             <div className={styles.delta}>
               {comparison.deltaPp !== null && (
@@ -98,7 +101,7 @@ export function ShareHero({
           <p className={styles.facingsOf}>
             {t.results.facingsOf(sos.counts.client, sos.counts.eligible)}
           </p>
-          <FacingGrid counts={sos.counts} />
+          <FacingGrid counts={sos.counts} progress={progress} />
           <ul className={styles.legend}>
             {legend(current).map((item) => (
               <li key={item.label} className={styles.legendItem}>
@@ -135,7 +138,11 @@ export function ShareHero({
                 aria-expanded={showCategories}
                 onClick={() => setShowCategories((v) => !v)}
               >
-                {t.results.byCategory} {showCategories ? '−' : '+'}
+                <span>{t.results.byCategory}</span>
+                <span className={styles.toggleMeta}>
+                  {t.results.categoriesCount(current.categories.length)}
+                  <ChevronDownIcon size={18} className={styles.chevron} />
+                </span>
               </button>
               {showCategories && (
                 <ul className={styles.categories}>

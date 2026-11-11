@@ -36,8 +36,11 @@ owns and may import. Keep business rules in `src/domain`; keep data access and o
 
 ## Strings and formats
 
-All copy lives in `src/i18n/strings.ts`; formatters in `src/i18n/format.ts` (DKK/decimals via
-`da-DK`, dates via `en-GB` in the store time zone). No user-facing literals in components.
+All copy lives in `src/i18n/da.ts` and `src/i18n/en.ts` (same shape, checked by a test) and is
+read through the `t` proxy in `src/i18n/strings.ts`. Read `t.*` during render, never at module
+load, so language switches apply. Formatters live in `src/i18n/format.ts` (DKK/decimals always
+`da-DK`; dates and words follow the language, in the store time zone). The language is
+persisted in `localStorage` (`src/i18n/language.ts`). No user-facing literals in components.
 
 ## Libraries (one per concern)
 

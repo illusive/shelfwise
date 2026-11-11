@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useState } from 'react';
 import { useInvalidate } from '@/app/data';
 import { useServices } from '@/app/services-context';
+import { padSequence } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { useToast } from '@/ui/primitives/Toast';
 
@@ -62,14 +63,37 @@ export function useVisitActions() {
     [services, invalidate, navigate, toast, submitting],
   );
 
+  /** Removes immediately; the toast offers Undo until it expires, then the images are purged. */
   const removeCapture = useCallback(
     async (captureId: string) => {
-      await services.captures.removeCapture(captureId);
+      const removed = await services.captures.removeCapture(captureId);
       await invalidate();
-      toast(t.captures.removed);
+      if (!removed) return;
+      toast(t.captures.removed(padSequence(removed.sequence)), {
+        action: {
+          label: t.common.undo,
+          onClick: () => {
+            services.captures
+              .restoreCapture(removed)
+              .then(invalidate)
+              .catch(() => toast(t.captures.restoreFailed, 'danger'));
+          },
+        },
+        onExpire: () => void services.captures.purgeRemoved(removed),
+      });
     },
     [services, invalidate, toast],
   );
 
-  return { startVisit, importFiles, submit, submitting, removeCapture };
+  const discardDraft = useCallback(
+    async (visitId: string, storeId: string) => {
+      await services.captures.discardDraft(visitId);
+      await invalidate();
+      toast(t.store.discarded);
+      await navigate({ to: '/stores/$storeId', params: { storeId } });
+    },
+    [services, invalidate, navigate, toast],
+  );
+
+  return { startVisit, importFiles, submit, submitting, removeCapture, discardDraft };
 }

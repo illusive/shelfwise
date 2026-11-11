@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import { isJobActive, type JobStatus } from '@/domain/models';
-import { plural } from '@/i18n/format';
+import { formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { AlertIcon, CheckIcon, RefreshIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
@@ -81,7 +81,7 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
       label: t.processing.status.preparing,
       detail: job.progress
         ? t.processing.preparing(job.progress.done, job.progress.total)
-        : plural(captures.length, 'photo', 'photos'),
+        : t.counts.photos(captures.length),
     },
     { status: 'analysing', label: t.processing.status.analysing, detail: job.providerId },
   ];
@@ -133,7 +133,7 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
       <div className={shared.stackTight}>
         <h1 className={shared.storeTitle}>{store.name}</h1>
         <p className={shared.muted}>
-          {store.address.street} · {plural(captures.length, 'photo', 'photos')}
+          {formatAddress(store.address)} · {t.counts.photos(captures.length)}
         </p>
         <Mono>
           {t.processing.job(job.id)} · {t.processing.attempts(Math.max(1, job.attempts))}
@@ -170,7 +170,7 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
       {isJobActive(job.status) && <p className={shared.muted}>{t.processing.analysingHint}</p>}
       {failed && (
         <Notice tone="danger" title={t.processing.status.failed}>
-          {job.failure?.message} {t.processing.failedHint}
+          {t.failures[job.failure?.code ?? ''] ?? job.failure?.message} {t.processing.failedHint}
         </Notice>
       )}
       {services.analysis.providerSource === 'mock' && (

@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import type { Capture } from '@/domain/models';
-import { padSequence } from '@/i18n/format';
+import { padSequence, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { captureVideoFrame } from '@/services/images';
 import { CloseIcon, InfoIcon, LightningIcon, RefreshIcon, TrashIcon } from '@/ui/icons';
@@ -17,13 +17,15 @@ import { ImportPhotos } from './ImportPhotos';
 import { useCamera, type CameraStatus } from './useCamera';
 import styles from './CameraPage.module.css';
 
-const BLOCKING: Partial<Record<CameraStatus, { title: string; hint: string }>> = {
+const FAN_ANGLES = [[0], [-10, 8], [-16, -4, 11]];
+
+const blockingFor = (): Partial<Record<CameraStatus, { title: string; hint: string }>> => ({
   denied: { title: t.camera.denied, hint: t.camera.deniedHint },
   unavailable: { title: t.camera.unavailable, hint: t.camera.unavailableHint },
   insecure: { title: t.camera.insecure, hint: t.camera.insecureHint },
   interrupted: { title: t.camera.interrupted, hint: t.camera.interruptedHint },
   error: { title: t.camera.unavailable, hint: t.camera.unavailableHint },
-};
+});
 
 export function CameraPage({
   visitId,
@@ -49,9 +51,10 @@ export function CameraPage({
 
   const captures = detail?.captures ?? [];
   const count = captures.length + pending;
-  const last = captures.at(-1);
+  // Up to the three newest photos, fanned out with the newest on top.
+  const fan = captures.slice(-3);
   const retakeTarget = retakeId ? captures.find((c) => c.id === retakeId) : undefined;
-  const blocking = BLOCKING[camera.status];
+  const blocking = blockingFor()[camera.status];
   const locked = detail && detail.visit.status !== 'draft';
 
   // Leaving the camera waits for photos still being saved, so none are lost or skipped.
@@ -133,7 +136,7 @@ export function CameraPage({
           </h1>
           {detail && (
             <p className={styles.store} data-testid="camera-store">
-              {detail.store.name} · {detail.store.address.street}
+              {detail.store.name} · {formatAddress(detail.store.address)}
             </p>
           )}
         </div>
@@ -216,14 +219,26 @@ export function CameraPage({
             disabled={captures.length === 0}
             aria-label={`${t.camera.captures}: ${count}`}
           >
-            {last && (
-              <BlobImage
-                blobId={last.thumbBlobId}
-                fallbackBlobId={last.blobId}
-                alt=""
-                className={styles.lastImage}
-              />
-            )}
+            <AnimatePresence initial={false}>
+              {fan.map((c, i) => (
+                <motion.span
+                  key={c.id}
+                  className={styles.fanCard}
+                  initial={{ opacity: 0, scale: 0.6, rotate: 0, y: -16 }}
+                  animate={{ opacity: 1, scale: 1, rotate: FAN_ANGLES[fan.length - 1][i], y: 0 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                  style={{ zIndex: i + 1 }}
+                >
+                  <BlobImage
+                    blobId={c.thumbBlobId}
+                    fallbackBlobId={c.blobId}
+                    alt=""
+                    className={styles.lastImage}
+                  />
+                </motion.span>
+              ))}
+            </AnimatePresence>
             {count > 0 && (
               <motion.span
                 key={count}

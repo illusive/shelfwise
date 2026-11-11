@@ -37,6 +37,7 @@ export async function createServices(
 ): Promise<Services> {
   const db = options.db ?? new ShelfwiseDb();
   await ensureSeeded(db);
+  await sweepOrphanBlobs(db);
   const repos = createDexieRepositories(db, seedCatalogue);
   const blobs = createDexieBlobStore(db);
   const provider = options.provider ?? createProvider(config);
@@ -52,4 +53,14 @@ export async function createServices(
     captures,
     analysis: createAnalysisService({ repos, blobs, provider, beforeSubmit: captures.whenIdle }),
   };
+}
+
+/** Deletes image blobs no capture references (e.g. a removal whose undo window was cut short). */
+export async function sweepOrphanBlobs(db: ShelfwiseDb): Promise<number> {
+  const captures = await db.captures.toArray();
+  const referenced = new Set(captures.flatMap((c) => [c.blobId, c.thumbBlobId ?? '']));
+  const keys = await db.blobs.toCollection().primaryKeys();
+  const orphans = keys.filter((key) => !referenced.has(key));
+  await db.blobs.bulkDelete(orphans);
+  return orphans.length;
 }

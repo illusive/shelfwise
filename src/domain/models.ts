@@ -10,7 +10,10 @@ export interface Rep {
 }
 
 export interface Address {
+  /** Street name and number, e.g. "Vesterbrogade 12". */
   street: string;
+  /** Floor/unit (etage), e.g. "1. sal" or "st. tv."; omitted when not relevant. */
+  floor?: string;
   postcode: string;
   city: string;
 }

@@ -1,10 +1,13 @@
+import type { Address } from '@/domain/models';
 import type { PackSize } from '@/domain/catalogue';
+import { getLanguage, TEXT_LOCALE } from './language';
+import { t } from './strings';
 
 /**
- * English UI text with Danish market conventions: money and decimals use da-DK, dates and
- * times use English wording in the store's time zone. Swap the locales here for Danish UI.
+ * Danish market conventions: money and decimals always use da-DK; dates and words follow the
+ * selected UI language, in the store's time zone.
  */
-export const LOCALES = { text: 'en-GB', numbers: 'da-DK' } as const;
+export const LOCALES = { numbers: 'da-DK' } as const;
 export const CURRENCY = 'DKK';
 export const DEFAULT_TIME_ZONE = 'Europe/Copenhagen';
 
@@ -30,7 +33,9 @@ export function formatPp(delta: number): string {
 }
 
 function parts(iso: string, timeZone: string, options: Intl.DateTimeFormatOptions) {
-  return new Intl.DateTimeFormat(LOCALES.text, { timeZone, ...options }).format(new Date(iso));
+  return new Intl.DateTimeFormat(TEXT_LOCALE[getLanguage()], { timeZone, ...options }).format(
+    new Date(iso),
+  );
 }
 
 export function formatTime(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
@@ -52,7 +57,7 @@ export function localDateKey(iso: string, timeZone = DEFAULT_TIME_ZONE): string 
   }).format(new Date(iso));
 }
 
-/** "Today", "Yesterday", "7 Nov" or "7 Nov 2025", by the store's local date. */
+/** "Today"/"I dag", "Yesterday"/"I går", "7 Nov" or "7 Nov 2025", by the store's local date. */
 export function formatRelativeDay(
   iso: string,
   timeZone = DEFAULT_TIME_ZONE,
@@ -61,8 +66,8 @@ export function formatRelativeDay(
   const day = localDateKey(iso, timeZone);
   const today = localDateKey(now.toISOString(), timeZone);
   const yesterday = localDateKey(new Date(now.getTime() - 86_400_000).toISOString(), timeZone);
-  if (day === today) return 'Today';
-  if (day === yesterday) return 'Yesterday';
+  if (day === today) return t.common.today;
+  if (day === yesterday) return t.common.yesterday;
   const sameYear = day.slice(0, 4) === today.slice(0, 4);
   return parts(
     iso,
@@ -77,24 +82,13 @@ export function formatVolume(ml: number): string {
   return ml >= 1000 ? `${formatNumber(ml / 1000)} l` : `${ml} ml`;
 }
 
-const containerNames: Record<PackSize['container'], [string, string]> = {
-  can: ['can', 'cans'],
-  'glass-bottle': ['bottle', 'bottles'],
-  'plastic-bottle': ['bottle', 'bottles'],
-  carton: ['carton', 'cartons'],
-};
-
 /** "330 ml can", "6 × 330 ml cans" */
 export function formatPack(
   pack: Pick<PackSize, 'units' | 'volumeMl'> & { container?: PackSize['container'] },
 ): string {
-  const names = pack.container ? containerNames[pack.container] : null;
+  const names = pack.container ? t.packs[pack.container] : null;
   if (pack.units === 1) return `${formatVolume(pack.volumeMl)}${names ? ` ${names[0]}` : ''}`;
   return `${pack.units} × ${formatVolume(pack.volumeMl)}${names ? ` ${names[1]}` : ''}`;
-}
-
-export function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
 }
 
 export function padSequence(n: number): string {
@@ -109,4 +103,11 @@ export function parseDkkInput(value: string): number | null {
     .replace(',', '.');
   if (!/^\d+(\.\d{1,2})?$/.test(normalised)) return null;
   return Math.round(Number(normalised) * 100);
+}
+
+/** Danish address order: "Vesterbrogade 12, 1. sal, 1620 København V" (floor only when set). */
+export function formatAddress(address: Address): string {
+  return [address.street, address.floor, `${address.postcode} ${address.city}`]
+    .filter(Boolean)
+    .join(', ');
 }

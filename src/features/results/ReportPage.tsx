@@ -2,7 +2,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import type { SosScope } from '@/domain/sos';
-import { formatPct, padSequence } from '@/i18n/format';
+import { formatPct, padSequence, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { BlobImage } from '@/ui/primitives/BlobImage';
 import { Screen, TopBar } from '@/ui/primitives/Screen';
@@ -44,7 +44,7 @@ export function ReportPage({ visitId }: { visitId: string }) {
     <Screen>
       <TopBar
         title={t.report.title}
-        subtitle={`${store.name} · ${store.address.street}`}
+        subtitle={`${store.name} · ${formatAddress(store.address)}`}
         onBack={() => void navigate({ to: '/visits/$visitId/results', params: { visitId } })}
         right={<MockBadge source={metrics.source} />}
       />
@@ -170,7 +170,7 @@ export function ReportPage({ visitId }: { visitId: string }) {
                 <p className={styles.priceName}>{p.headline}</p>
                 {p.conditionText && <p className={styles.priceSub}>{p.conditionText}</p>}
               </div>
-              <Badge tone="accent">{p.mechanic}</Badge>
+              <Badge tone="accent">{t.report.mechanic[p.mechanic]}</Badge>
             </li>
           ))}
         </ul>

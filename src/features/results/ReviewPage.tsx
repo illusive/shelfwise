@@ -10,7 +10,7 @@ import type {
   PriceCorrectionValue,
 } from '@/domain/corrections';
 import type { NormalisedPrice } from '@/domain/pricing';
-import { formatPack, parseDkkInput } from '@/i18n/format';
+import { formatPack, parseDkkInput, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { newId } from '@/services/ids';
 import { CheckIcon, SearchIcon } from '@/ui/icons';
@@ -101,7 +101,7 @@ export function ReviewPage({ visitId }: { visitId: string }) {
     >
       <TopBar
         title={t.review.title}
-        subtitle={`${detail.store.name} · ${detail.store.address.street}`}
+        subtitle={`${detail.store.name} · ${formatAddress(detail.store.address)}`}
         onBack={back}
       />
       <p className={shared.muted}>{t.review.intro}</p>

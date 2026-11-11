@@ -58,8 +58,8 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
             : productName(catalogue, f.productId, f.brandId),
         detail: [
           t.locationTypes[f.locationType],
-          f.source === 'rep' ? t.report.repCorrected : f.match.status,
-          f.evidence.length > 1 ? `${f.evidence.length} views merged` : null,
+          f.source === 'rep' ? t.report.repCorrected : t.photo.match[f.match.status],
+          f.evidence.length > 1 ? t.photo.viewsMerged(f.evidence.length) : null,
         ]
           .filter(Boolean)
           .join(' · '),
@@ -106,7 +106,15 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
         right={<MockBadge source={metrics.source} />}
       />
       <div className={shared.spread}>
-        <Badge tone="dark">{location ? location.label : t.photo.noLocation}</Badge>
+        <Badge tone="dark">
+          {location
+            ? `${t.locationTypes[location.type]} ${
+                result.response.locations
+                  .filter((l) => l.type === location.type)
+                  .indexOf(location) + 1
+              }`
+            : t.photo.noLocation}
+        </Badge>
         {analysis?.issues.map((i) => (
           <Badge key={i} tone="warning">
             {t.imageIssues[i]}
@@ -129,7 +137,7 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
           viewBox="0 0 1 1"
           preserveAspectRatio="none"
           role="group"
-          aria-label="Evidence"
+          aria-label={t.photo.evidence}
         >
           {boxes.map((b) => (
             <rect
@@ -166,7 +174,7 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
             <Mono>{active.detail}</Mono>
           </>
         ) : (
-          <p className={shared.muted}>{boxes.length} evidence regions. Tap a box for details.</p>
+          <p className={shared.muted}>{t.photo.regions(boxes.length)}</p>
         )}
       </div>
       <div className={shared.spread}>
@@ -175,7 +183,7 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
           className={styles.pager}
           onClick={() => go(-1)}
           disabled={index <= 0}
-          aria-label="Previous photo"
+          aria-label={t.photo.previous}
         >
           <ArrowLeftIcon />
         </button>
@@ -187,7 +195,7 @@ export function PhotoPage({ visitId, captureId }: { visitId: string; captureId: 
           className={styles.pager}
           onClick={() => go(1)}
           disabled={index >= captures.length - 1}
-          aria-label="Next photo"
+          aria-label={t.photo.next}
         >
           <ArrowRightIcon />
         </button>

@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { isJobActive } from '@/domain/models';
-import { formatPct, formatRelativeDay, formatTime, plural } from '@/i18n/format';
+import { formatPct, formatRelativeDay, formatTime } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import type { VisitSummary } from '@/services/visitSummaries';
 import { ChevronRightIcon } from '@/ui/icons';
@@ -13,12 +13,12 @@ export type VisitRowTitle = 'store' | 'date';
 
 function locationSummary(summary: VisitSummary): string {
   const { metrics } = summary;
-  if (!metrics) return plural(summary.captureCount, 'photo', 'photos');
+  if (!metrics) return t.counts.photos(summary.captureCount);
   const { shelf, cooler } = metrics.coverage.locations;
   const parts: string[] = [];
-  if (shelf) parts.push(plural(shelf, 'shelf', 'shelves'));
-  if (cooler) parts.push(plural(cooler, 'cooler', 'coolers'));
-  return parts.join(' · ') || plural(summary.captureCount, 'photo', 'photos');
+  if (shelf) parts.push(t.counts.shelves(shelf));
+  if (cooler) parts.push(t.counts.coolers(cooler));
+  return parts.join(' · ') || t.counts.photos(summary.captureCount);
 }
 
 /** Visit list row shared by Home, Store and Archive (Figma "Recent visits" row). */
@@ -62,7 +62,7 @@ export function VisitRow({
         <p className={styles.meta}>
           {title === 'store'
             ? `${day} · ${formatTime(when, tz)}`
-            : `${formatTime(when, tz)} · ${plural(summary.captureCount, 'photo', 'photos')}`}
+            : `${formatTime(when, tz)} · ${t.counts.photos(summary.captureCount)}`}
         </p>
       </div>
       <div className={styles.value}>

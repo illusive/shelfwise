@@ -14,6 +14,13 @@ concept for Royal Unibrew sales reps in Denmark.
 - Docker Desktop (for the LAN/HTTPS test environment)
 - Phones: iOS Safari 17+ or Android Chrome on the same Wi‑Fi as your computer
 
+## Live test build (GitHub Pages)
+
+Every push to `main` deploys to **https://illusive.github.io/shelfwise/** via
+`.github/workflows/pages.yml` (lint, typecheck and unit tests, then a build with
+`BASE_PATH=/shelfwise/`; `404.html` provides the SPA fallback for deep links). It is HTTPS, so
+the camera works on phones directly. Data stays on each phone.
+
 ## Quick start (local)
 
 ```sh
@@ -21,8 +28,8 @@ npm ci
 npm run dev            # http://localhost:5173 (camera works on localhost)
 ```
 
-The app starts as the default test rep (Alex Holm); switch reps from the user drawer (avatar,
-top right). Optionally use the drawer's **Add demo history**
+The app starts in Danish as the default test rep (Alex Holm); switch language or rep from the
+user drawer (avatar, top right). Optionally use the drawer's **Add demo history**
 to create backdated, analysed visits for comparisons.
 
 ## Run on a phone (Docker, HTTPS on the LAN)
@@ -63,6 +70,7 @@ credentials in them.
 | `VITE_ANALYSIS_PROVIDER`       | `mock`          | `live` is reserved; it falls back to mock until a server-side adapter exists |
 | `VITE_MOCK_LATENCY_MS`         | `2500`          | Simulated analysis duration                                                  |
 | `VITE_MOCK_FAIL_FIRST_ATTEMPT` | `false`         | Fail each job's first attempt (retryable) to demo recovery                   |
+| `BASE_PATH`                    | `/`             | Public path the app is served from (`/shelfwise/` on GitHub Pages)           |
 | `LAN_HOST`                     | —               | Docker: IP/hostname added to the self-signed certificate                     |
 | `HTTPS_PORT` / `HTTP_PORT`     | `8443` / `8080` | Docker host ports (HTTP redirects to HTTPS)                                  |
 

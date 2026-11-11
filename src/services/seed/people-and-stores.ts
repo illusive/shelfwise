@@ -213,3 +213,14 @@ export const seedStores: Store[] = [
     ['rep-jonas'],
   ),
 ];
+
+/** A few stores sit on a specific floor (etage) — shown in the Danish address format. */
+const FLOORS: Record<string, string> = {
+  'st-fotex-food-vesterbro': 'kælderen',
+  'st-meny-osterbro': '1. sal',
+  'st-fotex-aarhus-sct-clemens': 'st.',
+};
+for (const store of seedStores) {
+  const floor = FLOORS[store.id];
+  if (floor) store.address.floor = floor;
+}

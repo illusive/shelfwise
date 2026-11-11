@@ -1,0 +1,23 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.discard {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-round);
+  background: var(--color-surface);
+  color: var(--color-danger);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.discard:active {
+  transform: scale(0.94);
+}

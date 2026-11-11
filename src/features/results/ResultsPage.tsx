@@ -1,9 +1,9 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
-import { formatRelativeDay, formatTime, plural } from '@/i18n/format';
+import { formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
-import { CheckIcon } from '@/ui/icons';
+import { CheckIcon, ChevronRightIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
 import { Screen, TopBar } from '@/ui/primitives/Screen';
 import {
@@ -35,8 +35,6 @@ export function ResultsPage({ visitId }: { visitId: string }) {
     );
   }
   const { metrics, store, previous } = detail;
-  const completedAt = detail.visit.completedAt;
-  const tz = store.timeZone;
   const unresolved = metrics.unresolved.facings + metrics.unresolved.prices;
   const corrections = metrics.provenance.correctedFacings + metrics.provenance.correctedPrices;
   // The summary lists each product/pack/price once; the report keeps every label.
@@ -70,7 +68,7 @@ export function ResultsPage({ visitId }: { visitId: string }) {
             <CheckIcon size={14} /> {t.results.saved}
           </span>
         }
-        subtitle={`${store.name} · ${store.address.street}`}
+        subtitle={`${store.name} · ${formatAddress(store.address)}`}
       />
       <div className={shared.spread}>
         <Eyebrow>{t.results.summary}</Eyebrow>
@@ -99,7 +97,7 @@ export function ResultsPage({ visitId }: { visitId: string }) {
             <Link
               to="/visits/$visitId/review"
               params={{ visitId }}
-              className={styles.toggle}
+              className={styles.reviewLink}
               data-testid="review-link"
             >
               {t.results.review} →
@@ -125,8 +123,9 @@ export function ResultsPage({ visitId }: { visitId: string }) {
           ))}
         </ul>
         {prices.length > 5 && (
-          <Link to="/visits/$visitId/report" params={{ visitId }} className={styles.toggle}>
-            {plural(prices.length - 5, 'more price', 'more prices')} →
+          <Link to="/visits/$visitId/report" params={{ visitId }} className={styles.moreLink}>
+            <span>{t.results.morePrices(prices.length - 5)}</span>
+            <ChevronRightIcon size={18} />
           </Link>
         )}
       </section>
@@ -154,13 +153,6 @@ export function ResultsPage({ visitId }: { visitId: string }) {
       )}
 
       <div className={shared.stackTight}>
-        <p className={shared.footnote}>
-          <CheckIcon size={14} />
-          {t.results.savedTo(
-            store.name,
-            `${formatRelativeDay(completedAt, tz)}, ${formatTime(completedAt, tz)}`,
-          )}
-        </p>
         {corrections > 0 && <p className={shared.footnote}>{t.results.corrections(corrections)}</p>}
         <p className={shared.footnote}>{t.results.capturedAreaOnly}</p>
         <p className={shared.footnote}>{t.results.disclaimer}</p>

@@ -24,14 +24,29 @@
 `Screen` (page shell + fixed action + bottom nav, entry transition), `TopBar`, `Wordmark`,
 `BottomNav`, `Sheet` (Radix Dialog + spring), `Segmented` (Radix ToggleGroup), `Eyebrow` (mono
 caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `EmptyState`,
-`Divider`, `BlobImage`, `Toast`. Shared feature components: `AppHeader` + `UserDrawer` + `Avatar`, `VisitRow`, `PriceRow`,
-`ShareHero`, `FacingGrid`, `EvidenceCrop`.
+`Divider`, `BlobImage`, `Toast` (optional action, e.g. _Undo_), `SwipeToConfirm`. Shared feature components: `AppHeader` + `UserDrawer` + `Avatar`, `VisitRow`, `PriceRow`,
+`ShareHero`, `FacingGrid`, `EvidenceCrop`, `PhotoWall`, `Lightbox`, `SubmitBar`.
+
+## Navigation (extension following the user's other field app)
+
+The Figma's full-width tab bar is replaced by a floating, inset, dark-green bar of connected
+"gooey" blobs, matching the navigation of the user's existing field app: icon-only items (Home
+in the left blob, Stores in the larger centre circle, Archive in the right blob), joined by an SVG
+goo filter. The active item gets a white disc with a dark-green icon (centre: white disc with a
+dark-green inner ring) that glides between items via a shared Motion `layoutId` (instant under
+reduced motion). Each item has an accessible name, ≥ 44 px target, visible focus ring, and the
+bar sits above the safe-area inset.
 
 ## Motion
 
 - Screens: 200 ms fade + 8 px rise on entry (no exit delay).
 - Bottom sheets: spring slide (interruptible), overlay fade.
-- Thumbnails: layout animation on add/remove; count badge spring.
+- Thumbnails: layout animation on add/remove; count badge spring; the camera thumbnail is a
+  fan of up to three photos (newest on top).
+- Results: share counts up from 0 and the facing grid fills in order (≈0.9 s, replays on
+  scope change).
+- Submit: swipe-to-confirm thumb springs back if released early.
+- Navigation: active indicator glides between items.
 - Capture: 250 ms white flash. Never delays the next capture.
 - `MotionConfig reducedMotion="user"`; CSS durations collapse under reduced motion.
 
@@ -43,17 +58,27 @@ caps + step dashes), `Mono`, `Badge`, `MockBadge`, `Notice`, `SectionHeader`, `E
 - Captures show "Capture 01 · 14:24" instead of shelf names (agreed).
 - Home stat "Average shelf share" became "Shelf share this month", aggregated from counts
   (percentages are never averaged).
-- A user avatar (top right of Home, Stores and Archive) opens the user drawer; Mock badges throughout.
+- A user avatar with a circular border (top right of Home, Stores and Archive) opens the user
+  drawer; Mock badges throughout.
+- Danish is the default UI language (English selectable); addresses use the Danish order
+  "Vesterbrogade 12, 1. sal, 1620 København V"; customer numbers are not shown.
+- Results open on _Overall_ (order Overall · Shelves · Coolers); the "Saved to store" line was
+  dropped.
+- Draft screens use a swipe-to-analyse bar with a round discard button instead of a primary
+  button; with more than one photo, a photo wall (≈3 per row) replaces the large lead image.
+- Bottom navigation follows the user's other app (see Navigation).
 
 ## Screens invented beyond Figma (for review)
 
-1. User drawer (current rep, switch rep, _Add demo history_) opened from the top-right avatar.
-2. Stores: assigned + full-catalogue search with address/customer number disambiguation.
+1. User drawer (current rep, language, switch rep, _Add demo history_) opened from the top-right
+   avatar.
+2. Stores: assigned + full-catalogue search with address disambiguation.
 3. Store overview (no draft): latest result card, history, empty state, _Start visit_.
 4. Camera blocking states (denied, unavailable, insecure, interrupted), captures sheet, tips sheet.
-5. Capture inspection sheet with _Retake_/_Remove_.
+5. Photo wall with quick remove (+ _Undo_ toast), full-screen lightbox with _Retake_/_Remove_/back,
+   and the swipe-to-analyse bar with discard confirmation.
 6. Processing / failure screen with job id, attempts, steps, retry and edit.
-7. Results extensions: Shelves/Coolers/Overall toggle, unavailable/qualified states, category
+7. Results extensions: Overall/Shelves/Coolers toggle, unavailable/qualified states, category
    breakdown, review notice, promotions and displays.
 8. Full product report (coverage, SoS table, client products, prices by group, promotions,
    photos).

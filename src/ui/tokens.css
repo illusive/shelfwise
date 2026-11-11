@@ -98,7 +98,7 @@
   /* Layout */
   --app-max-width: 480px;
   --tap-min: 44px;
-  --nav-height: 76px;
+  --nav-height: 92px; /* floating bar (66px) + offset */
   --action-height: 88px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);

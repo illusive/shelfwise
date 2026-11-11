@@ -6,7 +6,7 @@ import { generateMockAnalysis } from './analysis/mockProvider';
 import type { AnalysisProvider } from './analysis/provider';
 import { ShelfwiseDb } from './db';
 import { createMockProvider } from './analysis/mockProvider';
-import { createServices, type Services } from './index';
+import { createServices, sweepOrphanBlobs, type Services } from './index';
 import type { ImageProcessor } from './images';
 import { seedCatalogue } from './seed/catalogue';
 
@@ -36,6 +36,29 @@ async function draftWithPhotos(count: number) {
     await services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' });
   return visit;
 }
+
+describe('orphan blob sweep', () => {
+  it('deletes blobs no capture references', async () => {
+    const db = new ShelfwiseDb(`test-sweep-${++dbCount}`);
+    await db.blobs.put({ id: 'kept', blob: new Blob(['a']) });
+    await db.blobs.put({ id: 'orphan', blob: new Blob(['b']) });
+    await db.captures.put({
+      id: 'c1',
+      visitId: 'v',
+      sequence: 1,
+      capturedAt: '2026-11-10T10:00:00Z',
+      source: 'camera',
+      mimeType: 'image/jpeg',
+      width: 1,
+      height: 1,
+      byteSize: 1,
+      blobId: 'kept',
+      thumbBlobId: null,
+    });
+    expect(await sweepOrphanBlobs(db)).toBe(1);
+    expect(await db.blobs.get('kept')).toBeDefined();
+  });
+});
 
 describe('current rep', () => {
   it('defaults to the seeded POC rep and keeps a valid choice', async () => {
@@ -69,6 +92,26 @@ describe('capture drafts', () => {
     );
     const captures = await services.repos.captures.listByVisit(visit.id);
     expect(captures.map((c) => c.sequence)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('restores a removed photo (undo) and purges images only after undo expires', async () => {
+    const visit = await draftWithPhotos(3);
+    const [, second] = await services.repos.captures.listByVisit(visit.id);
+    const removed = await services.captures.removeCapture(second.id);
+    expect((await services.repos.captures.listByVisit(visit.id)).map((c) => c.sequence)).toEqual([
+      1, 3,
+    ]);
+    expect(await services.blobs.get(second.blobId)).toBeDefined();
+    await services.captures.restoreCapture(removed!);
+    expect((await services.repos.captures.listByVisit(visit.id)).map((c) => c.sequence)).toEqual([
+      1, 2, 3,
+    ]);
+    await services.captures.purgeRemoved(removed!);
+    expect(await services.blobs.get(second.blobId)).toBeDefined();
+
+    await services.captures.removeCapture(second.id);
+    await services.captures.purgeRemoved(removed!);
+    expect(await services.blobs.get(second.blobId)).toBeUndefined();
   });
 
   it('keeps the sequence position on retake and removes photos', async () => {

@@ -240,7 +240,7 @@ export function generateMockAnalysis(
         locationId,
         region: { x: 0.05, y: 0.05, width: 0.9, height: 0.9 },
         brandIds: [featured.brandId],
-        description: `Floor display · ${featured.name}`,
+        description: `Gulvdisplay · ${featured.name}`,
       });
     }
 
@@ -369,8 +369,8 @@ export function generateMockAnalysis(
             imageId,
             region,
             mechanic: 'multibuy',
-            headline: `3 for 30,00 kr. · ${b.product.name}`,
-            conditionText: 'Buy 3. Pant added per unit.',
+            headline: `3 stk. 30,00 kr. · ${b.product.name}`,
+            conditionText: 'Ved køb af 3 stk. Pant pr. stk. kommer oveni.',
             productIds: [b.product.id],
             brandIds: [b.product.brandId],
           });
@@ -390,8 +390,8 @@ export function generateMockAnalysis(
             imageId,
             region,
             mechanic: 'member-price',
-            headline: `Member price ${ore(memberOre)} kr. · ${b.product.name}`,
-            conditionText: 'Requires the store loyalty app. Max 2 per customer.',
+            headline: `Medlemspris ${ore(memberOre)} kr. · ${b.product.name}`,
+            conditionText: 'Kræver butikkens app. Maks. 2 pr. kunde.',
             productIds: [b.product.id],
             brandIds: [b.product.brandId],
           });
@@ -399,7 +399,7 @@ export function generateMockAnalysis(
             ...base,
             priceType: 'member',
             amountOre: memberOre,
-            conditionText: 'Loyalty members only, max 2',
+            conditionText: 'Kun for medlemmer, maks. 2',
             promotionId,
           });
         } else if (!ambiguousDone && roll < 0.2) {

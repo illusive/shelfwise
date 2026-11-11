@@ -7,6 +7,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 // `npm run dev:lan` (mode "lan") serves self-signed HTTPS on the LAN so phones get a
 // secure context for getUserMedia. Docker Compose is the preferred LAN setup.
 export default defineConfig(({ mode }) => {
+  // GitHub Pages serves the app under /shelfwise/; Docker and dev serve it at /.
+  const base = process.env.BASE_PATH ?? '/';
   const plugins: PluginOption[] = [
     react(),
     VitePWA({
@@ -16,35 +18,36 @@ export default defineConfig(({ mode }) => {
       manifest: {
         name: 'Shelfwise',
         short_name: 'Shelfwise',
-        description: 'Shelf and cooler share, prices and promotions from store photos.',
-        lang: 'en-DK',
+        description: 'Hyldeandel, priser og kampagner fra butiksbilleder.',
+        lang: 'da',
         theme_color: '#173d32',
         background_color: '#f5f4ee',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           {
-            src: '/icons/icon-maskable-512.png',
+            src: 'icons/icon-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
           },
-          { src: '/icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: 'icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        navigateFallback: '/index.html',
+        navigateFallback: 'index.html',
       },
     }),
   ];
   if (mode === 'lan') plugins.push(basicSsl());
 
   return {
+    base,
     plugins,
     resolve: {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

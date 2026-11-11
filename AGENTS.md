@@ -14,7 +14,9 @@ analysis provider behind a provider-agnostic, Zod-validated contract.
 - Metrics are calculated deterministically in `src/domain` from validated observations. Never
   average percentages; never silently drop unknowns.
 - Mock and live results must always be distinguishable (`source` + `MockBadge`).
-- Commit locally; there is no remote yet. Do not open pull requests until asked.
+- Remote: `illusive/shelfwise` (public). Pushing `main` deploys GitHub Pages
+  (https://illusive.github.io/shelfwise/). Never commit `.references/` or other client material.
+  Do not open pull requests until asked.
 - The user tests in their own Docker environment from this checkout. After meaningful
   changes, run `npm run docker:up` and confirm `https://<LAN-IP>:8443` responds.
 

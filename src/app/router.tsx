@@ -125,6 +125,8 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
+  // Matches Vite's `base` (e.g. /shelfwise/ on GitHub Pages).
+  basepath: import.meta.env.BASE_URL.replace(/\/$/, '') || '/',
   defaultPreload: 'intent',
   scrollRestoration: true,
 });

@@ -129,15 +129,40 @@ export function createCaptureService(deps: {
       });
     },
 
-    async removeCapture(captureId: string): Promise<void> {
+    /**
+     * Removes the capture from the visit but keeps its image blobs so the removal can be
+     * undone with `restoreCapture`. Call `purgeRemoved` once undo is no longer offered; blobs
+     * left behind by a closed app are cleaned up by `sweepOrphanBlobs` at start-up.
+     */
+    async removeCapture(captureId: string): Promise<Capture | undefined> {
       const capture = await repos.captures.get(captureId);
-      if (!capture) return;
-      await enqueue(capture.visitId, async () => {
+      if (!capture) return undefined;
+      return enqueue(capture.visitId, async () => {
         await editableVisit(capture.visitId);
         await repos.captures.delete(captureId);
-        await deleteImages(capture);
+        await touch(capture.visitId);
+        return capture;
+      });
+    },
+
+    /** Puts a removed capture back in its original position (same sequence number). */
+    async restoreCapture(capture: Capture): Promise<void> {
+      await enqueue(capture.visitId, async () => {
+        await editableVisit(capture.visitId);
+        if (!(await blobs.get(capture.blobId))) throw new Error('Photo no longer available');
+        const existing = await repos.captures.listByVisit(capture.visitId);
+        // Keep the original number unless a newer photo took it while undo was pending.
+        const taken = existing.some((c) => c.sequence === capture.sequence);
+        const sequence = taken ? (existing.at(-1)?.sequence ?? 0) + 1 : capture.sequence;
+        await repos.captures.put({ ...capture, sequence });
         await touch(capture.visitId);
       });
+    },
+
+    /** Deletes a removed capture's images unless it was restored in the meantime. */
+    async purgeRemoved(capture: Capture): Promise<void> {
+      if (await repos.captures.get(capture.id)) return;
+      await deleteImages(capture);
     },
 
     /** Turns a failed submission back into an editable draft with a fresh idempotency key. */

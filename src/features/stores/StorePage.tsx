@@ -1,23 +1,24 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { AnimatePresence, motion } from 'motion/react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useCurrentRep, useStore, useVisitDetail, useVisitSummaries } from '@/app/data';
 import {
-  useCurrentRep,
-  useInvalidate,
-  useStore,
-  useVisitDetail,
-  useVisitSummaries,
-} from '@/app/data';
-import { useServices } from '@/app/services-context';
-import { formatPct, formatRelativeDay, formatTime, padSequence } from '@/i18n/format';
+  formatPct,
+  formatRelativeDay,
+  formatTime,
+  padSequence,
+  formatAddress,
+} from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import type { VisitSummary } from '@/services/visitSummaries';
-import { CameraIcon, CheckIcon, ChevronRightIcon, LockIcon, PlusIcon, TrashIcon } from '@/ui/icons';
+import { CameraIcon, CheckIcon, ChevronRightIcon, LockIcon, PlusIcon } from '@/ui/icons';
 import { BlobImage } from '@/ui/primitives/BlobImage';
-import { Button, IconButton } from '@/ui/primitives/Button';
+import { Button } from '@/ui/primitives/Button';
 import { Screen, TopBar } from '@/ui/primitives/Screen';
 import { EmptyState, Eyebrow, MockBadge, Notice, SectionHeader } from '@/ui/primitives/Text';
 import { ImportPhotos } from '../capture/ImportPhotos';
+import { Lightbox } from '../capture/Lightbox';
+import { PhotoWall } from '../capture/PhotoWall';
+import { SubmitBar } from '../visit/SubmitBar';
 import shared from '../shared/shared.module.css';
 import { VisitRow } from '../shared/VisitRow';
 import { useVisitActions } from '../visit/useVisitActions';
@@ -59,9 +60,7 @@ export function StorePage({ storeId }: { storeId: string }) {
         <h1 className={shared.storeTitle} data-testid="store-name">
           {store.name}
         </h1>
-        <p className={shared.muted}>
-          {store.area} · {store.address.street} · {t.stores.customerNo(store.customerNumber)}
-        </p>
+        <p className={shared.muted}>{formatAddress(store.address)}</p>
         <div className={shared.spread}>
           <span className={styles.status}>
             <span className={`${styles.dot} ${draft ? '' : styles.dotIdle}`} />
@@ -80,10 +79,8 @@ export function StorePage({ storeId }: { storeId: string }) {
       <DraftHub
         header={header}
         visitId={draft.visit.id}
+        storeId={store.id}
         timeZone={store.timeZone}
-        onImport={actions.importFiles}
-        onSubmit={() => void actions.submit(draft.visit.id)}
-        submitting={actions.submitting}
       />
     );
   }
@@ -179,114 +176,78 @@ function LatestResult({ summary }: { summary: VisitSummary }) {
 function DraftHub({
   header,
   visitId,
+  storeId,
   timeZone,
-  onImport,
-  onSubmit,
-  submitting,
 }: {
   header: ReactNode;
   visitId: string;
+  storeId: string;
   timeZone: string;
-  onImport: (visitId: string, files: File[]) => Promise<unknown>;
-  onSubmit: () => void;
-  submitting: boolean;
 }) {
   const navigate = useNavigate();
-  const services = useServices();
-  const invalidate = useInvalidate();
+  const actions = useVisitActions();
   const { data: detail } = useVisitDetail(visitId);
+  const [openId, setOpenId] = useState<string | null>(null);
   const captures = detail?.captures ?? [];
-  const lead = captures.at(-1);
+  const only = captures.length === 1 ? captures[0] : undefined;
   const toCamera = () => void navigate({ to: '/visits/$visitId/camera', params: { visitId } });
-
-  const discard = async () => {
-    if (!window.confirm(t.store.discardConfirm)) return;
-    await services.captures.discardDraft(visitId);
-    await invalidate();
-  };
 
   return (
     <Screen
       action={
-        <Button
-          block
-          size="lg"
-          withArrow
-          disabled={captures.length === 0 || submitting}
-          onClick={onSubmit}
-        >
-          {t.store.analyse(captures.length)}
-        </Button>
+        <SubmitBar
+          photoCount={captures.length}
+          submitting={actions.submitting}
+          onSubmit={() => actions.submit(visitId)}
+          onDiscard={() => actions.discardDraft(visitId, storeId)}
+        />
       }
     >
       {header}
       <section className={shared.stack}>
-        <SectionHeader title={t.store.captures} aside={t.captures.count(captures.length)} />
-        {lead ? (
+        <SectionHeader
+          title={t.store.captures}
+          aside={<span data-testid="captures-count">{t.captures.count(captures.length)}</span>}
+        />
+        {only ? (
           <>
-            <div className={styles.lead}>
+            <button
+              type="button"
+              className={styles.lead}
+              aria-label={t.captures.open(padSequence(only.sequence))}
+              onClick={() => setOpenId(only.id)}
+            >
               <BlobImage
-                blobId={lead.thumbBlobId}
-                fallbackBlobId={lead.blobId}
-                alt={t.store.capture(padSequence(lead.sequence))}
+                blobId={only.thumbBlobId}
+                fallbackBlobId={only.blobId}
+                alt=""
                 className={styles.leadImage}
               />
-              <span className={styles.chip}>{padSequence(lead.sequence)}</span>
-              <IconButton
-                label={t.store.takePhotos}
-                tone="light"
-                className={styles.leadCamera}
-                onClick={toCamera}
-              >
-                <CameraIcon />
-              </IconButton>
-            </div>
+              <span className={styles.chip}>{padSequence(only.sequence)}</span>
+            </button>
             <div className={shared.spread}>
               <div className={shared.stackTight}>
                 <span className={styles.guideTitle}>
-                  {t.store.capture(padSequence(lead.sequence))}
+                  {t.store.capture(padSequence(only.sequence))}
                 </span>
                 <span className={shared.muted}>
-                  {formatRelativeDay(lead.capturedAt, timeZone)} ·{' '}
-                  {formatTime(lead.capturedAt, timeZone)}
+                  {formatRelativeDay(only.capturedAt, timeZone)} ·{' '}
+                  {formatTime(only.capturedAt, timeZone)}
                 </span>
               </div>
               <span className={styles.status}>
                 <CheckIcon size={14} /> {t.store.readyToAnalyse}
               </span>
             </div>
-            {captures.length > 1 && (
-              <>
-                <ul className={styles.thumbs} aria-label={t.captures.heading}>
-                  <AnimatePresence initial={false}>
-                    {captures.map((c) => (
-                      <motion.li
-                        key={c.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                      >
-                        <BlobImage
-                          blobId={c.thumbBlobId}
-                          fallbackBlobId={c.blobId}
-                          alt={t.store.capture(padSequence(c.sequence))}
-                          className={styles.thumb}
-                        />
-                      </motion.li>
-                    ))}
-                  </AnimatePresence>
-                </ul>
-                <Link
-                  to="/visits/$visitId/captures"
-                  params={{ visitId }}
-                  className={styles.changeStore}
-                >
-                  {t.store.reviewAll(captures.length)} →
-                </Link>
-              </>
-            )}
           </>
+        ) : captures.length > 1 ? (
+          <PhotoWall
+            captures={captures}
+            timeZone={timeZone}
+            editable
+            onOpen={(c) => setOpenId(c.id)}
+            onRemove={(c) => void actions.removeCapture(c.id)}
+          />
         ) : (
           <EmptyState icon={<CameraIcon size={28} />} title={t.captures.empty}>
             {t.captures.emptyHint}
@@ -295,23 +256,28 @@ function DraftHub({
         <Button variant="secondary" block icon={<PlusIcon size={18} />} onClick={toCamera}>
           {captures.length ? t.store.addPhoto : t.store.takePhotos}
         </Button>
-        <ImportPhotos resolveVisitId={async () => visitId} onImport={onImport} />
+        <ImportPhotos resolveVisitId={async () => visitId} onImport={actions.importFiles} />
       </section>
-      <div className={styles.guide}>
-        <CameraIcon size={18} />
-        <div className={shared.stackTight}>
-          <p className={styles.guideTitle}>{t.store.guideTitle}</p>
-          <p className={shared.muted}>{t.store.guide}</p>
-        </div>
-      </div>
-      <div className={shared.spread}>
-        <p className={shared.footnote}>
-          <LockIcon size={14} /> {t.store.privacy}
-        </p>
-        <Button variant="ghost" icon={<TrashIcon size={16} />} onClick={() => void discard()}>
-          {t.store.discard}
-        </Button>
-      </div>
+      <p className={shared.footnote}>
+        <LockIcon size={14} /> {t.store.privacy}
+      </p>
+      <Lightbox
+        captures={captures}
+        openId={openId}
+        timeZone={timeZone}
+        editable
+        onOpenChange={setOpenId}
+        onRetake={(c) =>
+          void navigate({
+            to: '/visits/$visitId/retake/$captureId',
+            params: { visitId, captureId: c.id },
+          })
+        }
+        onRemove={(c) => {
+          setOpenId(null);
+          void actions.removeCapture(c.id);
+        }}
+      />
     </Screen>
   );
 }

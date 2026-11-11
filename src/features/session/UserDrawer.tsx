@@ -8,6 +8,8 @@ import { Button } from '@/ui/primitives/Button';
 import { Sheet } from '@/ui/primitives/Sheet';
 import { SectionHeader } from '@/ui/primitives/Text';
 import { useToast } from '@/ui/primitives/Toast';
+import { Segmented } from '@/ui/primitives/Segmented';
+import { LANGUAGES, setLanguage, useLanguage, type Language } from '@/i18n/language';
 import shared from '../shared/shared.module.css';
 import { Avatar } from './Avatar';
 import styles from './session.module.css';
@@ -26,6 +28,7 @@ export function UserDrawer({
   const invalidate = useInvalidate();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  const language = useLanguage();
 
   const choose = async (id: string) => {
     if (id !== current?.id) {
@@ -60,6 +63,13 @@ export function UserDrawer({
           </div>
         </div>
       )}
+      <SectionHeader title={t.reps.language} />
+      <Segmented<Language>
+        label={t.reps.language}
+        value={language}
+        onChange={setLanguage}
+        options={LANGUAGES.map((l) => ({ value: l, label: t.reps.languages[l] }))}
+      />
       <SectionHeader title={t.reps.switch} />
       <ul className={styles.reps}>
         {reps.map((rep) => (

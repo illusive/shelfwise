@@ -71,6 +71,11 @@
 
 .lead {
   position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
   border-radius: var(--radius-lg);
   overflow: hidden;
   aspect-ratio: 4 / 2.3;

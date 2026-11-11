@@ -1,7 +1,7 @@
 import type { ShelfwiseDb } from '../db';
 import { DEFAULT_REP_ID, seedReps, seedStores } from './people-and-stores';
 
-export const SEED_VERSION = 1;
+export const SEED_VERSION = 2;
 const SEED_KEY = 'seedVersion';
 export const CURRENT_REP_KEY = 'currentRepId';
 

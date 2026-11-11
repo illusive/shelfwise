@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatAddress,
   formatDkk,
   formatPack,
   formatPp,
@@ -7,6 +8,8 @@ import {
   localDateKey,
   parseDkkInput,
 } from './format';
+import { setLanguage } from './language';
+import { dictionaries } from './strings';
 
 describe('formatters', () => {
   it('formats DKK with Danish conventions', () => {
@@ -41,5 +44,43 @@ describe('formatters', () => {
     expect(parseDkkInput('12,95')).toBe(1295);
     expect(parseDkkInput('12.5 kr.')).toBe(1250);
     expect(parseDkkInput('abc')).toBeNull();
+  });
+
+  it('formats Danish addresses with an optional floor', () => {
+    expect(
+      formatAddress({
+        street: 'Vesterbrogade 12',
+        floor: '1. sal',
+        postcode: '1620',
+        city: 'København V',
+      }),
+    ).toBe('Vesterbrogade 12, 1. sal, 1620 København V');
+    expect(
+      formatAddress({ street: 'Nørrebrogade 34', postcode: '2200', city: 'København N' }),
+    ).toBe('Nørrebrogade 34, 2200 København N');
+  });
+
+  it('uses Danish words and packs when Danish is selected', () => {
+    setLanguage('da');
+    expect(
+      formatRelativeDay(
+        '2026-11-10T12:00:00Z',
+        'Europe/Copenhagen',
+        new Date('2026-11-10T13:00:00Z'),
+      ),
+    ).toBe('I dag');
+    expect(formatPack({ units: 6, volumeMl: 330, container: 'can' })).toBe('6 × 330 ml dåser');
+  });
+});
+
+describe('dictionaries', () => {
+  it('have the same keys in Danish and English', () => {
+    const keys = (o: object, prefix = ''): string[] =>
+      Object.entries(o).flatMap(([k, v]) =>
+        v && typeof v === 'object' && !Array.isArray(v)
+          ? keys(v, `${prefix}${k}.`)
+          : [`${prefix}${k}`],
+      );
+    expect(keys(dictionaries.da).sort()).toEqual(keys(dictionaries.en).sort());
   });
 });
