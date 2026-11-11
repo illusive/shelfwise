@@ -21,6 +21,8 @@
   not affect results. It loads after the camera starts, can be toggled off (remembered), pauses
   behind sheets, switches itself off on slow devices, and never delays the shutter. Reduced motion:
   static boxes, no animation.
+- Any future detection model over ~15 MB loads only when the connection is not metered/cellular
+  (where the browser reports it) or after the rep turns live detection on explicitly.
 - Tips rotate from "Fit the full shelf and its price labels" to "Move along and overlap the
   last photo slightly"; the (i) sheet adds framing, level, overlap and cooler-reflection
   advice.
