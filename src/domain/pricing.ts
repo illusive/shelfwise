@@ -108,7 +108,9 @@ export function normalisePrice(
   const resolved = status === 'resolved' && displayedOre !== null;
   const basis = resolved ? priceBasis(label.deposit) : null;
   const base = resolved ? basePrice(displayedOre!, label.deposit) : null;
-  const perLitre = base !== null && pack ? pricePerLitre(base, pack) : null;
+  // Per-litre values are only comparable without pant, so only ex-deposit prices get one.
+  const perLitre =
+    base !== null && pack && basis === 'ex-deposit' ? pricePerLitre(base, pack) : null;
   const multibuy = label.multibuy
     ? {
         ...label.multibuy,
@@ -164,9 +166,11 @@ export function dedupeLabels(labels: readonly PriceLabelObservation[]): PriceLab
       result.push(label);
       continue;
     }
-    const existing = byPhysical.get(label.physicalLabelId);
+    // Physical ids are only unique within a location (same rule as facings).
+    const key = `${label.locationId ?? ''}::${label.physicalLabelId}`;
+    const existing = byPhysical.get(key);
     if (!existing || (existing.status === 'unresolved' && label.status === 'resolved')) {
-      byPhysical.set(label.physicalLabelId, label);
+      byPhysical.set(key, label);
     }
   }
   return [...result, ...byPhysical.values()];

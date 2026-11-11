@@ -20,26 +20,27 @@ class JobError extends Error {
   }
 }
 
+class JobCancelled extends Error {}
+
 export type AnalysisService = ReturnType<typeof createAnalysisService>;
 
 export function createAnalysisService(deps: {
   repos: Repositories;
   blobs: BlobStore;
   provider: AnalysisProvider;
+  /** Waits for in-flight photo writes so submission never races a capture. */
+  beforeSubmit?: (visitId: string) => Promise<void>;
   now?: () => Date;
 }) {
   const { repos, blobs, provider } = deps;
   const now = deps.now ?? (() => new Date());
   const running = new Map<string, Promise<void>>();
 
+  /** Persists job changes; throws JobCancelled if the job was cancelled meanwhile. */
   async function save(job: AnalysisJob, changes: Partial<AnalysisJob>): Promise<AnalysisJob> {
-    const next = { ...job, ...changes, updatedAt: nowIso(now) };
-    await repos.jobs.put(next);
+    const next = await repos.jobs.update(job.id, { ...changes, updatedAt: nowIso(now) });
+    if (!next || next.status === 'cancelled') throw new JobCancelled();
     return next;
-  }
-
-  async function isCancelled(jobId: string) {
-    return (await repos.jobs.get(jobId))?.status === 'cancelled';
   }
 
   async function runJob(jobId: string): Promise<void> {
@@ -48,7 +49,7 @@ export function createAnalysisService(deps: {
     const visit = await repos.visits.get(job.visitId);
     const store = visit ? await repos.stores.get(visit.storeId) : undefined;
     if (!visit || !store) {
-      await save(job, {
+      await repos.jobs.update(job.id, {
         status: 'failed',
         failure: { code: 'visit-missing', message: 'Visit not found.', retryable: false },
       });
@@ -56,12 +57,16 @@ export function createAnalysisService(deps: {
     }
 
     const captures = await repos.captures.listByVisit(visit.id);
-    job = await save(job, {
-      status: 'preparing',
-      attempts: job.attempts + 1,
-      failure: null,
-      progress: { done: 0, total: captures.length },
-    });
+    try {
+      job = await save(job, {
+        status: 'preparing',
+        attempts: job.attempts + 1,
+        failure: null,
+        progress: { done: 0, total: captures.length },
+      });
+    } catch {
+      return; // cancelled before it started
+    }
 
     try {
       if (captures.length === 0) throw new JobError('no-photos', 'The visit has no photos.', false);
@@ -118,31 +123,27 @@ export function createAnalysisService(deps: {
         const failure = response.failure!;
         throw new JobError(failure.code, failure.message, failure.retryable);
       }
-      if (await isCancelled(job.id)) return;
-
-      // Deterministic id: a retried job overwrites, never duplicates, its result.
-      const resultId = `result-${job.id}`;
-      await repos.results.put({
-        id: resultId,
-        visitId: visit.id,
+      // Deterministic id: a retried job overwrites, never duplicates, its result. Completion is
+      // refused if the rep reopened the draft (job cancelled / visit no longer owns the job).
+      await repos.visits.completeJob({
         jobId: job.id,
-        storedAt: nowIso(now),
-        response,
-      });
-      await repos.visits.update(visit.id, {
-        status: 'completed',
-        resultId,
+        result: {
+          id: `result-${job.id}`,
+          visitId: visit.id,
+          jobId: job.id,
+          storedAt: nowIso(now),
+          response,
+        },
         completedAt: response.analysedAt,
         updatedAt: nowIso(now),
       });
-      await save(job, { status: 'completed', progress: null });
     } catch (error) {
-      if (await isCancelled(job.id)) return;
+      if (error instanceof JobCancelled) return;
       const failure: JobFailure =
         error instanceof JobError
           ? { code: error.code, message: error.message, retryable: error.retryable }
           : { code: 'unexpected', message: errorMessage(error), retryable: true };
-      await save(job, { status: 'failed', failure, progress: null });
+      await save(job, { status: 'failed', failure, progress: null }).catch(() => undefined);
     }
   }
 
@@ -159,6 +160,7 @@ export function createAnalysisService(deps: {
 
     /** Idempotent: returns the visit's existing job if it was already submitted. */
     async submitVisit(visitId: string): Promise<AnalysisJob> {
+      await deps.beforeSubmit?.(visitId);
       const captures = await repos.captures.listByVisit(visitId);
       if (captures.length === 0) throw new Error('Add at least one photo before analysing.');
       const job = await repos.visits.attachJob(visitId, (visit) => {
@@ -183,8 +185,8 @@ export function createAnalysisService(deps: {
     async retry(jobId: string): Promise<void> {
       const job = await repos.jobs.get(jobId);
       if (!job || job.status !== 'failed' || !job.failure?.retryable) return;
-      await save(job, { status: 'queued' });
-      await ensureRunning(jobId);
+      await repos.jobs.update(jobId, { status: 'queued', updatedAt: nowIso(now) });
+      void ensureRunning(jobId);
     },
 
     /** Restarts jobs interrupted by a reload or closed tab. */

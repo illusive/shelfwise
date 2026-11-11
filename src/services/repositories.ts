@@ -33,7 +33,22 @@ export interface Repositories {
      * or retried requests never create duplicate jobs.
      */
     attachJob(visitId: string, create: (visit: Visit) => AnalysisJob): Promise<AnalysisJob>;
+    /**
+     * Atomically stores the result and completes visit + job, only if the visit is still
+     * submitted with this job and the job was not cancelled. Returns false otherwise.
+     */
+    completeJob(input: {
+      jobId: string;
+      result: StoredResult;
+      completedAt: string;
+      updatedAt: string;
+    }): Promise<boolean>;
     delete(id: string): Promise<void>;
+    /**
+     * Atomically cancels a submitted visit's unfinished job and reopens it as a draft with a
+     * new idempotency key. No-op for drafts and completed visits.
+     */
+    reopen(visitId: string, idempotencyKey: string, at: string): Promise<void>;
   };
   captures: {
     get(id: string): Promise<Capture | undefined>;
@@ -45,6 +60,8 @@ export interface Repositories {
     get(id: string): Promise<AnalysisJob | undefined>;
     listActive(): Promise<AnalysisJob[]>;
     put(job: AnalysisJob): Promise<void>;
+    /** Read-modify-write; never overrides a cancelled job. Returns the stored job. */
+    update(id: string, changes: Partial<AnalysisJob>): Promise<AnalysisJob | undefined>;
   };
   results: {
     get(id: string): Promise<StoredResult | undefined>;

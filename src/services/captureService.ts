@@ -142,21 +142,15 @@ export function createCaptureService(deps: {
 
     /** Turns a failed submission back into an editable draft with a fresh idempotency key. */
     async reopenDraft(visitId: string): Promise<void> {
-      const visit = await repos.visits.get(visitId);
-      if (!visit || visit.status === 'completed') return;
-      if (visit.jobId) {
-        const job = await repos.jobs.get(visit.jobId);
-        if (job && job.status !== 'completed') {
-          await repos.jobs.put({ ...job, status: 'cancelled', updatedAt: nowIso(now) });
-        }
-      }
-      await repos.visits.update(visitId, {
-        status: 'draft',
-        jobId: null,
-        submittedAt: null,
-        idempotencyKey: newId('idem'),
-        updatedAt: nowIso(now),
-      });
+      await repos.visits.reopen(visitId, newId('idem'), nowIso(now));
+    },
+
+    /** Resolves once all queued capture writes for the visit have settled. */
+    whenIdle(visitId: string): Promise<void> {
+      return (queues.get(visitId) ?? Promise.resolve()).then(
+        () => undefined,
+        () => undefined,
+      );
     },
 
     async discardDraft(visitId: string): Promise<void> {

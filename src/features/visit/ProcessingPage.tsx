@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import { isJobActive, type JobStatus } from '@/domain/models';
@@ -33,6 +33,7 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
   const services = useServices();
   const invalidate = useInvalidate();
   const { data: detail, isPending } = useVisitDetail(visitId);
+  const [acting, setActing] = useState(false);
 
   const completed = detail?.visit.status === 'completed';
   useEffect(() => {
@@ -85,15 +86,21 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
     { status: 'analysing', label: t.processing.status.analysing, detail: job.providerId },
   ];
 
-  const retry = async () => {
-    await services.analysis.retry(job.id);
-    await invalidate();
+  const act = async (task: () => Promise<unknown>) => {
+    setActing(true);
+    try {
+      await task();
+      await invalidate();
+    } finally {
+      setActing(false);
+    }
   };
-  const edit = async () => {
-    await services.captures.reopenDraft(visit.id);
-    await invalidate();
-    await navigate({ to: '/visits/$visitId/captures', params: { visitId } });
-  };
+  const retry = () => act(() => services.analysis.retry(job.id));
+  const edit = () =>
+    act(async () => {
+      await services.captures.reopenDraft(visit.id);
+      await navigate({ to: '/visits/$visitId/captures', params: { visitId } });
+    });
 
   return (
     <Screen
@@ -101,11 +108,17 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
         failed ? (
           <div className={shared.stack}>
             {job.failure?.retryable && (
-              <Button block size="lg" icon={<RefreshIcon size={18} />} onClick={() => void retry()}>
+              <Button
+                block
+                size="lg"
+                icon={<RefreshIcon size={18} />}
+                disabled={acting}
+                onClick={() => void retry()}
+              >
                 {t.processing.retry}
               </Button>
             )}
-            <Button block variant="secondary" onClick={() => void edit()}>
+            <Button block variant="secondary" disabled={acting} onClick={() => void edit()}>
               {t.processing.edit}
             </Button>
           </div>

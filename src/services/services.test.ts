@@ -103,6 +103,7 @@ describe('analysis submission', () => {
     expect(failed).toMatchObject({ status: 'failed', failure: { retryable: true } });
 
     await services.analysis.retry(job.id);
+    await services.analysis.whenIdle(job.id);
     const done = await services.repos.jobs.get(job.id);
     expect(done).toMatchObject({ status: 'completed', attempts: 2 });
     expect((await services.repos.visits.get(visit.id))?.resultId).toBe(`result-${job.id}`);
@@ -129,6 +130,62 @@ describe('analysis submission', () => {
     expect(reopened).toMatchObject({ status: 'draft', jobId: null });
     expect(reopened?.idempotencyKey).not.toBe(visit.idempotencyKey);
     expect((await services.repos.jobs.get(job.id))?.status).toBe('cancelled');
+  });
+});
+
+describe('concurrency', () => {
+  it('does not complete a job after the rep reopened the draft', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const mock = createMockProvider({
+      catalogue: seedCatalogue,
+      latencyMs: 0,
+      failFirstAttempt: false,
+    });
+    await setup({
+      id: 'slow',
+      source: 'mock',
+      analyse: async (input) => {
+        await gate;
+        return mock.analyse(input);
+      },
+    });
+    const visit = await draftWithPhotos(1);
+    const job = await services.analysis.submitVisit(visit.id);
+    await new Promise((r) => setTimeout(r, 20));
+    await services.captures.reopenDraft(visit.id);
+    release();
+    await services.analysis.whenIdle(job.id);
+    expect(await services.repos.visits.get(visit.id)).toMatchObject({
+      status: 'draft',
+      resultId: null,
+    });
+    expect((await services.repos.jobs.get(job.id))?.status).toBe('cancelled');
+    expect(await services.repos.results.get(`result-${job.id}`)).toBeUndefined();
+  });
+
+  it('waits for in-flight captures before submitting', async () => {
+    let imagesSent = 0;
+    const mock = createMockProvider({
+      catalogue: seedCatalogue,
+      latencyMs: 0,
+      failFirstAttempt: false,
+    });
+    await setup({
+      id: 'count',
+      source: 'mock',
+      analyse: async (input) => {
+        imagesSent = input.images.length;
+        return mock.analyse(input);
+      },
+    });
+    const visit = await draftWithPhotos(1);
+    const [, job] = await Promise.all([
+      services.captures.addCapture(visit.id, { blob: photo(), source: 'camera' }),
+      services.analysis.submitVisit(visit.id),
+    ]);
+    await services.analysis.whenIdle(job.id);
+    expect(imagesSent).toBe(2);
   });
 });
 

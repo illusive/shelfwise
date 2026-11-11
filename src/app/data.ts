@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { isJobActive } from '@/domain/models';
+import type { AnalysisJob, Visit } from '@/domain/models';
 import { loadVisitDetail, loadVisitSummaries } from '@/services/visitSummaries';
 import { useServices } from './services-context';
 
@@ -8,6 +8,15 @@ import { useServices } from './services-context';
  * Query hooks over the repositories. Components never call repositories directly for reads;
  * mutations go through services and then call `useInvalidate()`.
  */
+/**
+ * Keep polling while a submitted visit awaits its result. Visit and job are read separately,
+ * so a snapshot can show a finished job on a not-yet-completed visit; only a failed or
+ * cancelled job ends polling for a submitted visit.
+ */
+export function isAwaitingResult(visit: Visit, job: AnalysisJob | null): boolean {
+  return visit.status === 'submitted' && job?.status !== 'failed' && job?.status !== 'cancelled';
+}
+
 export const queryKeys = {
   currentRep: ['current-rep'] as const,
   reps: ['reps'] as const,
@@ -62,8 +71,8 @@ export function useVisitDetail(visitId: string) {
     queryFn: () => loadVisitDetail(services, visitId),
     // Poll while an analysis job runs; job state lives in IndexedDB.
     refetchInterval: (query) => {
-      const job = query.state.data?.job;
-      return job && isJobActive(job.status) ? 400 : false;
+      const data = query.state.data;
+      return data && isAwaitingResult(data.visit, data.job) ? 400 : false;
     },
   });
 }
@@ -74,6 +83,6 @@ export function useVisitSummaries(filter: { repId?: string; storeId?: string }) 
     queryKey: queryKeys.summaries(filter),
     queryFn: () => loadVisitSummaries(services, filter),
     refetchInterval: (query) =>
-      query.state.data?.some((s) => s.job && isJobActive(s.job.status)) ? 1000 : false,
+      query.state.data?.some((s) => isAwaitingResult(s.visit, s.job)) ? 1000 : false,
   });
 }

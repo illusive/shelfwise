@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import type { Capture } from '@/domain/models';
@@ -39,7 +39,9 @@ export function CameraPage({
   const actions = useVisitActions();
   const { data: detail } = useVisitDetail(visitId);
   const camera = useCamera();
-  const [pending, setPending] = useState(0);
+  const [pending, setPending] = useState(0); // new photos being saved (shown in the count)
+  const [saving, setSaving] = useState(0); // all shots being saved, including retakes
+  const inflight = useRef(new Set<Promise<unknown>>());
   const [flashKey, setFlashKey] = useState(0);
   const [retakeId, setRetakeId] = useState<string | null>(retakeCaptureId ?? null);
   const [stripOpen, setStripOpen] = useState(false);
@@ -52,27 +54,44 @@ export function CameraPage({
   const blocking = BLOCKING[camera.status];
   const locked = detail && detail.visit.status !== 'draft';
 
-  const close = () => {
-    if (detail) void navigate({ to: '/stores/$storeId', params: { storeId: detail.store.id } });
-    else void navigate({ to: '/' });
+  // Leaving the camera waits for photos still being saved, so none are lost or skipped.
+  const settle = async () => {
+    await Promise.allSettled([...inflight.current]);
+    await services.captures.whenIdle(visitId);
   };
-  const done = () => void navigate({ to: '/visits/$visitId/captures', params: { visitId } });
+  const close = async () => {
+    await settle();
+    if (detail) await navigate({ to: '/stores/$storeId', params: { storeId: detail.store.id } });
+    else await navigate({ to: '/' });
+  };
+  const done = async () => {
+    await settle();
+    await navigate({ to: '/visits/$visitId/captures', params: { visitId } });
+  };
 
   // Never awaits UI: the shutter is ready for the next tap immediately.
-  const shoot = async () => {
+  const shoot = () => {
+    const run = save();
+    inflight.current.add(run);
+    void run.finally(() => inflight.current.delete(run));
+  };
+
+  const save = async () => {
     const video = camera.videoRef.current;
     if (!video || camera.status !== 'ready' || locked) return;
     setFlashKey((k) => k + 1);
     navigator.vibrate?.(8);
     const target = retakeId;
     if (!target) setPending((p) => p + 1);
+    setSaving((n) => n + 1);
     try {
       const blob = await captureVideoFrame(video);
       if (target) {
         setRetakeId(null);
         await services.captures.replaceCapture(target, { blob, source: 'camera' });
         await invalidate();
-        if (retakeCaptureId) done();
+        if (retakeCaptureId)
+          await navigate({ to: '/visits/$visitId/captures', params: { visitId } });
       } else {
         await services.captures.addCapture(visitId, { blob, source: 'camera' });
         await invalidate();
@@ -81,6 +100,7 @@ export function CameraPage({
       toast(t.camera.saveFailed, 'danger');
     } finally {
       if (!target) setPending((p) => p - 1);
+      setSaving((n) => n - 1);
     }
   };
 
@@ -102,7 +122,7 @@ export function CameraPage({
       <div className={styles.shadeTop} aria-hidden="true" />
 
       <header className={styles.top}>
-        <IconButton label={t.common.close} onClick={close}>
+        <IconButton label={t.common.close} onClick={() => void close()}>
           <CloseIcon />
         </IconButton>
         <div className={styles.titleBlock}>
@@ -204,31 +224,29 @@ export function CameraPage({
                 className={styles.lastImage}
               />
             )}
-            <AnimatePresence mode="popLayout">
-              {count > 0 && (
-                <motion.span
-                  key={count}
-                  className={styles.count}
-                  data-testid="capture-count"
-                  initial={{ scale: 0.4 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 600, damping: 22 }}
-                >
-                  {count}
-                </motion.span>
-              )}
-            </AnimatePresence>
+            {count > 0 && (
+              <motion.span
+                key={count}
+                className={styles.count}
+                data-testid="capture-count"
+                initial={{ scale: 0.4 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 600, damping: 22 }}
+              >
+                {count}
+              </motion.span>
+            )}
           </button>
           <button
             type="button"
             className={styles.shutter}
             aria-label={t.camera.shutter}
             disabled={camera.status !== 'ready' || Boolean(locked)}
-            onClick={() => void shoot()}
+            onClick={shoot}
           >
             <span className={styles.shutterInner} />
           </button>
-          <Button variant="accent" onClick={done} disabled={pending > 0}>
+          <Button variant="accent" onClick={() => void done()} disabled={saving > 0}>
             {t.camera.done}
           </Button>
         </div>

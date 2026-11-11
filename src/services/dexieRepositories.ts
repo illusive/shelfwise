@@ -63,6 +63,41 @@ export function createDexieRepositories(db: ShelfwiseDb, catalogue: Catalogue): 
           return job;
         });
       },
+      completeJob({ jobId, result, completedAt, updatedAt }) {
+        return db.transaction('rw', db.visits, db.jobs, db.results, async () => {
+          const job = await db.jobs.get(jobId);
+          const visit = await db.visits.get(result.visitId);
+          if (!job || job.status === 'cancelled') return false;
+          if (!visit || visit.jobId !== jobId || visit.status !== 'submitted') return false;
+          await db.results.put(result);
+          await db.visits.update(visit.id, {
+            status: 'completed',
+            resultId: result.id,
+            completedAt,
+            updatedAt,
+          });
+          await db.jobs.put({ ...job, status: 'completed', progress: null, updatedAt });
+          return true;
+        });
+      },
+      reopen(visitId, idempotencyKey, at) {
+        return db.transaction('rw', db.visits, db.jobs, async () => {
+          const visit = await db.visits.get(visitId);
+          if (!visit || visit.status !== 'submitted') return;
+          if (visit.jobId) {
+            const job = await db.jobs.get(visit.jobId);
+            if (job?.status === 'completed') return;
+            if (job) await db.jobs.put({ ...job, status: 'cancelled', updatedAt: at });
+          }
+          await db.visits.update(visitId, {
+            status: 'draft',
+            jobId: null,
+            submittedAt: null,
+            idempotencyKey,
+            updatedAt: at,
+          });
+        });
+      },
       async delete(id) {
         await db.transaction('rw', db.visits, db.captures, db.blobs, async () => {
           const captures = await db.captures.where('visitId').equals(id).toArray();
@@ -93,6 +128,15 @@ export function createDexieRepositories(db: ShelfwiseDb, catalogue: Catalogue): 
         db.jobs.where('status').anyOf(['queued', 'preparing', 'analysing']).toArray(),
       async put(job) {
         await db.jobs.put(job);
+      },
+      update(id, changes) {
+        return db.transaction('rw', db.jobs, async () => {
+          const current = await db.jobs.get(id);
+          if (!current || current.status === 'cancelled') return current;
+          const next = { ...current, ...changes };
+          await db.jobs.put(next);
+          return next;
+        });
       },
     },
     results: {

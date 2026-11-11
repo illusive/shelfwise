@@ -40,15 +40,16 @@ export async function createServices(
   const repos = createDexieRepositories(db, seedCatalogue);
   const blobs = createDexieBlobStore(db);
   const provider = options.provider ?? createProvider(config);
+  const captures = createCaptureService({
+    repos,
+    blobs,
+    images: options.images ?? browserImageProcessor,
+  });
   return {
     repos,
     blobs,
     catalogue: indexCatalogue(seedCatalogue),
-    captures: createCaptureService({
-      repos,
-      blobs,
-      images: options.images ?? browserImageProcessor,
-    }),
-    analysis: createAnalysisService({ repos, blobs, provider }),
+    captures,
+    analysis: createAnalysisService({ repos, blobs, provider, beforeSubmit: captures.whenIdle }),
   };
 }

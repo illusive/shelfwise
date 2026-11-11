@@ -52,6 +52,18 @@ describe('normalisePrice', () => {
     expect(noPack.pricePerLitreOre).toBeNull();
   });
 
+  it('does not compute price per litre when pant may be included', () => {
+    const p = normalisePrice(
+      label({
+        match: matched('pepsi-max-330'),
+        deposit: { shown: false, amountOre: null, included: null },
+      }),
+      catalogue,
+    );
+    expect(p.basis).toBe('as-displayed');
+    expect(p.pricePerLitreOre).toBeNull();
+  });
+
   it('never makes different pack sizes comparable', () => {
     const single = normalisePrice(label({ match: matched('pepsi-max-330') }), catalogue);
     const bottle = normalisePrice(label({ match: matched('pepsi-max-1500') }), catalogue);
@@ -110,6 +122,12 @@ describe('dedupeLabels', () => {
     const result = dedupeLabels([a, b, label()]);
     expect(result).toHaveLength(2);
     expect(result.find((l) => l.physicalLabelId === 'pl-1')?.labelId).toBe(b.labelId);
+  });
+
+  it('keeps labels with the same physical id in different locations', () => {
+    const a = label({ physicalLabelId: 'pl-1', locationId: 'loc-shelf' });
+    const b = label({ physicalLabelId: 'pl-1', locationId: 'loc-cooler' });
+    expect(dedupeLabels([a, b])).toHaveLength(2);
   });
 
   it('applies the latest correction per label', () => {
