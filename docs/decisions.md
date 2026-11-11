@@ -97,6 +97,22 @@ Recommendation: keep the COCO overlay as framing help for now; collect and label
 store photos during the field POC and train an Apache-licensed class-agnostic detector (YOLOX-nano
 or RT-DETR-S) on them — the same photo set the brief needs for evaluation.
 
+## Overlap guide (camera, 11 Nov 2026)
+
+Reps photograph shelves sideways, left to right, each photo covering the full shelf height. The
+guide helps them keep a small, consistent overlap (target 25 %, `VITE_OVERLAP_TARGET`, ±7 %)
+with no gaps.
+
+| Topic       | Decision                                                                                                                                                                                                                                                                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Scope       | **Guidance only.** No auto-capture; the shutter is never delayed or disabled by it. Estimates are stored as capture metadata for later reconciliation, never used in metrics. Toggle in the camera bar (persisted, default on).                                                                                                                                    |
+| Strip       | After each new photo, the right 25 % of what the rep saw is shown translucently on the left of the viewfinder. A run resets on _Ny sektion_ or after a 2-minute pause; retakes do not move the run on.                                                                                                                                                             |
+| Matching    | Framework-free zero-mean normalised cross-correlation of 96 px-wide grayscale frames (horizontal search, ±3 px vertical). Confidence combines peak strength and its margin over the next-best peak, so **repetitive shelves of identical cans read as low confidence** — the guide then says "Ret striben ind efter hylden" and leaves the strip to the rep's eye. |
+| Runtime     | One shared vision worker and frame pump with live detection (no second frame grab). ≈2–4 ms per alignment on desktop Chromium; auto-off above 120 ms average; paused when hidden or under a sheet/lightbox.                                                                                                                                                        |
+| Tilt        | `DeviceMotionEvent` gravity → roll; a level line turns lime within ±2.5°. iOS permission is requested from the tap that opens the camera (and a _Vis vaterpas_ button); denied/missing sensors simply hide the level. Tilt changes damp the overlap estimate. Roll sign is unverified on iOS.                                                                      |
+| Metadata    | `Capture.placement = { run, position, overlap, confidence, rollDeg }`; `overlap`/`confidence` only when the match was confident at the moment of capture. Sent in the analysis request (see analysis-contract).                                                                                                                                                    |
+| LiDAR/depth | **Out of scope for the web app** — iOS Safari exposes no LiDAR/depth API to web pages. Measured spacing, distance or 3D stitching would need a native (ARKit) app.                                                                                                                                                                                                 |
+
 ## Open questions
 
 - Backend/hosting choice and Foundry model/endpoint (and request/response limits).
@@ -104,6 +120,7 @@ or RT-DETR-S) on them — the same photo set the brief needs for evaluation.
   authoritative owned/licensed list — the seed catalogue was compiled without access to
   royalunibrew.dk/brands/alle-brands during the build and must be validated against it.
 - Representative photo sets and acceptance targets (SoS error, price read rate, overlap).
+- Is 25 % the right overlap target for the analysis/stitching approach chosen later?
 - Overall SoS alongside shelf/cooler — implemented as proposed; confirm it's wanted.
 - Category depth: top-level only, or beer styles too (the incumbent tool reports by style)?
 - Should comparisons be limited to the same rep, or any rep (current)?

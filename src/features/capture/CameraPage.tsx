@@ -1,13 +1,22 @@
 import { useNavigate } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { readConfig } from '@/app/config';
 import { useInvalidate, useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
-import type { Capture } from '@/domain/models';
+import type { Capture, CapturePlacement } from '@/domain/models';
 import { padSequence, formatAddress } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import { captureVideoFrame } from '@/services/images';
-import { CloseIcon, InfoIcon, LightningIcon, RefreshIcon, TrashIcon, ScanIcon } from '@/ui/icons';
+import {
+  CloseIcon,
+  InfoIcon,
+  LightningIcon,
+  OverlapIcon,
+  RefreshIcon,
+  TrashIcon,
+  ScanIcon,
+} from '@/ui/icons';
 import { BlobImage } from '@/ui/primitives/BlobImage';
 import { Button, IconButton } from '@/ui/primitives/Button';
 import { Sheet } from '@/ui/primitives/Sheet';
@@ -15,12 +24,19 @@ import { useToast } from '@/ui/primitives/Toast';
 import { useVisitActions } from '../visit/useVisitActions';
 import { ImportPhotos } from './ImportPhotos';
 import { DetectionOverlay } from './detection/DetectionOverlay';
-import { useLiveDetectionSetting } from './detection/settings';
-import { useLiveDetection } from './detection/useLiveDetection';
+import { useLiveDetectionSetting, useOverlapGuideSetting } from './detection/settings';
+import { DEFAULT_GUIDE, nextPlacement, RUN_GAP_MS, type RunState } from './guide/guide';
+import { LevelIndicator } from './guide/LevelIndicator';
+import { useTilt } from './guide/motion';
+import { guideHint } from './guide/hints';
+import { OverlapGuide } from './guide/OverlapGuide';
+import { grabStrip } from './vision/frames';
+import { useVision } from './vision/useVision';
 import { Lightbox } from './Lightbox';
 import { useCamera, type CameraStatus } from './useCamera';
 import styles from './CameraPage.module.css';
 
+const OVERLAP_TARGET = readConfig().overlapTarget;
 const FAN_ANGLES = [[0], [-10, 8], [-16, -4, 11]];
 
 const blockingFor = (): Partial<Record<CameraStatus, { title: string; hint: string }>> => ({
@@ -54,11 +70,42 @@ export function CameraPage({
   const [tipsOpen, setTipsOpen] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
   const [liveOn, setLiveOn] = useLiveDetectionSetting();
+  const [guideOn, setGuideOn] = useOverlapGuideSetting();
+  const ready = camera.status === 'ready';
+  const tilt = useTilt(ready);
   // Load only once the camera runs; pause while sheets/lightbox cover the preview.
-  const live = useLiveDetection(camera.videoRef, {
-    enabled: liveOn && camera.status === 'ready',
+  const vision = useVision(camera.videoRef, {
+    detect: liveOn && ready,
+    align: guideOn && ready,
     paused: stripOpen || tipsOpen || viewId !== null,
+    tiltChange: tilt.readChange,
   });
+  const live = vision.detection;
+  const target = OVERLAP_TARGET;
+  // Right edge of the last photo in the current left-to-right run (guidance only).
+  const [strip, setStrip] = useState<HTMLCanvasElement | null>(null);
+  const runRef = useRef<RunState | null>(null);
+  const newRunRef = useRef(false);
+  const { setReference } = vision;
+  useEffect(() => {
+    if (!strip) return;
+    const timer = setTimeout(() => {
+      setStrip(null);
+      setReference(null);
+    }, RUN_GAP_MS);
+    return () => clearTimeout(timer);
+  }, [strip, setReference]);
+  useEffect(() => {
+    if (!guideOn) {
+      setStrip(null);
+      setReference(null);
+    }
+  }, [guideOn, setReference]);
+  const newSection = () => {
+    setStrip(null);
+    setReference(null);
+    newRunRef.current = true;
+  };
   const [inView, setInView] = useState(0);
   const liveText =
     live.status === 'running'
@@ -108,27 +155,62 @@ export function CameraPage({
     if (!video || camera.status !== 'ready' || locked) return;
     setFlashKey((k) => k + 1);
     navigator.vibrate?.(8);
-    const target = retakeId;
-    if (!target) setPending((p) => p + 1);
+    const replaceId = retakeId;
+    // Placement and the guide strip are taken synchronously, from the frame being captured.
+    const placement = replaceId ? null : placeShot(video);
+    if (!replaceId) setPending((p) => p + 1);
     setSaving((n) => n + 1);
     try {
       const blob = await captureVideoFrame(video);
-      if (target) {
+      if (replaceId) {
         setRetakeId(null);
-        await services.captures.replaceCapture(target, { blob, source: 'camera' });
+        await services.captures.replaceCapture(replaceId, { blob, source: 'camera' });
         await invalidate();
         if (retakeCaptureId)
           await navigate({ to: '/visits/$visitId/captures', params: { visitId } });
       } else {
-        await services.captures.addCapture(visitId, { blob, source: 'camera' });
+        await services.captures.addCapture(visitId, { blob, source: 'camera', placement });
         await invalidate();
       }
     } catch {
       toast(t.camera.saveFailed, 'danger');
     } finally {
-      if (!target) setPending((p) => p - 1);
+      if (!replaceId) setPending((p) => p - 1);
       setSaving((n) => n - 1);
     }
+  };
+
+  const placeShot = (video: HTMLVideoElement): CapturePlacement => {
+    const previousRun = Math.max(0, ...captures.map((c) => c.placement?.run ?? 0));
+    const run = nextPlacement(runRef.current, Date.now(), previousRun, newRunRef.current);
+    newRunRef.current = false;
+    runRef.current = run;
+    const a = vision.alignment;
+    const measured =
+      run.position > 1 &&
+      strip !== null &&
+      a.status === 'running' &&
+      a.overlap !== null &&
+      a.confidence >= DEFAULT_GUIDE.minConfidence;
+    const round = (n: number) => Math.round(n * 1000) / 1000;
+    if (guideOn) {
+      try {
+        const next = grabStrip(video, target);
+        setReference(next.gray);
+        setStrip(next.display);
+      } catch {
+        setStrip(null);
+        setReference(null);
+      }
+    }
+    return {
+      run: run.run,
+      position: run.position,
+      overlap: measured ? round(Math.min(1, a.overlap!)) : null,
+      confidence: measured ? round(a.confidence) : null,
+      rollDeg:
+        tilt.status === 'active' && tilt.roll !== null ? Math.round(tilt.roll * 10) / 10 : null,
+    };
   };
 
   const remove = async (capture: Capture) => {
@@ -153,6 +235,14 @@ export function CameraPage({
           onVisibleCount={setInView}
         />
       )}
+      {guideOn && strip && ready && (
+        <OverlapGuide
+          strip={strip}
+          alignment={vision.alignment}
+          target={target}
+          onNewSection={newSection}
+        />
+      )}
       <div className={styles.shadeTop} aria-hidden="true" />
 
       <header className={styles.top}>
@@ -175,6 +265,14 @@ export function CameraPage({
           <InfoIcon />
         </IconButton>
         <IconButton
+          label={t.camera.guide.toggle}
+          aria-pressed={guideOn}
+          className={guideOn ? styles.liveOn : undefined}
+          onClick={() => setGuideOn(!guideOn)}
+        >
+          <OverlapIcon />
+        </IconButton>
+        <IconButton
           label={t.camera.live.toggle}
           aria-pressed={liveOn}
           className={liveOn ? styles.liveOn : undefined}
@@ -195,7 +293,25 @@ export function CameraPage({
 
       {camera.status === 'ready' && (
         <>
-          <p className={styles.tip}>{t.camera.tip[count === 0 ? 0 : 1]}</p>
+          {guideOn && strip ? (
+            <p
+              className={styles.tip}
+              data-testid="guide-hint"
+              data-status={vision.alignment.status}
+              aria-live="polite"
+            >
+              {guideHint(vision.alignment, target)}
+            </p>
+          ) : (
+            <p className={styles.tip}>{t.camera.tip[count === 0 ? 0 : 1]}</p>
+          )}
+          {guideOn && (
+            <LevelIndicator
+              status={tilt.status}
+              roll={tilt.roll}
+              onEnable={() => void tilt.request()}
+            />
+          )}
           {liveText && (
             <p
               className={styles.liveChip}

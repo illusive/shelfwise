@@ -39,7 +39,7 @@ All data is on the device in IndexedDB (`ShelfwiseDb`, Dexie):
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `reps`, `stores` | Seeded (`services/seed`, versioned by `SEED_VERSION`). Stores keep `mustStockProductIds`/`targetPrices` for deferred KPIs.                                  |
 | `visits`         | One record per visit: store, rep, status (`draft`/`submitted`/`completed`), idempotency key, job/result ids, timestamps. Never overwritten by later visits. |
-| `captures`       | Photo metadata: sequence, captured time, source (`camera`/`import`/`demo`), dimensions, blob ids.                                                           |
+| `captures`       | Photo metadata: sequence, captured time, source (`camera`/`import`/`demo`), dimensions, blob ids, optional overlap-guide `placement`.                       |
 | `blobs`          | Original JPEG/imported files (full resolution) and ~480 px thumbnails.                                                                                      |
 | `jobs`           | Analysis jobs: status, attempts, real preparation progress, failure.                                                                                        |
 | `results`        | Validated `AnalysisResponse` per job (`result-<jobId>`), plus storage time.                                                                                 |
@@ -79,13 +79,24 @@ device until a live backend exists.
 6. UI polls IndexedDB while a submitted visit awaits its result (TanStack Query
    `refetchInterval`).
 
-## Live detection (camera, optional)
+## Live camera guidance (optional)
 
-`features/capture/detection/`: `useLiveDetection` grabs a 480 px frame from the preview at most
-every 125 ms (`InferenceGovernor`), posts it as an `ImageBitmap` to `detector.worker.ts`
-(MediaPipe `ObjectDetector`, CPU delegate), and feeds detections through `updateTracks`
-(IoU matching + EMA smoothing). Nothing is persisted. Tests replace the detector via
-`window.__SHELFWISE_DETECTOR__` (e2e) and cover the pure tracking/throttling logic (unit).
+`features/capture/vision/`: `useVision` runs one frame pump (at most every 125 ms, skipped while
+busy, paused when hidden or under a sheet/lightbox) and grabs each frame once — a 480 px
+`ImageBitmap` for detection and/or a 96 px-wide grayscale of the visible viewfinder for
+alignment — and posts both to a single module worker (`vision.worker.ts`). The worker lazily
+loads MediaPipe `ObjectDetector` (CPU delegate) only when detection is on and runs the overlap
+matcher against the reference strip set after each capture. Each task has its own speed budget
+and switches itself off independently.
+
+- `detection/`: `updateTracks` (IoU matching + EMA smoothing), `InferenceGovernor`, overlay.
+- `guide/`: pure `alignment.ts` (normalised cross-correlation → overlap + confidence),
+  `guide.ts` (status/hints, smoothing, tilt maths, runs), `motion.ts` (iOS permission,
+  `useTilt`), `OverlapGuide`/`LevelIndicator`.
+
+Only the placement estimate at capture time is persisted (`Capture.placement`). Tests replace
+the worker via `window.__SHELFWISE_VISION__` (e2e: detector ok/fail/slow, alignment aligned/too
+much/too little/no match/slow) and cover the pure logic with synthetic shifted images (unit).
 
 ## Integrations (planned)
 

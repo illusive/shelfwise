@@ -70,6 +70,7 @@ credentials in them.
 | `VITE_ANALYSIS_PROVIDER`       | `mock`          | `live` is reserved; it falls back to mock until a server-side adapter exists |
 | `VITE_MOCK_LATENCY_MS`         | `2500`          | Simulated analysis duration                                                  |
 | `VITE_MOCK_FAIL_FIRST_ATTEMPT` | `false`         | Fail each job's first attempt (retryable) to demo recovery                   |
+| `VITE_OVERLAP_TARGET`          | `0.25`          | Camera overlap guide target (share of photo width, clamped 0.1–0.5)          |
 | `BASE_PATH`                    | `/`             | Public path the app is served from (`/shelfwise/` on GitHub Pages)           |
 | `LAN_HOST`                     | —               | Docker: IP/hostname added to the self-signed certificate                     |
 | `HTTPS_PORT` / `HTTP_PORT`     | `8443` / `8080` | Docker host ports (HTTP redirects to HTTPS)                                  |
@@ -97,7 +98,9 @@ E2E_BASE_URL=https://localhost:8443 npm run e2e   # same journey against Docker
 
 The e2e journey covers the default rep and switching reps, store search, repeated camera capture, removal, import,
 reload recovery, submission, results, rep review, report, photo evidence and archive, plus
-camera-permission denial with the import fallback. Real-device validation (iPhone/Android)
+camera-permission denial with the import fallback. Camera specs stub the vision worker to cover
+live detection (ok/off/failing/slow) and the overlap guide (aligned, too far, too much overlap,
+no match, slow, sensors denied) — capture must work in every case. Real-device validation (iPhone/Android)
 is manual — see `docs/ux-guidelines.md`.
 
 ## Build

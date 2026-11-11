@@ -241,6 +241,17 @@ export const analysisRequestSchema = z.object({
         width: z.number().int().positive(),
         height: z.number().int().positive(),
         byteSize: z.number().int().nonnegative(),
+        /** Overlap-guide estimate from the camera; null/absent for imports. Guidance only. */
+        placement: z
+          .object({
+            run: z.number().int().positive(),
+            position: z.number().int().positive(),
+            overlap: z.number().min(0).max(1).nullable(),
+            confidence: z.number().min(0).max(1).nullable(),
+            rollDeg: z.number().nullable(),
+          })
+          .nullable()
+          .optional(),
       }),
     )
     .min(1),

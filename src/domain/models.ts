@@ -56,6 +56,23 @@ export interface Visit {
 
 export type CaptureSource = 'camera' | 'import' | 'demo';
 
+/**
+ * Where a camera photo sits in a left-to-right run along a shelf, recorded by the overlap
+ * guide so analysis can reconcile overlapping photos. Guidance estimates, not measurements.
+ */
+export interface CapturePlacement {
+  /** Run of photos taken left to right (new run after "new section" or a pause). */
+  run: number;
+  /** 1-based position within the run. */
+  position: number;
+  /** Estimated overlap with the previous photo in the run, 0–1 of the photo width. */
+  overlap: number | null;
+  /** 0–1 matching confidence for `overlap` (not a validated accuracy). */
+  confidence: number | null;
+  /** Sideways tilt of the phone at capture, in degrees; null without a motion sensor. */
+  rollDeg: number | null;
+}
+
 export interface Capture {
   id: string;
   visitId: string;
@@ -69,6 +86,8 @@ export interface Capture {
   byteSize: number;
   blobId: string;
   thumbBlobId: string | null;
+  /** Overlap-guide metadata for camera photos; absent for imports and older captures. */
+  placement?: CapturePlacement | null;
 }
 
 export type JobStatus = 'queued' | 'preparing' | 'analysing' | 'completed' | 'failed' | 'cancelled';

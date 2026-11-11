@@ -55,6 +55,19 @@ updates and smoothed by an EMA tracker; boxes fade in/out and dim while briefly 
 shutter: dark translucent pill with a lime dot. Toggle: scan icon in the camera top bar (lime when
 on). Under reduced motion boxes are static.
 
+## Overlap guide (camera, extension)
+
+`OverlapGuide`: the previous photo's right-edge strip at 50 % opacity, pinned left at the
+target width (25 %), with a 2 px lime inner edge. A dashed lime target band spans target ±
+tolerance and fills faintly when aligned. A vertical marker (2 px white line + 14 × 44 px pill
+handle, panorama-style) sits where the previous photo ends in the live view and turns
+`--color-accent` when aligned; it is hidden while confidence is low. The hint replaces the
+camera tip (same dark translucent card). _Ny sektion_: dark translucent pill, bottom-left above
+the detection chip. `LevelIndicator`: 64 px horizon line over a dashed 96 px reference, white →
+lime when level, degrees in mono below. Toggle: overlapping-frames icon in the top bar (lime
+when on). Marker and horizon ease with `--duration-base`/`--duration-fast`; static under reduced
+motion.
+
 ## Navigation (extension following the user's other field app)
 
 The Figma's full-width tab bar is replaced by a floating, inset, dark-green bar of connected
@@ -108,6 +121,8 @@ bar sits above the safe-area inset.
 1. Stores: assigned + full-catalogue search with address disambiguation.
 1. Store overview (no draft): latest result card, history, empty state, _Start visit_.
 1. Camera blocking states (denied, unavailable, insecure, interrupted), captures sheet, tips sheet.
+1. Camera live guidance: detection brackets + chip, overlap guide (previous-photo strip, target
+   band, marker, hints, _Ny sektion_) and level indicator.
 1. Photo wall with quick remove (+ _Undo_ toast), full-screen lightbox with _Retake_/_Remove_/back,
    and the swipe-to-analyse bar with discard confirmation.
 1. Processing / failure screen with job id, attempts, steps, retry and edit.

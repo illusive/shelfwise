@@ -14,6 +14,7 @@ import { SubmitBar } from '../visit/SubmitBar';
 import { useVisitActions } from '../visit/useVisitActions';
 import { ImportPhotos } from './ImportPhotos';
 import { Lightbox } from './Lightbox';
+import { primeMotionPermission } from './guide/motion';
 import { PhotoWall } from './PhotoWall';
 
 export function CapturesPage({ visitId }: { visitId: string }) {
@@ -33,7 +34,10 @@ export function CapturesPage({ visitId }: { visitId: string }) {
   const { visit, store, captures } = detail;
   const tz = store.timeZone;
   const editable = visit.status === 'draft';
-  const toCamera = () => void navigate({ to: '/visits/$visitId/camera', params: { visitId } });
+  const toCamera = () => {
+    primeMotionPermission();
+    void navigate({ to: '/visits/$visitId/camera', params: { visitId } });
+  };
 
   return (
     <Screen

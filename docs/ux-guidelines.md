@@ -21,6 +21,18 @@
   not affect results. It loads after the camera starts, can be toggled off (remembered), pauses
   behind sheets, switches itself off on slow devices, and never delays the shutter. Reduced motion:
   static boxes, no animation.
+- **Overlap guide (optional, default on):** shelves are shot sideways, left to right. After each
+  photo the right edge of it stays translucent on the left of the viewfinder; the rep lines it up
+  with the shelf and moves on. A white marker shows where the previous photo now ends and turns
+  lime inside the target zone (~25 % overlap); the top hint says "Godt overlap", "For meget
+  overlap — flyt længere til højre" or "For lidt overlap — gå lidt tilbage". When the match is
+  unsure (e.g. rows of identical cans) it says so ("Ret striben ind efter hylden") and shows only
+  the strip. _Ny sektion_ starts a new run; a 2-minute pause does too. It never takes photos by
+  itself, never delays the shutter, pauses behind sheets and switches itself off on slow devices.
+  Reduced motion: static marker and level.
+- **Level:** a small horizon line under the tip turns lime when the phone is level. iOS asks for
+  motion access from the tap that opens the camera (or _Vis vaterpas_); if refused or missing,
+  the level is simply not shown.
 - Any future detection model over ~15 MB loads only when the connection is not metered/cellular
   (where the browser reports it) or after the rep turns live detection on explicitly.
 - Tips rotate from "Fit the full shelf and its price labels" to "Move along and overlap the

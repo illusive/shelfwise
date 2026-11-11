@@ -3,6 +3,8 @@ export interface AppConfig {
   analysisProvider: 'mock' | 'live';
   mockLatencyMs: number;
   mockFailFirstAttempt: boolean;
+  /** Target overlap between consecutive shelf photos (fraction of the photo width). */
+  overlapTarget: number;
 }
 
 function readNumber(value: string | undefined, fallback: number): number {
@@ -18,5 +20,9 @@ export function readConfig(
     analysisProvider: provider,
     mockLatencyMs: readNumber(env.VITE_MOCK_LATENCY_MS as string | undefined, 2500),
     mockFailFirstAttempt: env.VITE_MOCK_FAIL_FIRST_ATTEMPT === 'true',
+    overlapTarget: Math.min(
+      0.5,
+      Math.max(0.1, readNumber(env.VITE_OVERLAP_TARGET as string | undefined, 0.25)),
+    ),
   };
 }

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState, type ReactNode } from 'react';
 import { useCurrentRep, useStore, useVisitDetail, useVisitSummaries } from '@/app/data';
+import { primeMotionPermission } from '@/features/capture/guide/motion';
 import { formatPct, formatRelativeDay, formatTime, padSequence } from '@/i18n/format';
 import { t } from '@/i18n/strings';
 import type { VisitSummary } from '@/services/visitSummaries';
@@ -37,6 +38,7 @@ export function StorePage({ storeId }: { storeId: string }) {
   const draft = summaries.find((s) => s.visit.status === 'draft' && s.visit.repId === rep.id);
 
   const begin = async () => {
+    primeMotionPermission();
     const visit = await actions.startVisit(store.id, rep.id);
     await navigate({ to: '/visits/$visitId/camera', params: { visitId: visit.id } });
   };
@@ -172,7 +174,10 @@ function DraftHub({
   const [openId, setOpenId] = useState<string | null>(null);
   const captures = detail?.captures ?? [];
   const only = captures.length === 1 ? captures[0] : undefined;
-  const toCamera = () => void navigate({ to: '/visits/$visitId/camera', params: { visitId } });
+  const toCamera = () => {
+    primeMotionPermission();
+    void navigate({ to: '/visits/$visitId/camera', params: { visitId } });
+  };
 
   return (
     <Screen

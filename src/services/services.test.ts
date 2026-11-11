@@ -15,7 +15,12 @@ const images: ImageProcessor = {
   thumbnail: async () => null,
 };
 const photo = () => new Blob(['jpeg'], { type: 'image/jpeg' });
-const config = { analysisProvider: 'mock' as const, mockLatencyMs: 0, mockFailFirstAttempt: false };
+const config = {
+  analysisProvider: 'mock' as const,
+  mockLatencyMs: 0,
+  mockFailFirstAttempt: false,
+  overlapTarget: 0.25,
+};
 
 let services: Services;
 let dbCount = 0;
@@ -127,6 +132,35 @@ describe('capture drafts', () => {
     expect((await services.repos.captures.listByVisit(visit.id)).map((c) => c.sequence)).toEqual([
       2, 3,
     ]);
+  });
+});
+
+describe('overlap placement', () => {
+  it('stores the placement and sends it with the analysis request', async () => {
+    let sent: unknown;
+    const mock = createMockProvider({
+      catalogue: seedCatalogue,
+      latencyMs: 0,
+      failFirstAttempt: false,
+    });
+    await setup({
+      id: 'spy',
+      source: 'mock',
+      analyse: async (input) => {
+        sent = input.request.images.map((i) => i.placement);
+        return mock.analyse(input);
+      },
+    });
+    const visit = await services.captures.startVisit('st-meny-osterbro', 'rep-alex');
+    const placement = { run: 1, position: 2, overlap: 0.27, confidence: 0.8, rollDeg: 1.2 };
+    await services.captures.addCapture(visit.id, { blob: photo(), source: 'camera', placement });
+    await services.captures.addCapture(visit.id, { blob: photo(), source: 'import' });
+    const [a, b] = await services.repos.captures.listByVisit(visit.id);
+    expect(a.placement).toEqual(placement);
+    expect(b.placement).toBeNull();
+    const job = await services.analysis.submitVisit(visit.id);
+    await services.analysis.whenIdle(job.id);
+    expect(sent).toEqual([placement, null]);
   });
 });
 

@@ -24,12 +24,20 @@ output is validated with `analysisResponseSchema` before storage; metrics are ca
       "width": 3840,
       "height": 2160,
       "byteSize": 2400000,
+      // camera photos only; null/absent for imports — guidance estimate, not a measurement
+      "placement": { "run": 1, "position": 2, "overlap": 0.27, "confidence": 0.81, "rollDeg": 1.4 },
     },
   ],
 }
 ```
 
 Images are sent alongside (multipart/blob), at original resolution.
+
+`placement` comes from the camera's overlap guide: photos in the same `run` were taken left to
+right along one shelf section, in `position` order; `overlap` is the estimated share of this
+photo's width that repeats the previous one (0–1), with a 0–1 `confidence`; `rollDeg` is the
+phone's sideways tilt. `overlap`/`confidence` are null when the match was unsure. Analysis may
+use them to de-duplicate facings across overlapping photos but must not trust them blindly.
 
 ## Response (`AnalysisResponse`)
 

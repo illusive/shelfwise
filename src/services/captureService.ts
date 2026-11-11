@@ -1,4 +1,4 @@
-import type { Capture, CaptureSource, Visit } from '@/domain/models';
+import type { Capture, CapturePlacement, CaptureSource, Visit } from '@/domain/models';
 import { newId, nowIso } from './ids';
 import type { ImageProcessor } from './images';
 import type { BlobStore, Repositories } from './repositories';
@@ -7,6 +7,7 @@ export interface CaptureInput {
   blob: Blob;
   source: CaptureSource;
   capturedAt?: Date;
+  placement?: CapturePlacement | null;
 }
 
 export class DraftLockedError extends Error {
@@ -107,6 +108,7 @@ export function createCaptureService(deps: {
           visitId,
           sequence: (existing.at(-1)?.sequence ?? 0) + 1,
           ...stored,
+          placement: input.placement ?? null,
         };
         await repos.captures.put(capture);
         await touch(visitId);

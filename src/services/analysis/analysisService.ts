@@ -95,6 +95,7 @@ export function createAnalysisService(deps: {
           width: c.width,
           height: c.height,
           byteSize: c.byteSize,
+          placement: c.placement ?? null,
         })),
       });
 

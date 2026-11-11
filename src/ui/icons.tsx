@@ -153,3 +153,9 @@ export const ScanIcon = (p: IconProps) => (
     <rect x="13" y="9.5" width="2.6" height="7" rx="1" />
   </Icon>
 );
+export const OverlapIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="6" width="11" height="12" rx="2" />
+    <rect x="10" y="6" width="11" height="12" rx="2" strokeDasharray="2.5 2" />
+  </Icon>
+);

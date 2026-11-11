@@ -23,29 +23,63 @@ export async function swipeToConfirm(page: Page) {
 }
 
 export type DetectorStub = 'ok' | 'fail' | 'slow';
+export type AlignmentStub = 'aligned' | 'too-much' | 'too-little' | 'none' | 'slow';
 
 /**
- * Replaces the on-device detector with a deterministic stub (see window.__SHELFWISE_DETECTOR__):
- * `ok` reports three drinks, `fail` cannot load, `slow` reports 1 s inference.
+ * Replaces the vision worker with a deterministic stub (see window.__SHELFWISE_VISION__).
+ * Detector: `ok` reports three drinks, `fail` cannot load, `slow` reports 1 s inference.
+ * Alignment (once a previous-photo strip exists): `aligned` hits the 25% target, `too-much`
+ * and `too-little` miss it, `none` finds no confident match, `slow` takes 500 ms.
  */
+export async function stubVision(
+  page: Page,
+  {
+    detector = 'ok',
+    alignment = 'aligned',
+  }: { detector?: DetectorStub; alignment?: AlignmentStub } = {},
+) {
+  await page.addInitScript(
+    ({ detector, alignment }) => {
+      const overlaps = {
+        aligned: 0.25,
+        'too-much': 0.6,
+        'too-little': 0.05,
+        none: 0.25,
+        slow: 0.25,
+      };
+      window.__SHELFWISE_VISION__ = () => ({
+        loadDetector: () =>
+          detector === 'fail'
+            ? Promise.reject(new Error('stub'))
+            : Promise.resolve({ backend: 'stub' }),
+        setReference: () => {},
+        process: async ({ detectFrame, alignFrame }) => {
+          detectFrame?.close();
+          // Inside the visible centre of a 16:9 frame shown with object-fit: cover on a phone.
+          const boxes = detectFrame
+            ? [0.38, 0.47, 0.56].map((x) => ({ x, y: 0.3, width: 0.07, height: 0.3, score: 0.9 }))
+            : null;
+          return {
+            boxes,
+            detectMs: detectFrame ? (detector === 'slow' ? 1000 : 5) : null,
+            alignment: alignFrame
+              ? {
+                  overlap: overlaps[alignment],
+                  confidence: alignment === 'none' ? 0.05 : 0.9,
+                  peak: alignment === 'none' ? 0.4 : 0.95,
+                }
+              : null,
+            alignMs: alignFrame ? (alignment === 'slow' ? 500 : 2) : null,
+          };
+        },
+        dispose: () => {},
+      });
+    },
+    { detector, alignment },
+  );
+}
+
+/** Detection-only shorthand used by most journeys. */
 export async function stubDetector(page: Page, mode: DetectorStub = 'ok') {
-  await page.addInitScript((m) => {
-    window.__SHELFWISE_DETECTOR__ = () => ({
-      load: () =>
-        m === 'fail' ? Promise.reject(new Error('stub')) : Promise.resolve({ backend: 'stub' }),
-      detect: async (frame: ImageBitmap) => {
-        frame.close();
-        // Inside the visible centre of a 16:9 frame shown with object-fit: cover on a phone.
-        const boxes = [0.38, 0.47, 0.56].map((x) => ({
-          x,
-          y: 0.3,
-          width: 0.07,
-          height: 0.3,
-          score: 0.9,
-        }));
-        return { boxes, ms: m === 'slow' ? 1000 : 5 };
-      },
-      dispose: () => {},
-    });
-  }, mode);
+  await stubVision(page, { detector: mode });
 }
