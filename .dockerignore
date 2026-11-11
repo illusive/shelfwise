@@ -6,4 +6,4 @@ playwright-report
 test-results
 certs
 .git
-docs/references
+.references

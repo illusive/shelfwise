@@ -10,3 +10,6 @@ certs/*.pem
 .env.local
 .DS_Store
 *.log
+
+# Client/reference material: kept locally, never committed (public repo)
+.references/

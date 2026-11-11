@@ -1,6 +1,6 @@
 # Decisions
 
-Material decisions agreed during discovery (see `docs/references/discovery-plan.md`) and made
+Material decisions agreed during discovery (the original brief and discovery plan are kept locally in `.references/`, not in the repo) and made
 during the build. Each rule has one home; link here rather than restating.
 
 ## Agreed decisions
@@ -13,7 +13,7 @@ during the build. Each rule has one home; link here rather than restating.
 | Share of Shelf | Visible facings: client ÷ all eligible beverage facings × 100. Shelves and coolers separate; overall aggregates counts; unknowns stay in the denominator.                       | Defensible, testable; avoids inflating client share.    |
 | Denominator    | All beverages; overall + optional per-category (beer, soft drinks, water, energy/functional, RTD/cider, other).                                                                 | Matches how reps see shelves.                           |
 | Client brands  | Everything Royal Unibrew sells in DK, owned + licensed/distributed, tagged `owned`/`licensed`.                                                                                  | Business reality (Pepsi, Heineken…).                    |
-| Locations      | `shelf`, `cooler`, `display`; displays counted, excluded from SoS. Classification from analysis, not manual tags.                                                               | Faster capture than the incumbent tool.                             |
+| Locations      | `shelf`, `cooler`, `display`; displays counted, excluded from SoS. Classification from analysis, not manual tags.                                                               | Faster capture than the incumbent tool.                 |
 | Rep review     | Quick review of unresolved items only; AI values and rep corrections stored separately with provenance.                                                                         | Accuracy without re-keying everything.                  |
 | Execution KPIs | Out-of-stock/must-stock and price compliance deferred; stores keep `mustStockProductIds` and `targetPrices`.                                                                    | Scope.                                                  |
 | Reporting      | No export/manager reporting; data stays flat and versioned.                                                                                                                     | Scope.                                                  |

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { snap } from './snap';
 
 const samplePhoto = fileURLToPath(
-  new URL('../docs/references/figma/shelf-photo.jpg', import.meta.url),
+  new URL('./fixtures/shelf.jpg', import.meta.url),
 );
 
 test('rep finds a store, captures, reviews, submits and sees results', async ({ page }) => {

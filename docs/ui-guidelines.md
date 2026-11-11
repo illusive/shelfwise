@@ -2,10 +2,9 @@
 
 ## References
 
-- **Governing design:** `docs/references/figma/Shelfwise.fig` (decode with `decode.mjs` +
-  `summarize.mjs`); export `Shelfwise.png`; decoded values in `decoded-tokens.txt` and copy in
-  `screen-copy.txt`. Frames: Home, In store, Camera, Analysis & summary, Archive, Daily
-  captures (402 × 874).
+- **Governing design:** `Shelfwise.fig` with its PNG export, decoded tokens and screen copy.
+  These are kept locally in `.references/figma/` and are not in the repo. Frames: Home, In store,
+  Camera, Analysis & summary, Archive, Daily captures (402 × 874).
 - Where the Figma and the agreed decisions differ, decisions win and are noted below.
 
 ## Tokens (`src/ui/tokens.css`)

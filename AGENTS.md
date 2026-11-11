@@ -9,7 +9,7 @@ analysis provider behind a provider-agnostic, Zod-validated contract.
 
 - Read `docs/decisions.md` before changing behaviour; record new material decisions there.
   Don't re-ask questions already answered there.
-- Figma (`docs/references/figma/Shelfwise.fig`) governs the design. Screens not in Figma extend
+- Figma (`Shelfwise.fig`, kept locally in `.references/figma/`) governs the design. Screens not in Figma extend
   its language and are listed in `docs/ui-guidelines.md` for review.
 - Metrics are calculated deterministically in `src/domain` from validated observations. Never
   average percentages; never silently drop unknowns.
@@ -40,4 +40,5 @@ analysis provider behind a provider-agnostic, Zod-validated contract.
 - `docs/ui-guidelines.md` — design references, tokens, primitives, motion, invented screens.
 - `docs/analysis-contract.md` — request/response schemas, metric definitions, unknowns.
 - `docs/decisions.md` — decisions, rationale, open questions, known limits.
-- `docs/references/` — original brief, approved plan, Figma, competitor material (not shipped).
+- `.references/` — original brief, approved plan, Figma and competitor material. Local only:
+  gitignored and never committed (the repo is public).

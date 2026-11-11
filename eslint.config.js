@@ -12,7 +12,7 @@ export default tseslint.config(
       'coverage',
       'playwright-report',
       'test-results',
-      'docs/references',
+      '.references',
       'node_modules',
     ],
   },
