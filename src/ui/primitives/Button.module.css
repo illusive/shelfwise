@@ -153,3 +153,10 @@
   position: absolute;
   inset: -2px;
 }
+
+.sm {
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  font-size: var(--font-size-13);
+  border-radius: var(--radius-pill);
+}

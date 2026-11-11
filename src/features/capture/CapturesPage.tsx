@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useVisitDetail } from '@/app/data';
 import { formatLongDay } from '@/i18n/format';
@@ -63,11 +63,11 @@ export function CapturesPage({ visitId }: { visitId: string }) {
         <Notice
           tone="info"
           title={t.store.processing}
-          action={
-            <Link to="/visits/$visitId/processing" params={{ visitId }}>
-              {t.processing.title} →
-            </Link>
-          }
+          action={{
+            label: t.processing.title,
+            onClick: () =>
+              void navigate({ to: '/visits/$visitId/processing', params: { visitId } }),
+          }}
         />
       )}
 

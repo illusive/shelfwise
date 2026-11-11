@@ -190,7 +190,6 @@ export const da: Strings = {
   },
   results: {
     title: 'Hyldeanalyse',
-    saved: 'Gemt',
     sos: 'Hyldeandel',
     scope: { overall: 'Samlet', shelf: 'Hylder', cooler: 'Kølere' },
     facingsOf: (client: number, eligible: number) => `${client} af ${eligible} synlige facings`,
@@ -210,6 +209,7 @@ export const da: Strings = {
     reviewNeeded: (n: number) => `${plural(n, 'punkt', 'punkter')} skal tjekkes`,
     reviewHint: 'Bekræft eller ret uafklarede produkter og priser.',
     review: 'Gennemgå nu',
+    reviewShort: 'Gennemgå',
     reportGateTitle: (n: number) => `${plural(n, 'punkt', 'punkter')} kræver opmærksomhed`,
     reportGateBody: 'Vil du gennemgå dem først, så rapporten indeholder dine rettelser?',
     reportGateSkip: 'Gå til rapporten alligevel',

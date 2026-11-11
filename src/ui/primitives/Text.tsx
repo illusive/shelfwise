@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { t } from '@/i18n/strings';
 import { AlertIcon, InfoIcon } from '../icons';
+import { Button } from './Button';
 import styles from './Text.module.css';
 
 export function Eyebrow({
@@ -47,6 +48,16 @@ export function Badge({
   );
 }
 
+export interface NoticeAction {
+  label: string;
+  onClick: () => void;
+  testId?: string;
+}
+
+/**
+ * Inline message card: tinted icon badge, title + supporting text, optional compact button.
+ * Tone shows in the icon badge and edge, not by tinting the whole card.
+ */
 export function Notice({
   tone = 'warning',
   title,
@@ -56,21 +67,31 @@ export function Notice({
   tone?: 'warning' | 'info' | 'danger';
   title: ReactNode;
   children?: ReactNode;
-  action?: ReactNode;
+  action?: NoticeAction;
 }) {
   return (
     <div
       className={`${styles.notice} ${styles[`notice-${tone}`]}`}
       role={tone === 'danger' ? 'alert' : undefined}
     >
-      <span className={styles.noticeIcon}>
+      <span className={styles.noticeIcon} aria-hidden="true">
         {tone === 'info' ? <InfoIcon size={18} /> : <AlertIcon size={18} />}
       </span>
       <div className={styles.noticeBody}>
         <p className={styles.noticeTitle}>{title}</p>
         {children && <div className={styles.noticeText}>{children}</div>}
-        {action && <div className={styles.noticeAction}>{action}</div>}
       </div>
+      {action && (
+        <Button
+          size="sm"
+          variant="secondary"
+          className={styles.noticeAction}
+          data-testid={action.testId}
+          onClick={action.onClick}
+        >
+          {action.label}
+        </Button>
+      )}
     </div>
   );
 }

@@ -194,15 +194,6 @@
   font-weight: var(--font-weight-semibold);
 }
 
-.reviewLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-min);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-13);
-  color: inherit;
-}
-
 .categories {
   list-style: none;
   margin: 0;

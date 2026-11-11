@@ -90,15 +90,14 @@ export function StorePage({ storeId }: { storeId: string }) {
           key={s.visit.id}
           tone={s.job?.status === 'failed' ? 'danger' : 'info'}
           title={s.job?.status === 'failed' ? t.processing.status.failed : t.store.processing}
-          action={
-            <Link
-              to="/visits/$visitId/processing"
-              params={{ visitId: s.visit.id }}
-              className={styles.changeStore}
-            >
-              {t.common.viewAll} →
-            </Link>
-          }
+          action={{
+            label: t.processing.title,
+            onClick: () =>
+              void navigate({
+                to: '/visits/$visitId/processing',
+                params: { visitId: s.visit.id },
+              }),
+          }}
         />
       ))}
       {completed[0] ? <LatestResult summary={completed[0]} /> : null}

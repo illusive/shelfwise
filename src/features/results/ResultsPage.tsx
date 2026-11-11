@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useVisitDetail } from '@/app/data';
 import { useServices } from '@/app/services-context';
 import { t } from '@/i18n/strings';
-import { CheckIcon, ChevronRightIcon } from '@/ui/icons';
+import { ChevronRightIcon } from '@/ui/icons';
 import { Button } from '@/ui/primitives/Button';
 import { Screen, TopBar } from '@/ui/primitives/Screen';
 import { Divider, EmptyState, Notice, SectionHeader } from '@/ui/primitives/Text';
@@ -52,16 +52,11 @@ export function ResultsPage({ visitId }: { visitId: string }) {
     unresolved > 0 ? (
       <Notice
         title={t.results.reviewNeeded(unresolved)}
-        action={
-          <Link
-            to="/visits/$visitId/review"
-            params={{ visitId }}
-            className={styles.reviewLink}
-            data-testid="review-link"
-          >
-            {t.results.review} →
-          </Link>
-        }
+        action={{
+          label: t.results.reviewShort,
+          testId: 'review-link',
+          onClick: () => void navigate({ to: '/visits/$visitId/review', params: { visitId } }),
+        }}
       >
         {t.results.reviewHint}
       </Notice>
@@ -81,14 +76,7 @@ export function ResultsPage({ visitId }: { visitId: string }) {
         </Button>
       }
     >
-      <PageTitle
-        title={t.results.title}
-        aside={
-          <>
-            <CheckIcon size={14} /> {t.results.saved}
-          </>
-        }
-      />
+      <PageTitle title={t.results.title} />
       {reviewNotice}
 
       <ShareHero

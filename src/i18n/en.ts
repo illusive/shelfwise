@@ -198,7 +198,6 @@ export const en = {
   } as Record<string, string>,
   results: {
     title: 'Shelf analysis',
-    saved: 'Saved',
     sos: 'Share of shelf',
     scope: { overall: 'Overall', shelf: 'Shelves', cooler: 'Coolers' } as Record<
       'shelf' | 'cooler' | 'overall',
@@ -221,6 +220,7 @@ export const en = {
     reviewNeeded: (n: number) => `${n} ${n === 1 ? 'item needs' : 'items need'} a closer look`,
     reviewHint: 'Confirm or correct unresolved products and prices.',
     review: 'Review now',
+    reviewShort: 'Review',
     reportGateTitle: (n: number) => `${plural(n, 'item needs', 'items need')} attention`,
     reportGateBody: 'Review them first, so the report includes your corrections?',
     reportGateSkip: 'Go to report anyway',
