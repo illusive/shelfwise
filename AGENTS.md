@@ -2,8 +2,9 @@
 
 Shelfwise is a mobile-first React PWA proof of concept for Royal Unibrew (Denmark) sales reps:
 **select store → capture shelf/cooler photos → submit for analysis → review results → compare
-with previous visits.** It is frontend-only for now (IndexedDB) with a clearly badged **mock**
-analysis provider behind a provider-agnostic, Zod-validated contract.
+with previous visits.** It is frontend-only for now (IndexedDB). Analysis sits behind a provider-agnostic,
+Zod-validated contract: **mock** by default, plus a **Copilot Studio** live provider for the
+POC (Microsoft sign-in, no secrets). Foundry comes later.
 
 ## Working agreements
 
@@ -14,7 +15,8 @@ analysis provider behind a provider-agnostic, Zod-validated contract.
 - Metrics are calculated deterministically in `src/domain` from validated observations. Never
   average percentages; never silently drop unknowns.
 - Mock and live results must always be distinguishable (`source` + `MockBadge`).
-- Remote: `illusive/shelfwise` (public). Pushing `main` deploys GitHub Pages
+- Remote: `illusive/shelfwise` (public). Never commit tenant, environment, agent or client IDs;
+  they are build variables. Pushing `main` deploys GitHub Pages
   (https://illusive.github.io/shelfwise/). Never commit `.references/` or other client material.
   Do not open pull requests until asked.
 - The user tests in their own Docker environment from this checkout. After meaningful
@@ -43,5 +45,6 @@ analysis provider behind a provider-agnostic, Zod-validated contract.
 - `docs/analysis-contract.md` — request/response schemas, metric definitions, unknowns.
 - `docs/decisions.md` — decisions, rationale, open questions, known limits.
 - `docs/model-training.md` — training-data flywheel, labelling, evaluation, privacy prerequisites.
+- `docs/copilot-studio-agent.md` — setup and reply format for the Copilot Studio agent (handover).
 - `.references/` — original brief, approved plan, Figma and competitor material. Local only:
   gitignored and never committed (the repo is public).

@@ -50,6 +50,11 @@ export const en = {
     demoData: 'Add demo history',
     demoDataHint: 'Creates two analysed visits per assigned store with generated photos.',
     demoAdded: 'Demo history added',
+    account: 'Microsoft account',
+    accountHint: 'Needed to analyse photos with the analysis agent (Copilot Studio).',
+    signIn: 'Sign in with Microsoft',
+    signOut: 'Sign out',
+    signInFailed: 'Sign-in is not working right now.',
     dataUse: 'Data use',
     trainingConsent: 'Use my photos to improve recognition',
     trainingConsentHint:
@@ -218,6 +223,7 @@ export const en = {
       cancelled: 'Analysis cancelled',
     } satisfies Record<JobStatus, string>,
     preparing: (done: number, total: number) => `${done} of ${total} photos ready`,
+    analysed: (done: number, total: number) => `${done} of ${total} photos analysed`,
     analysingHint: 'You can leave this screen — the visit is saved and will finish here.',
     failedHint: 'Your photos are safe on this device.',
     retry: 'Retry analysis',
@@ -229,6 +235,9 @@ export const en = {
   failures: {
     'provider-unavailable': 'The analysis service did not respond in time.',
     'provider-error': 'The analysis service returned an error.',
+    'sign-in-required':
+      'Sign in with your Microsoft account (user menu, top right), then try again.',
+    'provider-throttled': 'The analysis service is busy right now. Try again in a few minutes.',
     'invalid-response': 'The analysis result was incomplete or invalid.',
     'mismatched-response': 'The analysis result belonged to another visit.',
     'no-photos': 'The visit has no photos.',

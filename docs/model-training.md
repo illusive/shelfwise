@@ -30,8 +30,9 @@ flowchart LR
    carries location.
 2. **Draft labels.** Analysis observations become COCO boxes. Today they come from the mock
    provider (`source: "mock"`), which is illustrative only and **must never be used to train or
-   evaluate**. Real drafts will come from the live provider (Foundry, or an open-vocabulary
-   model such as OWLv2/Grounding DINO server-side).
+   evaluate**. Real drafts will come from the live provider: the Copilot Studio agent for
+   the POC (`provider.name: "copilot-studio"`; its boxes are rough), and later Foundry or an
+   open-vocabulary model such as OWLv2/Grounding DINO server-side.
 3. **Rep corrections** are exported as a separate layer linked to the annotations. They are
    evidence for verifiers, not ground truth.
 4. **Verification.** Import the package into a labelling tool and have trained labellers verify

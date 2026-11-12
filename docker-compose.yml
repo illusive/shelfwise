@@ -7,6 +7,12 @@ services:
         VITE_MOCK_LATENCY_MS: ${VITE_MOCK_LATENCY_MS:-2500}
         VITE_MOCK_FAIL_FIRST_ATTEMPT: ${VITE_MOCK_FAIL_FIRST_ATTEMPT:-false}
         APP_COMMIT: ${APP_COMMIT:-local}
+        VITE_CS_DIRECT_CONNECT_URL: ${VITE_CS_DIRECT_CONNECT_URL:-}
+        VITE_CS_ENVIRONMENT_ID: ${VITE_CS_ENVIRONMENT_ID:-}
+        VITE_CS_SCHEMA_NAME: ${VITE_CS_SCHEMA_NAME:-}
+        VITE_CS_TENANT_ID: ${VITE_CS_TENANT_ID:-}
+        VITE_CS_CLIENT_ID: ${VITE_CS_CLIENT_ID:-}
+        VITE_CS_CLOUD: ${VITE_CS_CLOUD:-Prod}
     image: shelfwise-web:local
     container_name: shelfwise-web
     ports:

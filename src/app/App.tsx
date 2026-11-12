@@ -6,6 +6,7 @@ import { createServices, type Services } from '@/services';
 import { GooFilter } from '@/ui/primitives/GooFilter';
 import { ToastProvider } from '@/ui/primitives/Toast';
 import { useLanguage } from '@/i18n/language';
+import { getAgentToken } from './auth';
 import { readConfig } from './config';
 import { router } from './router';
 import { ServicesProvider } from './services-context';
@@ -28,7 +29,7 @@ export function App() {
 
   useEffect(() => {
     let cancelled = false;
-    createServices(readConfig())
+    createServices(readConfig(), { providerDeps: { getAgentToken } })
       .then(async (s) => {
         if (cancelled) return;
         setServices(s);

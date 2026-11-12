@@ -1,0 +1,63 @@
+# dk-seed-2026.11
+productId,productName,brandId,brandName,relation,category,units,volumeMl,container
+faxe-premium-500,Faxe Premium,faxe,Faxe,owned,beer,1,500,can
+faxe-premium-6x330,Faxe Premium,faxe,Faxe,owned,beer,6,330,can
+royal-pilsner-6x330,Royal Pilsner,royal,Royal,owned,beer,6,330,can
+royal-classic-6x330,Royal Classic,royal,Royal,owned,beer,6,330,can
+royal-okologisk-330,Royal Økologisk Pilsner,royal,Royal,owned,beer,1,330,glass-bottle
+albani-odense-6x330,Albani Odense Pilsner,albani,Albani,owned,beer,6,330,can
+albani-giraf-500,Albani Giraf Strong,albani,Albani,owned,beer,1,500,can
+ceres-top-6x330,Ceres Top,ceres,Ceres,owned,beer,6,330,can
+thor-pilsner-6x330,Thor Pilsner,thor,Thor,owned,beer,6,330,can
+anarkist-neipa-330,Anarkist New England IPA,anarkist,Anarkist,owned,beer,1,330,can
+schiotz-mork-500,Schiøtz Mørk Mumme,schiotz,Schiøtz,owned,beer,1,500,glass-bottle
+heancock-6x330,Heancock Pilsner,heancock,Heancock,owned,beer,6,330,can
+faxe-kondi-330,Faxe Kondi,faxe-kondi,Faxe Kondi,owned,soft-drinks,1,330,can
+faxe-kondi-1500,Faxe Kondi,faxe-kondi,Faxe Kondi,owned,soft-drinks,1,1500,plastic-bottle
+faxe-kondi-free-330,Faxe Kondi Free,faxe-kondi,Faxe Kondi,owned,soft-drinks,1,330,can
+nikoline-appelsin-330,Nikoline Appelsin,nikoline,Nikoline,owned,soft-drinks,1,330,can
+tango-appelsin-1500,Tango Appelsin,tango,Tango,owned,soft-drinks,1,1500,plastic-bottle
+lemonsoda-330,Lemonsoda,lemonsoda,Lemonsoda,owned,soft-drinks,1,330,can
+egekilde-500,Egekilde Kildevand,egekilde,Egekilde,owned,water,1,500,plastic-bottle
+egekilde-citrus-500,Egekilde Brus Citrus,egekilde,Egekilde,owned,water,1,500,plastic-bottle
+cult-energy-250,Cult Energy,cult,Cult,owned,energy-functional,1,250,can
+booster-500,Faxe Kondi Booster,faxe-kondi-booster,Faxe Kondi Booster,owned,energy-functional,1,500,can
+crabbies-500,Crabbie's Original Ginger Beer,crabbies,Crabbie's,owned,rtd-cider,1,500,glass-bottle
+long-drink-330,The Original Long Drink,long-drink,The Original Long Drink,owned,rtd-cider,1,330,can
+pepsi-330,Pepsi,pepsi,Pepsi,licensed,soft-drinks,1,330,can
+pepsi-max-330,Pepsi Max,pepsi,Pepsi,licensed,soft-drinks,1,330,can
+pepsi-max-1500,Pepsi Max,pepsi,Pepsi,licensed,soft-drinks,1,1500,plastic-bottle
+7up-330,7UP,7up,7UP,licensed,soft-drinks,1,330,can
+7up-free-1500,7UP Free,7up,7UP,licensed,soft-drinks,1,1500,plastic-bottle
+mirinda-330,Mirinda Orange,mirinda,Mirinda,licensed,soft-drinks,1,330,can
+mountain-dew-330,Mountain Dew,mountain-dew,Mountain Dew,licensed,soft-drinks,1,330,can
+lipton-peach-500,Lipton Ice Tea Peach,lipton,Lipton Ice Tea,licensed,soft-drinks,1,500,plastic-bottle
+heineken-6x330,Heineken,heineken,Heineken,licensed,beer,6,330,can
+heineken-330,Heineken,heineken,Heineken,licensed,beer,1,330,glass-bottle
+moretti-330,Birra Moretti,birra-moretti,Birra Moretti,licensed,beer,1,330,glass-bottle
+sol-330,Sol,sol,Sol,licensed,beer,1,330,glass-bottle
+desperados-330,Desperados,desperados,Desperados,licensed,beer,1,330,glass-bottle
+lagunitas-ipa-355,Lagunitas IPA,lagunitas,Lagunitas,licensed,beer,1,355,can
+carlsberg-pilsner-6x330,Carlsberg Pilsner,carlsberg,Carlsberg,competitor,beer,6,330,can
+carlsberg-pilsner-500,Carlsberg Pilsner,carlsberg,Carlsberg,competitor,beer,1,500,can
+tuborg-gron-6x330,Tuborg Grøn,tuborg,Tuborg,competitor,beer,6,330,can
+tuborg-classic-6x330,Tuborg Classic,tuborg,Tuborg,competitor,beer,6,330,can
+jacobsen-brown-330,Jacobsen Brown Ale,jacobsen,Jacobsen,competitor,beer,1,330,glass-bottle
+grimbergen-blonde-330,Grimbergen Blonde,grimbergen,Grimbergen,competitor,beer,1,330,glass-bottle
+somersby-apple-330,Somersby Apple,somersby,Somersby,competitor,rtd-cider,1,330,can
+tuborg-squash-330,Tuborg Squash,tuborg-squash,Tuborg Squash,competitor,soft-drinks,1,330,can
+aqua-dor-500,Aqua d'Or,aqua-dor,Aqua d'Or,competitor,water,1,500,plastic-bottle
+coca-cola-330,Coca-Cola,coca-cola,Coca-Cola,competitor,soft-drinks,1,330,can
+coca-cola-zero-330,Coca-Cola Zero Sugar,coca-cola,Coca-Cola,competitor,soft-drinks,1,330,can
+coca-cola-1500,Coca-Cola,coca-cola,Coca-Cola,competitor,soft-drinks,1,1500,plastic-bottle
+fanta-orange-330,Fanta Orange,fanta,Fanta,competitor,soft-drinks,1,330,can
+sprite-500,Sprite,sprite,Sprite,competitor,soft-drinks,1,500,plastic-bottle
+kildevaeld-500,Kildevæld,kildevaeld,Kildevæld,competitor,water,1,500,plastic-bottle
+monster-500,Monster Energy,monster,Monster Energy,competitor,energy-functional,1,500,can
+harboe-pilsner-6x330,Harboe Pilsner,harboe,Harboe,competitor,beer,6,330,can
+bear-beer-500,Bear Beer Strong,bear-beer,Bear Beer,competitor,beer,1,500,can
+red-bull-250,Red Bull,red-bull,Red Bull,competitor,energy-functional,1,250,can
+mikkeller-peter-330,"Mikkeller Peter, Pale and Mary",mikkeller,Mikkeller,competitor,beer,1,330,can
+pl-cola-1500,Private label cola,pl-cola,Private label cola,competitor,soft-drinks,1,1500,plastic-bottle
+pl-water-1500,Private label water,pl-water,Private label water,competitor,water,1,1500,plastic-bottle
+pl-pilsner-6x330,Private label pilsner,pl-pilsner,Private label pilsner,competitor,beer,6,330,can

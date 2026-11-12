@@ -211,9 +211,37 @@ add `facingKey`, `locationId`, `locationType`, `physicalPositionId`, `matchStatu
 `counts.observationsWithoutBox`. Corrections never alter the draft labels. They reference them,
 and the newest per target has `latest: true`.
 
-## Live provider requirements (pending)
+## Live provider requirements
 
-A live adapter must: run server-side; dedupe on `idempotencyKey`; return explicit `null`s and
-`unresolved` statuses rather than plausible guesses; assign `physicalPositionId`/
-`physicalLabelId` across overlapping photos (or omit them so results are qualified);
-classify each image as shelf/cooler/display; and set `source: "live"`.
+A live adapter must:
+
+- keep secrets out of the browser (use a server-side endpoint, or the signed-in user's
+  delegated token);
+- return explicit `null`s and `unresolved` statuses rather than plausible guesses;
+- assign `physicalPositionId`/`physicalLabelId` across overlapping photos, or leave them null
+  so results are qualified;
+- classify each image as shelf/cooler/display;
+- set `source: "live"`.
+
+### Copilot Studio (POC)
+
+The agent answers **per photo** in the small `shelfwise-photo-v1` format
+(`src/contracts/agentPhoto.ts`; spec, prompt and example in `docs/copilot-studio-agent.md`).
+Shelfwise builds the `AnalysisResponse`:
+
+- Provider `copilot-studio`, method `copilot-studio-photo-v1`, `source: "live"`.
+- IDs not in the catalogue become `unknown`, with a `classification-uncertain` warning.
+- Prices are converted from DKK to øre.
+- A facing group with `count` > 1 becomes that many observations, its box split into equal
+  columns.
+- Locations are runs of consecutive photos from the overlap guide with the same location type;
+  imports start their own location. Facings inside the estimated overlap of neighbouring photos
+  share a `physicalPositionId` when both sides agree on the count. Otherwise they stay null, with
+  an `overlap-unreconciled` warning.
+- Photos whose replies were unreadable are `usable: false` (`unusable-image` warning,
+  `status: "partial"`). The job fails only if no reply was readable.
+- Job failure codes: `sign-in-required`, `provider-throttled`, `provider-unavailable` and
+  `invalid-response` (all retryable except an account without access).
+
+The `dataUse` terms aren't sent to Copilot Studio. Its transcripts, including the photos, are
+kept under the environment's own retention settings (see decisions).

@@ -3,6 +3,7 @@ import { BUILD } from '@/app/build';
 import { formatBuildDate } from '@/i18n/format';
 import { useCurrentRep, useInvalidate, useReps, useTrainingConsent } from '@/app/data';
 import { devToolsEnabled } from '@/app/devTools';
+import { signIn, signOut, useAuth } from '@/app/auth';
 import { useServices } from '@/app/services-context';
 import { t } from '@/i18n/strings';
 import { addDemoHistory } from '@/services/demoData';
@@ -36,6 +37,7 @@ export function UserDrawer({
   const language = useLanguage();
   const { data: consent = false } = useTrainingConsent(current?.id);
   const devTools = devToolsEnabled();
+  const auth = useAuth();
 
   const setConsent = async (on: boolean) => {
     if (!current) return;
@@ -83,6 +85,38 @@ export function UserDrawer({
         onChange={setLanguage}
         options={LANGUAGES.map((l) => ({ value: l, label: t.reps.languages[l] }))}
       />
+      {auth.status !== 'disabled' && (
+        <>
+          <SectionHeader title={t.reps.account} />
+          <div className={styles.account} data-testid="microsoft-account">
+            {auth.account ? (
+              <>
+                <div className={styles.repBody}>
+                  <span className={styles.repName}>{auth.account.name}</span>
+                  <span className={shared.muted}>{auth.account.username}</span>
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => void signOut()}>
+                  {t.reps.signOut}
+                </Button>
+              </>
+            ) : (
+              <div className={shared.stackTight}>
+                <p className={shared.muted}>
+                  {auth.status === 'error' ? t.reps.signInFailed : t.reps.accountHint}
+                </p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={auth.status === 'loading'}
+                  onClick={() => void signIn()}
+                >
+                  {t.reps.signIn}
+                </Button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
       <SectionHeader title={t.reps.dataUse} />
       <Switch
         label={t.reps.trainingConsent}

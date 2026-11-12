@@ -8,7 +8,7 @@ during the build. Each rule has one home; link here rather than restating.
 | Topic              | Decision                                                                                                                                                                                         | Rationale                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
 | Repository         | Local git repo, no remote yet; commit locally, no automatic PRs.                                                                                                                                 | User preference.                                        |
-| AI                 | No live endpoint yet: typed `AnalysisProvider` + clearly badged mock adapter. Foundry adapter later, server-side.                                                                                | Credentials must not reach the browser; contract first. |
+| AI                 | Typed `AnalysisProvider`; mock by default. **POC live provider: a Copilot Studio agent** (Foundry access not granted yet), with Foundry as the later target.                                     | Credentials must not reach the browser; contract first. |
 | Data               | Frontend-only IndexedDB (Dexie) for reps, stores, drafts, blobs, visits, jobs, results, corrections, behind repository interfaces.                                                               | Fast POC; API can replace it.                           |
 | Share of Shelf     | Visible facings: client ÷ all eligible beverage facings × 100. Shelves and coolers separate; overall aggregates counts; unknowns stay in the denominator.                                        | Defensible, testable; avoids inflating client share.    |
 | Denominator        | All beverages; overall + optional per-category (beer, soft drinks, water, energy/functional, RTD/cider, other).                                                                                  | Matches how reps see shelves.                           |
@@ -139,9 +139,26 @@ docs/model-training.md.
 | Mock data  | Exported mock labels are marked `source: "mock"` and must never be used to train or evaluate.                                                                                                                                                                                                                                                                                      |
 | Model path | Unchanged: train our own Apache-licensed class-agnostic detector (YOLOX-nano / RT-DETR-S, licence-clean init) on these packages after human verification (see the licence review above).                                                                                                                                                                                           |
 
+## Live analysis via Copilot Studio (12 Nov 2026)
+
+Foundry access hasn't been granted by IT, so the POC uses a Copilot Studio agent owned by a
+colleague. The contract is unchanged, and Foundry can replace the agent by swapping the adapter.
+
+| Topic       | Decision                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connection  | Microsoft 365 Agents SDK direct-connect from the browser. The agent requires authentication, so there's no Direct Line secret. Testers sign in with their organisation account (MSAL, SPA app registration, delegated `CopilotStudio.Copilots.Invoke`). No secret and no backend; Pages and Docker keep working.                                                                            |
+| Identity    | **Changes "no authentication"** for live analysis only: a Microsoft sign-in in the user drawer. Test reps, mock and demo data still work without signing in.                                                                                                                                                                                                                                |
+| Per photo   | One conversation per photo (uploaded files accumulate in a conversation), two in parallel. The agent returns a small `shelfwise-photo-v1` JSON; Shelfwise maps, reconciles and validates it. Agent spec: docs/copilot-studio-agent.md.                                                                                                                                                      |
+| Trust       | Only catalogue IDs are kept; anything else becomes unknown. Prices, deposit and multibuy are kept separately. Unreadable replies make that photo unusable, never guessed.                                                                                                                                                                                                                   |
+| Overlap     | Overlap-guide runs form locations. Facings inside the estimated overlap are paired by order when both photos agree; otherwise the location is qualified (`overlap-unreconciled`).                                                                                                                                                                                                           |
+| Public repo | Tenant, environment, agent and client IDs are build variables (GitHub repo Variables / Docker `.env`), never committed.                                                                                                                                                                                                                                                                     |
+| Limits      | LLM vision reads brands and prices reasonably but counts dense facings and draws boxes poorly, so **Share of Shelf is approximate** and evidence boxes may be rough or missing. Quotas: 50 AI requests/min and 1,000/hour (1–10 message packs); trial/dev environments 10/min and 200/hour (about 2 visits/hour). Transcripts, including photos, are stored in the environment's Dataverse. |
+
 ## Open questions
 
-- Backend/hosting choice and Foundry model/endpoint (and request/response limits).
+- Copilot Studio: tenant ID and app registration, image input on the agent, environment type,
+  billing and quota, region, DLP and transcript retention (checklist in
+  docs/copilot-studio-agent.md). Later: Foundry model/endpoint and hosting.
 - Real store list and rep assignments; RU SKU-level catalogue (EANs, pack sizes) and an
   authoritative owned/licensed list — the seed catalogue was compiled without access to
   royalunibrew.dk/brands/alle-brands during the build and must be validated against it.
@@ -155,12 +172,15 @@ docs/model-training.md.
 
 ## Known POC limits
 
-- **Analysis is mocked.** Results do not reflect photo content; boxes are illustrative. The
-  brief's field-POC acceptance ("live analysis of actual store photos") is **not met**.
-- **Blocked:** live analysis (needs endpoint, hosting and credentials) and evaluation (needs
-  real photo sets, manual ground truth, targets, device validation).
+- **Analysis is mocked by default.** The Copilot Studio adapter is built and tested against a
+  scripted agent, but it has **not yet run against the real agent**. It is waiting for the tenant
+  and client IDs and for image input to be enabled. The brief's field-POC acceptance ("live
+  analysis of actual store photos") is **not met** yet.
+- **Blocked:** a real Copilot Studio run (see the open questions) and evaluation (needs real
+  photo sets, manual ground truth, targets and device validation).
 - Data lives only on the device; browsers can evict IndexedDB; no sync or backup.
-- No authentication; any device user can pick any test rep.
+- No authentication for the app itself; any device user can pick any test rep. A Microsoft
+  sign-in is needed only for live analysis.
 - Real-device camera behaviour (iOS/Android) has not been validated yet; automated tests use
   Chromium's synthetic camera.
 - Upload size limits are not enforced client-side yet (no upload exists); define with the

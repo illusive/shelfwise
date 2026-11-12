@@ -2,7 +2,13 @@ import type { AppConfig } from '@/app/config';
 import { indexCatalogue, type CatalogueIndex } from '@/domain/catalogue';
 import { createAnalysisService, type AnalysisService } from './analysis/analysisService';
 import { createMockProvider } from './analysis/mockProvider';
-import type { AnalysisProvider } from './analysis/provider';
+import { ProviderError, type AnalysisProvider } from './analysis/provider';
+import {
+  createCopilotStudioProvider,
+  type AgentTransport,
+} from './analysis/copilotStudio/provider';
+import { createSdkTransport } from './analysis/copilotStudio/sdkTransport';
+import { copilotStudioReady } from '@/app/config';
 import { createCaptureService, type CaptureService } from './captureService';
 import { ShelfwiseDb } from './db';
 import { createDexieBlobStore, createDexieRepositories } from './dexieRepositories';
@@ -22,10 +28,50 @@ export interface Services {
   analysis: AnalysisService;
 }
 
-export function createProvider(config: AppConfig): AnalysisProvider {
-  if (config.analysisProvider === 'live') {
-    // The live adapter needs a server-side endpoint (credentials must not reach the browser).
-    console.warn('Live analysis is not available yet; falling back to the mock provider.');
+declare global {
+  interface Window {
+    /** Test seam (e2e): replaces the Copilot Studio agent with a scripted one. */
+    __SHELFWISE_AGENT__?: () => AgentTransport & { retryDelayMs?: number };
+  }
+}
+
+export interface ProviderDeps {
+  /** Delegated token for the agent (signed-in tester); see app/auth.ts. */
+  getAgentToken?: () => Promise<string>;
+}
+
+export function createProvider(config: AppConfig, deps: ProviderDeps = {}): AnalysisProvider {
+  const catalogue = indexCatalogue(seedCatalogue);
+  const stub = typeof window !== 'undefined' ? window.__SHELFWISE_AGENT__?.() : undefined;
+  if (stub) {
+    // Scripted errors arrive as plain `{ code, message, retryable }` objects.
+    const transport: AgentTransport = {
+      model: stub.model,
+      analysePhoto: (input, signal) =>
+        stub.analysePhoto(input, signal).catch((e: unknown) => {
+          const err = e as Partial<ProviderError> | null;
+          if (err && typeof err.code === 'string')
+            throw new ProviderError(err.code, err.message ?? err.code, err.retryable ?? true);
+          throw e;
+        }),
+    };
+    return createCopilotStudioProvider({
+      transport,
+      catalogue,
+      retryDelayMs: stub.retryDelayMs ?? 4_000,
+    });
+  }
+  if (config.analysisProvider === 'copilot-studio') {
+    if (copilotStudioReady(config.copilotStudio) && deps.getAgentToken) {
+      return createCopilotStudioProvider({
+        transport: createSdkTransport({
+          config: config.copilotStudio,
+          getToken: deps.getAgentToken,
+        }),
+        catalogue,
+      });
+    }
+    console.warn('Copilot Studio is not fully configured; falling back to the mock provider.');
   }
   return createMockProvider({
     catalogue: seedCatalogue,
@@ -36,7 +82,12 @@ export function createProvider(config: AppConfig): AnalysisProvider {
 
 export async function createServices(
   config: AppConfig,
-  options: { db?: ShelfwiseDb; images?: ImageProcessor; provider?: AnalysisProvider } = {},
+  options: {
+    db?: ShelfwiseDb;
+    images?: ImageProcessor;
+    provider?: AnalysisProvider;
+    providerDeps?: ProviderDeps;
+  } = {},
 ): Promise<Services> {
   const db = options.db ?? new ShelfwiseDb();
   await ensureSeeded(db);
@@ -45,7 +96,7 @@ export async function createServices(
   await ensureWeekPlanned(db, dateKeyIn(new Date().toISOString()));
   const repos = createDexieRepositories(db, seedCatalogue);
   const blobs = createDexieBlobStore(db);
-  const provider = options.provider ?? createProvider(config);
+  const provider = options.provider ?? createProvider(config, options.providerDeps);
   const captures = createCaptureService({
     repos,
     blobs,

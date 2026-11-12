@@ -4,9 +4,10 @@ Shelf and cooler share, observed prices and promotions from in-store photos — 
 concept for Royal Unibrew sales reps in Denmark.
 
 > **Status: reduced POC.** Capture, persistence, the analysis contract, deterministic metrics
-> and the full UI journey work end to end. Analysis currently runs on a **mock provider**
-> (results are simulated and badged "Mock"). Live recognition with Microsoft AI Foundry and
-> evaluation on real store photos are not done yet — see `docs/decisions.md`.
+> and the full UI journey work end to end. Analysis runs on a **mock provider** by default. A
+> **Copilot Studio** live provider is built and waits for the agent's sign-in settings
+> (`docs/copilot-studio-agent.md`). Foundry and evaluation on real store photos are not done
+> yet; see `docs/decisions.md`.
 
 ## Requirements
 
@@ -65,17 +66,21 @@ Other Docker commands: `npm run docker:logs`, `npm run docker:down`.
 See `.env.example`. All `VITE_*` values are public and bundled into the client — never put
 credentials in them.
 
-| Variable                       | Default         | Purpose                                                                        |
-| ------------------------------ | --------------- | ------------------------------------------------------------------------------ |
-| `VITE_ANALYSIS_PROVIDER`       | `mock`          | `live` is reserved; it falls back to mock until a server-side adapter exists   |
-| `VITE_MOCK_LATENCY_MS`         | `2500`          | Simulated analysis duration                                                    |
-| `VITE_MOCK_FAIL_FIRST_ATTEMPT` | `false`         | Fail each job's first attempt (retryable) to demo recovery                     |
-| `VITE_OVERLAP_TARGET`          | `0.25`          | Camera overlap guide target (share of photo width, clamped 0.1–0.5)            |
-| `VITE_RETENTION_DAYS`          | `365`           | Days before a visit's local originals may be purged; sent as `retainUntil`     |
-| `VITE_DEV_TOOLS`               | `false`         | Show developer tools (training export); per device: open the app with `?dev=1` |
-| `BASE_PATH`                    | `/`             | Public path the app is served from (`/shelfwise/` on GitHub Pages)             |
-| `LAN_HOST`                     | —               | Docker: IP/hostname added to the self-signed certificate                       |
-| `HTTPS_PORT` / `HTTP_PORT`     | `8443` / `8080` | Docker host ports (HTTP redirects to HTTPS)                                    |
+| Variable                       | Default         | Purpose                                                                                                           |
+| ------------------------------ | --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `VITE_ANALYSIS_PROVIDER`       | `mock`          | `copilot-studio` for live analysis (`live` is an alias); falls back to mock if the `VITE_CS_*` values are missing |
+| `VITE_CS_DIRECT_CONNECT_URL`   | —               | Copilot Studio agent's direct-connect URL (or `VITE_CS_ENVIRONMENT_ID` + `VITE_CS_SCHEMA_NAME`)                   |
+| `VITE_CS_TENANT_ID`            | —               | Entra tenant of the agent                                                                                         |
+| `VITE_CS_CLIENT_ID`            | —               | Entra app registration (single-page application) used to sign testers in                                          |
+| `VITE_CS_CLOUD`                | `Prod`          | Power Platform cloud (`Prod` = public); needed because the SDK can't infer it from the agent URL                  |
+| `VITE_MOCK_LATENCY_MS`         | `2500`          | Simulated analysis duration                                                                                       |
+| `VITE_MOCK_FAIL_FIRST_ATTEMPT` | `false`         | Fail each job's first attempt (retryable) to demo recovery                                                        |
+| `VITE_OVERLAP_TARGET`          | `0.25`          | Camera overlap guide target (share of photo width, clamped 0.1–0.5)                                               |
+| `VITE_RETENTION_DAYS`          | `365`           | Days before a visit's local originals may be purged; sent as `retainUntil`                                        |
+| `VITE_DEV_TOOLS`               | `false`         | Show developer tools (training export); per device: open the app with `?dev=1`                                    |
+| `BASE_PATH`                    | `/`             | Public path the app is served from (`/shelfwise/` on GitHub Pages)                                                |
+| `LAN_HOST`                     | —               | Docker: IP/hostname added to the self-signed certificate                                                          |
+| `HTTPS_PORT` / `HTTP_PORT`     | `8443` / `8080` | Docker host ports (HTTP redirects to HTTPS)                                                                       |
 
 ## Training data (groundwork)
 
@@ -87,15 +92,20 @@ prerequisites are in `docs/model-training.md`.
 
 ## Mock vs live analysis
 
-- **Mock (today):** `src/services/analysis/mockProvider.ts` generates deterministic,
+- **Mock (default):** `src/services/analysis/mockProvider.ts` generates deterministic,
   contract-valid results per visit, including overlapping photos, cooler reflections,
   unknown products, unreadable labels, multibuy and member prices, pant and displays.
-  Bounding boxes are illustrative only. Every mock result is stored with `source: "mock"` and
-  badged in the UI, including in history.
-- **Live (not built):** needs a backend endpoint that holds the Foundry credentials, accepts
-  the `AnalysisRequest` + images and returns an `AnalysisResponse`
-  (`docs/analysis-contract.md`). Add an `AnalysisProvider` that calls that endpoint and wire it
-  in `src/services/index.ts`.
+  Bounding boxes are illustrative only. Every mock result is stored with `source: "mock"`.
+- **Copilot Studio (POC live):** set the build variables below. Testers sign in with Microsoft
+  from the user menu, and each photo goes to the agent. The agent's setup (Entra app,
+  settings, prompt, reply format, catalogue file) is in `docs/copilot-studio-agent.md`.
+  - **GitHub Pages:** add repository **Variables** (Settings → Secrets and variables → Actions →
+    Variables): `VITE_ANALYSIS_PROVIDER=copilot-studio`, `VITE_CS_DIRECT_CONNECT_URL`,
+    `VITE_CS_TENANT_ID`, `VITE_CS_CLIENT_ID`. Then re-run the Pages workflow.
+  - **Docker:** put the same values in `.env`, then run `npm run docker:up`.
+  - These are public identifiers, not secrets, but keep them out of the (public) repository.
+- **Foundry (later):** another `AnalysisProvider` behind a small backend that holds the
+  credentials. The UI and domain stay the same.
 
 ## Testing
 
@@ -110,7 +120,9 @@ The e2e journey covers the default rep and switching reps, store search, repeate
 reload recovery, submission, results, rep review, report, photo evidence and archive, plus
 camera-permission denial with the import fallback. Camera specs stub the vision worker to cover
 live detection (ok/off/failing/slow) and the overlap guide (aligned, too far, too much overlap,
-no match, slow, sensors denied) — capture must work in every case. `e2e/webkit/` runs the
+no match, slow, sensors denied) — capture must work in every case. `e2e/copilot-studio.spec.ts`
+replaces the agent with a scripted one (`window.__SHELFWISE_AGENT__`): replies, throttling,
+unreadable replies and signed-out testers. `e2e/webkit/` runs the
 overlap strip in WebKit with the iPhone 15 profile (persistent context, since WebKit's ephemeral
 test contexts can't store Blobs in IndexedDB). Real-device validation (iPhone/Android)
 is manual — see `docs/ux-guidelines.md`.

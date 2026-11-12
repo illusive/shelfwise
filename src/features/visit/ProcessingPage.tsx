@@ -83,11 +83,19 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
     {
       status: 'preparing',
       label: t.processing.status.preparing,
-      detail: job.progress
-        ? t.processing.preparing(job.progress.done, job.progress.total)
-        : t.counts.photos(captures.length),
+      detail:
+        job.status === 'preparing' && job.progress
+          ? t.processing.preparing(job.progress.done, job.progress.total)
+          : t.counts.photos(captures.length),
     },
-    { status: 'analysing', label: t.processing.status.analysing, detail: job.providerId },
+    {
+      status: 'analysing',
+      label: t.processing.status.analysing,
+      detail:
+        job.status === 'analysing' && job.progress
+          ? t.processing.analysed(job.progress.done, job.progress.total)
+          : job.providerId,
+    },
   ];
 
   const act = async (task: () => Promise<unknown>) => {

@@ -22,6 +22,14 @@ const config = {
   overlapTarget: 0.25,
   retentionDays: 365,
   devTools: false,
+  copilotStudio: {
+    directConnectUrl: null,
+    environmentId: null,
+    schemaName: null,
+    tenantId: null,
+    clientId: null,
+    cloud: 'Prod',
+  },
 };
 
 let services: Services;

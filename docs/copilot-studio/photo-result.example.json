@@ -1,0 +1,85 @@
+{
+  "format": "shelfwise-photo-v1",
+  "usable": true,
+  "locationType": "cooler",
+  "issues": ["reflection"],
+  "facings": [
+    {
+      "status": "matched",
+      "brandId": "faxe-kondi",
+      "productId": "faxe-kondi-330",
+      "category": "soft-drinks",
+      "score": 0.86,
+      "count": 4,
+      "box": [0.05, 0.12, 0.32, 0.18]
+    },
+    {
+      "status": "matched",
+      "brandId": "pepsi",
+      "productId": "pepsi-max-330",
+      "category": "soft-drinks",
+      "score": 0.81,
+      "count": 3,
+      "box": [0.4, 0.12, 0.24, 0.18]
+    },
+    {
+      "status": "candidate",
+      "brandId": "coca-cola",
+      "productId": null,
+      "category": "soft-drinks",
+      "score": 0.55,
+      "count": 2,
+      "box": [0.67, 0.12, 0.16, 0.18]
+    },
+    {
+      "status": "unknown",
+      "brandId": null,
+      "productId": null,
+      "category": null,
+      "score": null,
+      "count": 1,
+      "box": [0.86, 0.12, 0.08, 0.18]
+    }
+  ],
+  "priceLabels": [
+    {
+      "status": "resolved",
+      "unresolvedReason": null,
+      "rawText": "2 STK. 30,- + PANT",
+      "brandId": "faxe-kondi",
+      "productId": "faxe-kondi-330",
+      "priceType": "promotion",
+      "priceDkk": 17.95,
+      "deposit": { "shown": true, "dkk": 1.5, "included": false },
+      "pack": { "units": 1, "volumeMl": 330 },
+      "multibuy": { "quantity": 2, "totalDkk": 30 },
+      "conditionText": null,
+      "box": [0.08, 0.31, 0.1, 0.04]
+    },
+    {
+      "status": "unresolved",
+      "unresolvedReason": "unreadable",
+      "rawText": null,
+      "brandId": null,
+      "productId": null,
+      "priceType": "unknown",
+      "priceDkk": null,
+      "deposit": { "shown": false, "dkk": null, "included": null },
+      "pack": { "units": null, "volumeMl": null },
+      "multibuy": null,
+      "conditionText": null,
+      "box": [0.7, 0.31, 0.1, 0.04]
+    }
+  ],
+  "promotions": [
+    {
+      "mechanic": "multibuy",
+      "headline": "2 for 30,-",
+      "conditionText": "Max 6 pr. kunde",
+      "productIds": ["faxe-kondi-330"],
+      "brandIds": ["faxe-kondi"],
+      "box": [0.05, 0.02, 0.2, 0.06]
+    }
+  ],
+  "displays": []
+}

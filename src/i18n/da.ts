@@ -47,6 +47,11 @@ export const da: Strings = {
     build: (version: string, commit: string, date: string) =>
       `Version ${version} · build ${commit} · ${date}`,
     demoAdded: 'Demohistorik tilføjet',
+    account: 'Microsoft-konto',
+    accountHint: 'Skal bruges for at analysere billeder med analyseagenten (Copilot Studio).',
+    signIn: 'Log ind med Microsoft',
+    signOut: 'Log ud',
+    signInFailed: 'Login virker ikke lige nu.',
     dataUse: 'Brug af data',
     trainingConsent: 'Brug mine billeder til at forbedre genkendelsen',
     trainingConsentHint:
@@ -211,6 +216,7 @@ export const da: Strings = {
       cancelled: 'Analysen blev annulleret',
     },
     preparing: (done: number, total: number) => `${done} af ${total} billeder klar`,
+    analysed: (done: number, total: number) => `${done} af ${total} billeder analyseret`,
     analysingHint: 'Du kan godt forlade skærmen — besøget er gemt og bliver færdigt her.',
     failedHint: 'Dine billeder er i sikkerhed på denne enhed.',
     retry: 'Prøv analysen igen',
@@ -222,6 +228,9 @@ export const da: Strings = {
   failures: {
     'provider-unavailable': 'Analysetjenesten svarede ikke i tide.',
     'provider-error': 'Analysetjenesten returnerede en fejl.',
+    'sign-in-required':
+      'Log ind med din Microsoft-konto (brugermenuen øverst til højre), og prøv igen.',
+    'provider-throttled': 'Analysetjenesten har travlt lige nu. Prøv igen om et par minutter.',
     'invalid-response': 'Analyseresultatet var ufuldstændigt eller ugyldigt.',
     'mismatched-response': 'Analyseresultatet hørte til et andet besøg.',
     'no-photos': 'Besøget har ingen billeder.',

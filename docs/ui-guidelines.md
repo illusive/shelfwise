@@ -113,7 +113,7 @@ bar sits above the safe-area inset.
 
 ## Screens invented beyond Figma (for review)
 
-1. User drawer (current rep, language, data-use switch, switch rep, _Add demo history_,
+1. User drawer (current rep, language, Microsoft account sign-in for live analysis only, data-use switch, switch rep, _Add demo history_,
    developer-only training export in a dashed panel, build stamp in mono at the bottom) opened
    from the top-right avatar.
 1. Home planned visits: day strip + Figma-style list rows.

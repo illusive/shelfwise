@@ -9,8 +9,9 @@ flowchart LR
   Data --> Repos[Repositories interface]
   Svc --> Repos
   Svc --> Provider[AnalysisProvider]
-  Provider -.->|today| Mock[mockProvider]
-  Provider -.->|later| Live[server endpoint → Foundry]
+  Provider -.->|default| Mock[mockProvider]
+  Provider -.->|POC live| CS[Copilot Studio agent<br/>Agents SDK + tester's Entra token]
+  Provider -.->|later| Foundry[Microsoft AI Foundry]
   Repos --> Dexie[(IndexedDB via Dexie)]
   Data --> Domain[domain: metrics, SoS, overlap, pricing, comparison]
   Svc --> Contract[contracts: Zod analysis schema]
@@ -23,7 +24,7 @@ flowchart LR
 | `src/domain`     | Models, catalogue types, SoS, overlap reconciliation, corrections, pricing, comparison, aggregation. Framework-free, reusable in React Native.           | `contracts` (types only)                          |
 | `src/contracts`  | Zod schemas for analysis request/response; schema version.                                                                                               | `domain/categories`                               |
 | `src/services`   | Repository interfaces and Dexie implementation, seed data, capture/draft service, analysis job service, providers, demo data, visit summaries. No React. | `domain`, `contracts`                             |
-| `src/app`        | Composition: config, services context, query hooks, router, root layout.                                                                                 | everything                                        |
+| `src/app`        | Composition: config, Microsoft sign-in (`auth.ts`), services context, query hooks, router, root layout, PWA updates.                                     | everything                                        |
 | `src/features/*` | Screens by area: `session`, `home`, `stores`, `capture`, `visit`, `results`, `archive`, `shared`. Presentation + calling services.                       | `app`, `services` (types), `domain`, `ui`, `i18n` |
 | `src/ui`         | Tokens, global CSS, icons, primitives (Button, Screen/TopBar, BottomNav, Sheet, Segmented, Badge/Notice, BlobImage, Toast).                              | `i18n`                                            |
 | `src/i18n`       | All user-facing strings and locale formatters.                                                                                                           | `domain` types                                    |
@@ -123,11 +124,36 @@ visibility/focus and every 15 min. `app/updateGate.ts` applies a waiting update 
 when nothing holds it (`useHoldUpdates`: camera open, export running) and the page is visible.
 `app/build.ts` exposes the version/commit/time stamped at build.
 
+## Live analysis (Copilot Studio, POC)
+
+`services/analysis/copilotStudio/`:
+
+- `provider.ts` calls the agent once per photo, in a fresh conversation, two photos at a time.
+  It has a 120 s timeout per photo and retries throttling, timeouts and unreadable replies
+  twice. It reports per-photo progress to the job.
+- `sdkTransport.ts` uses the Microsoft 365 Agents SDK (`CopilotStudioClient`, direct-connect
+  URL). It sends the photo, downscaled to a 2,560 px long edge, as a `data:` URL attachment,
+  and maps HTTP 401/403/429/5xx to job failure codes.
+- `contracts/agentPhoto.ts` is the lenient per-photo reply schema (`shelfwise-photo-v1`) and
+  JSON extraction.
+- `buildResponse.ts` maps replies into `AnalysisResponse`. It keeps catalogue IDs only (others
+  become unknown, with a warning), converts DKK to øre, and splits grouped facings into columns.
+  Each overlap-guide run forms one location. Facings inside the estimated overlap are paired by
+  order, and a mismatch is left unreconciled (qualified) rather than guessed.
+
+The result is then validated by the analysis service like any provider's.
+
+**Auth:** `app/auth.ts` uses MSAL (`@azure/msal-browser`) with the redirect flow and a localStorage
+cache, completed before the first render. Tokens are delegated
+(`CopilotStudio.Copilots.Invoke`), so there's no secret and no backend. A missing or expired
+sign-in fails the job with `sign-in-required`; it never redirects mid-analysis.
+MSAL and the SDK form a lazily loaded `live-*.js` chunk (≈158 kB gzip), cached on first use
+and not precached. Without the `VITE_CS_*` settings, mock stays in use. Handover for the agent
+owner: `docs/copilot-studio-agent.md`.
+
 ## Integrations (planned)
 
-- **Live analysis:** a small backend (hosting TBD) receives request + images, calls Microsoft AI
-  Foundry with server-held credentials, maps the provider output to `AnalysisResponse`, and
-  returns it. The browser adds an `AnalysisProvider` that posts to this backend. The UI and
-  domain do not change.
+- **Foundry** (once IT grants access): a small backend holding credentials, behind another
+  `AnalysisProvider`. The UI and domain do not change.
 - **Persistence API:** replace `createDexieRepositories` with an HTTP implementation of the
   same `Repositories` interface; keep IndexedDB for drafts/blobs until upload.

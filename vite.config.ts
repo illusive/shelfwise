@@ -85,8 +85,14 @@ export default defineConfig(({ mode }) => {
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // Live detection assets (~19 MB) load lazily and are cached on first use, not precached.
-        globIgnores: ['mediapipe/**', 'models/**'],
+        // Copilot Studio code (live-*.js) is cached on first use, not precached for everyone.
+        globIgnores: ['mediapipe/**', 'models/**', 'assets/live-*.js'],
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/assets\/live-[^/]+\.js$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: { cacheName: 'shelfwise-live', expiration: { maxEntries: 4 } },
+          },
           {
             urlPattern: ({ url }) => /\/(mediapipe|models)\//.test(url.pathname),
             handler: 'CacheFirst',
@@ -120,6 +126,12 @@ export default defineConfig(({ mode }) => {
               '@radix-ui/react-switch',
             ],
             data: ['dexie', 'zod'],
+            // Copilot Studio sign-in + agent SDK: loaded only when live analysis is configured.
+            live: [
+              '@azure/msal-browser',
+              '@microsoft/agents-copilotstudio-client',
+              '@microsoft/agents-activity',
+            ],
           },
         },
       },

@@ -8,7 +8,7 @@ import type { AnalysisJob, JobFailure } from '@/domain/models';
 import { SOS_METHOD_VERSION } from '@/domain/sos';
 import { newId, nowIso } from '../ids';
 import type { BlobStore, Repositories } from '../repositories';
-import type { AnalysisProvider } from './provider';
+import { ProviderError, type AnalysisProvider } from './provider';
 
 class JobError extends Error {
   constructor(
@@ -106,10 +106,21 @@ export function createAnalysisService(deps: {
       });
 
       job = await save(job, { status: 'analysing', progress: null });
+      const jobId = job.id;
       let raw: unknown;
       try {
-        raw = await provider.analyse({ request, images });
+        raw = await provider.analyse({
+          request,
+          images,
+          onProgress: (done, total) => {
+            void repos.jobs
+              .update(jobId, { progress: { done, total }, updatedAt: nowIso(now) })
+              .catch(() => undefined);
+          },
+        });
       } catch (error) {
+        if (error instanceof ProviderError)
+          throw new JobError(error.code, error.message, error.retryable);
         throw new JobError('provider-error', errorMessage(error), true);
       }
 

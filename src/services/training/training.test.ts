@@ -412,6 +412,14 @@ describe('data use in the services', () => {
     overlapTarget: 0.25,
     retentionDays: 30,
     devTools: false,
+    copilotStudio: {
+      directConnectUrl: null,
+      environmentId: null,
+      schemaName: null,
+      tenantId: null,
+      clientId: null,
+      cloud: 'Prod',
+    },
   };
   let count = 0;
   async function setup() {
