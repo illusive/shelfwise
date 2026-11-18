@@ -17,7 +17,9 @@ with a delegated token. **No secret is used.** This may need an IT or applicatio
 1. Entra ID → App registrations → New: name "Shelfwise POC", **single tenant**.
 2. Authentication → Add a platform → **Single-page application**, with these redirect URIs:
    - `https://illusive.github.io/shelfwise/`
-   - `https://192.168.2.218:8443/` (local Docker test server)
+   - `https://localhost:8443/` and `https://<LAN-IP>:8443/` (local Docker test server, e.g.
+     `https://192.168.2.105:8443/`). The LAN IP changes if the test machine's address changes,
+     and Entra only accepts exact matches.
    - `http://localhost:5173/` (development)
 3. API permissions → Add → APIs my organization uses → **Power Platform API** → Delegated →
    **`CopilotStudio.Copilots.Invoke`** → then **Grant admin consent**. If Power Platform API
