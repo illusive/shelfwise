@@ -58,7 +58,7 @@ use them to de-duplicate facings across overlapping photos but must not trust th
 | `priceLabels[]`                                   | `{ labelId, imageId, locationId, physicalLabelId, region, rawText, status, unresolvedReason, match, priceType, amountOre, currency: "DKK", deposit{shown, amountOre, included}, pack{units, volumeMl}, multibuy{quantity,totalOre}, conditionText, promotionId }`. |
 | `promotions[]`                                    | `{ promotionId, imageId, region, mechanic: multibuy/price-cut/member-price/bundle/other, headline, conditionText, productIds[], brandIds[] }`.                                                                                                                     |
 | `displays[]`                                      | `{ displayId, imageId, locationId, region, brandIds[], description }`.                                                                                                                                                                                             |
-| `warnings[]`                                      | `{ code, message, imageIds[] }`: overlap-unreconciled, reflection, low-coverage, unusable-image, classification-uncertain, label-unreadable.                                                                                                                       |
+| `warnings[]`                                      | `{ code, message, imageIds[] }`: overlap-unreconciled, reflection, low-coverage, unusable-image, classification-uncertain, label-unreadable, not-in-catalogue (message lists the names).                                                                           |
 | `failure`                                         | `{ code, message, retryable }` or `null`.                                                                                                                                                                                                                          |
 | `narrative`                                       | Optional prose. Never used for metrics.                                                                                                                                                                                                                            |
 
@@ -230,7 +230,8 @@ The agent answers **per photo** in the small `shelfwise-photo-v1` format
 Shelfwise builds the `AnalysisResponse`:
 
 - Provider `copilot-studio`, method `copilot-studio-photo-v1`, `source: "live"`.
-- IDs not in the catalogue become `unknown`, with a `classification-uncertain` warning.
+- IDs not in the catalogue become `unknown`. A `not-in-catalogue` warning lists the products the
+  agent named (`name`), which helps to complete the catalogue.
 - Prices are converted from DKK to øre.
 - A facing group with `count` > 1 becomes that many observations, its box split into equal
   columns.

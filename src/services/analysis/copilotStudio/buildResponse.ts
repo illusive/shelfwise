@@ -108,7 +108,8 @@ export function buildResponse(input: {
   const images = [...request.images].sort((a, b) => a.sequence - b.sequence);
   const warnings: AnalysisWarning[] = [];
   const unusable: string[] = [];
-  const uncertain = new Set<string>();
+  const outside = new Set<string>();
+  const outsideNames = new Map<string, number>();
   const unreconciled = new Set<string>();
 
   const analysedImages: AnalysisResponse['images'] = [];
@@ -169,7 +170,11 @@ export function buildResponse(input: {
     const imageFacings: FacingObservation[] = [];
     result.facings.forEach((group, g) => {
       const { match, downgraded } = resolveMatch(catalogue, group);
-      if (downgraded) uncertain.add(image.imageId);
+      if (downgraded) {
+        outside.add(image.imageId);
+        const name = group.name?.trim() || null;
+        if (name) outsideNames.set(name, (outsideNames.get(name) ?? 0) + group.count);
+      }
       splitRegion(toRegion(group.box), group.count).forEach((region, i) => {
         const facingId = `${image.imageId}-f${g + 1}-${i + 1}`;
         imageFacings.push({
@@ -193,7 +198,7 @@ export function buildResponse(input: {
 
     result.priceLabels.forEach((label, i) => {
       const mapped = mapPriceLabel(catalogue, label);
-      if (mapped.downgraded) uncertain.add(image.imageId);
+      if (mapped.downgraded) outside.add(image.imageId);
       priceLabels.push({
         labelId: `${image.imageId}-l${i + 1}`,
         imageId: image.imageId,
@@ -236,12 +241,17 @@ export function buildResponse(input: {
       message: `${unusable.length} photo(s) could not be analysed.`,
       imageIds: unusable,
     });
-  if (uncertain.size)
+  if (outside.size) {
+    const names = [...outsideNames]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12)
+      .map(([name, n]) => `${name} ×${n}`);
     warnings.push({
-      code: 'classification-uncertain',
-      message: 'Some products were named outside the catalogue and are treated as unknown.',
-      imageIds: [...uncertain],
+      code: 'not-in-catalogue',
+      message: `Recognised but not in the catalogue: ${names.join(', ') || 'unnamed products'}`,
+      imageIds: [...outside],
     });
+  }
   if (unreconciled.size)
     warnings.push({
       code: 'overlap-unreconciled',

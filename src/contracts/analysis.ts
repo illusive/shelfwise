@@ -151,6 +151,8 @@ export const warningCodeSchema = z.enum([
   'unusable-image',
   'classification-uncertain',
   'label-unreadable',
+  /** Products recognised by name that aren't in the catalogue (counted as unknown). */
+  'not-in-catalogue',
 ]);
 export type WarningCode = z.infer<typeof warningCodeSchema>;
 

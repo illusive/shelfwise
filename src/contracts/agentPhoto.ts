@@ -26,6 +26,8 @@ const facingGroupSchema = z.object({
   category: z.enum(CATEGORIES).nullable().catch(null),
   /** Model's own confidence, not a measured accuracy. */
   score: z.number().min(0).max(1).nullable().catch(null),
+  /** What the pack says (brand + product), even when it isn't in the catalogue. */
+  name: textOrNull.optional(),
   /** Adjacent identical facings reported as one group (box spans all of them). */
   count: z.number().int().min(1).max(60).catch(1),
   box,

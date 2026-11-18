@@ -91,6 +91,7 @@ Shelfwise's tests check that this example is accepted.
 | `issues[]`                                  | `blurry` `glare` `reflection` `too-dark` `obstructed` `low-resolution` `not-a-shelf`                   |
 | `facings[].status`                          | `matched` · `candidate` · `unknown`                                                                    |
 | `facings[].category`                        | `beer` `soft-drinks` `water` `energy-functional` `rtd-cider` `other` · null                            |
+| `facings[].name`                            | what the pack says (brand + product), also when it isn't in the catalogue                              |
 | `facings[].count`                           | 1–60 (identical adjacent facings)                                                                      |
 | `priceLabels[].status` / `unresolvedReason` | `resolved` · `unresolved` / `unreadable` `ambiguous-product` `ambiguous-condition` `partially-visible` |
 | `priceLabels[].priceType`                   | `regular` `promotion` `member` `unknown`                                                               |

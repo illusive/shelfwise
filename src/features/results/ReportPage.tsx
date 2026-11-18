@@ -70,7 +70,12 @@ export function ReportPage({ visitId }: { visitId: string }) {
         {metrics.warnings.length > 0 && (
           <ul className={report.warnings}>
             {metrics.warnings.map((w, i) => (
-              <li key={`${w.code}-${i}`}>{t.warnings[w.code] ?? w.message}</li>
+              <li key={`${w.code}-${i}`}>
+                {t.warnings[w.code] ?? w.message}
+                {w.code === 'not-in-catalogue' && (
+                  <span className={shared.muted}> {w.message.split(': ').slice(1).join(': ')}</span>
+                )}
+              </li>
             ))}
           </ul>
         )}

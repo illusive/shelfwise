@@ -407,6 +407,7 @@ export const da: Strings = {
     'low-coverage': 'Få billeder: resultaterne beskriver kun det fotograferede område.',
     'unusable-image': 'Nogle billeder kunne ikke analyseres.',
     'classification-uncertain': 'Hylde/køler-genkendelsen er usikker for nogle billeder.',
+    'not-in-catalogue': 'Genkendt, men findes ikke i produktkataloget endnu (tæller som ukendt):',
     'label-unreadable': 'Nogle prisskilte var ulæselige.',
   },
   imageIssues: {

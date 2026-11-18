@@ -112,7 +112,7 @@ describe('agent reply parsing', () => {
     });
     expect(analysisResponseSchema.safeParse(response).success).toBe(true);
     expect(response.facings.length).toBeGreaterThan(0);
-    expect(response.warnings.map((w) => w.code)).not.toContain('classification-uncertain');
+    expect(response.warnings.map((w) => w.code)).not.toContain('not-in-catalogue');
   });
 });
 
@@ -474,6 +474,37 @@ describe('real agent turn shape', () => {
     expect(parsePhotoReply({ value: { turnId: 'abc' } })).toBeNull();
     expect(parsePhotoReply({ text: '{"answer":"Here is the analysis"}' })).toBeNull();
     expect(parsePhotoReply({ text: '{"facings":[]}' })).not.toBeNull();
+  });
+
+  it('lists products recognised outside the catalogue by name', () => {
+    const response = buildResponse({
+      request: request([null]),
+      photos: [
+        {
+          imageId: 'cap-1',
+          result: {
+            ...empty,
+            facings: [
+              facing(0.1, { brandId: null, productId: null, name: 'Red Bull 25 cl', count: 4 }),
+              facing(0.5, { brandId: null, productId: null, name: 'Monster Energy', count: 2 }),
+              facing(0.8),
+            ],
+          },
+        },
+      ],
+      catalogue,
+      analysedAt: '2026-11-18T10:00:00.000Z',
+      model: null,
+    });
+    expect(analysisResponseSchema.safeParse(response).success).toBe(true);
+    expect(response.facings.filter((f) => f.match.status === 'unknown')).toHaveLength(6);
+    expect(response.warnings).toEqual([
+      {
+        code: 'not-in-catalogue',
+        message: 'Recognised but not in the catalogue: Red Bull 25 cl ×4, Monster Energy ×2',
+        imageIds: ['cap-1'],
+      },
+    ]);
   });
 
   it('keeps the agent’s category when only the brand is known', () => {
