@@ -58,7 +58,7 @@ use them to de-duplicate facings across overlapping photos but must not trust th
 | `priceLabels[]`                                   | `{ labelId, imageId, locationId, physicalLabelId, region, rawText, status, unresolvedReason, match, priceType, amountOre, currency: "DKK", deposit{shown, amountOre, included}, pack{units, volumeMl}, multibuy{quantity,totalOre}, conditionText, promotionId }`. |
 | `promotions[]`                                    | `{ promotionId, imageId, region, mechanic: multibuy/price-cut/member-price/bundle/other, headline, conditionText, productIds[], brandIds[] }`.                                                                                                                     |
 | `displays[]`                                      | `{ displayId, imageId, locationId, region, brandIds[], description }`.                                                                                                                                                                                             |
-| `warnings[]`                                      | `{ code, message, imageIds[] }`: overlap-unreconciled, reflection, low-coverage, unusable-image, classification-uncertain, label-unreadable, not-in-catalogue (message lists the names).                                                                           |
+| `warnings[]`                                      | `{ code, message, imageIds[] }`: overlap-unreconciled, reflection, low-coverage, unusable-image, classification-uncertain, label-unreadable, not-in-catalogue (message lists the names), facings-discarded.                                                        |
 | `failure`                                         | `{ code, message, retryable }` or `null`.                                                                                                                                                                                                                          |
 | `narrative`                                       | Optional prose. Never used for metrics.                                                                                                                                                                                                                            |
 
@@ -230,13 +230,25 @@ The agent answers **per photo** in the small `shelfwise-photo-v1` format
 Shelfwise builds the `AnalysisResponse`:
 
 - Provider `copilot-studio`, method `copilot-studio-photo-v1`, `source: "live"`.
-- IDs not in the catalogue become `unknown`. A `not-in-catalogue` warning lists the products the
-  agent named (`name`), which helps to complete the catalogue.
+- Only catalogue IDs are kept. When the agent's IDs are missing or invalid, its `name` for the
+  pack (or a label's `rawText`) is matched against the catalogue (`domain/catalogueMatch.ts`):
+  - the brand must appear as whole words, with the longest brand name winning;
+  - a product is chosen only when the brand, pack size (e.g. "33 cl", "6-pak") and wording leave
+    exactly one candidate; plain wording picks the plain variant and "FREE" picks Free;
+  - otherwise the match stays at brand level.
+- An item the agent was unsure about (`unknown`) but named well enough to place becomes a
+  `candidate` for the rep's review.
+- Anything that can't be placed becomes `unknown`. A `not-in-catalogue` warning lists those
+  names, which helps to complete the catalogue.
+- A reported facing no single product could fill is left out, with a `facings-discarded`
+  warning. That means one unit more than 3× wider than tall in pixels, or wider than half the
+  photo; typically a shelf edge or price strip.
 - Prices are converted from DKK to øre.
 - A facing group with `count` > 1 becomes that many observations, its box split into equal
   columns.
-- Locations are runs of consecutive photos from the overlap guide with the same location type;
-  imports start their own location. Facings inside the estimated overlap of neighbouring photos
+- Locations are runs of consecutive photos from the overlap guide with the same location type.
+  Consecutive imported photos (no placement) of the same type also form one location, but their
+  overlap is unknown, so the location is qualified (`overlap-unreconciled`). Facings inside the estimated overlap of neighbouring photos
   share a `physicalPositionId` when both sides agree on the count. Otherwise they stay null, with
   an `overlap-unreconciled` warning.
 - Photos whose replies were unreadable are `usable: false` (`unusable-image` warning,

@@ -153,6 +153,8 @@ export const warningCodeSchema = z.enum([
   'label-unreadable',
   /** Products recognised by name that aren't in the catalogue (counted as unknown). */
   'not-in-catalogue',
+  /** Reported facings dropped because no single product could have that shape. */
+  'facings-discarded',
 ]);
 export type WarningCode = z.infer<typeof warningCodeSchema>;
 

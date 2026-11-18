@@ -420,6 +420,8 @@ export const en = {
     'low-coverage': 'Few photos: results describe only the captured area.',
     'unusable-image': 'Some photos could not be analysed.',
     'classification-uncertain': 'Shelf/cooler classification is uncertain for some photos.',
+    'facings-discarded':
+      'Some reported products had a shape no single product could have (e.g. a shelf edge) and were left out.',
     'not-in-catalogue': 'Recognised but not in the product catalogue yet (counted as unknown):',
     'label-unreadable': 'Some price labels were unreadable.',
   } satisfies Record<WarningCode, string>,

@@ -162,7 +162,7 @@ describe('mapping to the contract', () => {
       },
       downgraded: true,
     });
-    // An unknown product of a known brand keeps the brand but is flagged.
+    // An unknown product of a known brand keeps the brand (brand-level match).
     expect(
       resolveMatch(catalogue, {
         status: 'candidate',
@@ -171,7 +171,10 @@ describe('mapping to the contract', () => {
         category: null,
         score: null,
       }),
-    ).toMatchObject({ match: { status: 'candidate', brandId: brand.id }, downgraded: true });
+    ).toMatchObject({
+      match: { status: 'candidate', brandId: brand.id, productId: null },
+      downgraded: false,
+    });
   });
 
   it('builds a valid response with øre prices, unusable photos and warnings', () => {
@@ -485,8 +488,13 @@ describe('real agent turn shape', () => {
           result: {
             ...empty,
             facings: [
-              facing(0.1, { brandId: null, productId: null, name: 'Red Bull 25 cl', count: 4 }),
-              facing(0.5, { brandId: null, productId: null, name: 'Monster Energy', count: 2 }),
+              facing(0.1, {
+                brandId: null,
+                productId: null,
+                name: 'Fever-Tree Tonic 20 cl',
+                count: 4,
+              }),
+              facing(0.5, { brandId: null, productId: null, name: 'Herrljunga Cider', count: 2 }),
               facing(0.8),
             ],
           },
@@ -501,7 +509,8 @@ describe('real agent turn shape', () => {
     expect(response.warnings).toEqual([
       {
         code: 'not-in-catalogue',
-        message: 'Recognised but not in the catalogue: Red Bull 25 cl ×4, Monster Energy ×2',
+        message:
+          'Recognised but not in the catalogue: Fever-Tree Tonic 20 cl ×4, Herrljunga Cider ×2',
         imageIds: ['cap-1'],
       },
     ]);
@@ -519,6 +528,113 @@ describe('real agent turn shape', () => {
       score: 0.9,
     });
     expect(match).toMatchObject({ status: 'matched', brandId: harboe.id, category: 'soft-drinks' });
+  });
+});
+
+describe('interpretation', () => {
+  const at = '2026-11-18T10:00:00.000Z';
+  const one = (result: PhotoResult, placement: Parameters<typeof request>[0][number] = null) =>
+    buildResponse({
+      request: request([placement]),
+      photos: [{ imageId: 'cap-1', result }],
+      catalogue,
+      analysedAt: at,
+      model: null,
+    });
+
+  it('places named products the agent gave no ids for', () => {
+    const named = (name: string, status: 'matched' | 'unknown' = 'matched') =>
+      facing(0.3, { brandId: null, productId: null, category: null, name, status });
+    const r = one({
+      ...empty,
+      facings: [
+        named('Red Bull Energy Drink 25 cl'),
+        named('Pepsi Max 33cl'),
+        named('Faxe Kondi Booster'),
+        named('Monster'),
+        named('Faxe Kondi', 'unknown'),
+      ],
+    });
+    expect(r.facings.map((f) => [f.match.status, f.match.brandId, f.match.productId])).toEqual([
+      ['matched', 'red-bull', 'red-bull-250'],
+      ['matched', 'pepsi', 'pepsi-max-330'],
+      ['matched', 'faxe-kondi-booster', null],
+      ['matched', 'monster', null],
+      // The agent wasn't sure: a placeable name only becomes a candidate for review.
+      ['candidate', 'faxe-kondi', null],
+    ]);
+    expect(r.warnings).toEqual([]);
+  });
+
+  it('links a price label to a product by brand, pack and wording', () => {
+    const label = (rawText: string, volumeMl: number | null) => ({
+      status: 'resolved' as const,
+      unresolvedReason: null,
+      rawText,
+      brandId: null,
+      productId: null,
+      priceType: 'regular' as const,
+      priceDkk: 10,
+      deposit: { shown: false, dkk: null, included: null },
+      pack: { units: null, volumeMl },
+      multibuy: null,
+      conditionText: null,
+      box: null,
+    });
+    const r = one({
+      ...empty,
+      priceLabels: [
+        label('PEPSI MAX 33 CL DÅSE', null),
+        label('FAXE KONDI 1,5 L', null),
+        label('FAXE KONDI', 330),
+        label('FAXE KONDI FREE 33 CL', null),
+        label('FAXE KONDI', null),
+      ],
+    });
+    expect(r.priceLabels.map((p) => [p.match.status, p.match.brandId, p.match.productId])).toEqual([
+      ['matched', 'pepsi', 'pepsi-max-330'],
+      ['matched', 'faxe-kondi', 'faxe-kondi-1500'],
+      // Plain wording picks the plain variant; "FREE" picks Free.
+      ['matched', 'faxe-kondi', 'faxe-kondi-330'],
+      ['matched', 'faxe-kondi', 'faxe-kondi-free-330'],
+      // No pack size: several products possible, so brand level only.
+      ['candidate', 'faxe-kondi', null],
+    ]);
+  });
+
+  it('leaves out boxes no single product could fill', () => {
+    const r = one({
+      ...empty,
+      facings: [
+        facing(0.1, { box: [0.08, 0, 0.88, 0.05] }), // shelf strip
+        facing(0.1, { box: [0.1, 0.2, 0.6, 0.3], count: 6 }), // six cans in a row: fine
+        facing(0.1, { box: [0.1, 0.2, 0.08, 0.3] }),
+      ],
+    });
+    expect(r.facings).toHaveLength(7);
+    expect(r.warnings.map((w) => w.code)).toEqual(['facings-discarded']);
+    expect(analysisResponseSchema.safeParse(r).success).toBe(true);
+  });
+
+  it('treats consecutive imports of one type as one location with unknown overlap', () => {
+    const r = buildResponse({
+      request: request([null, null, null]),
+      photos: [
+        { imageId: 'cap-1', result: { ...empty, locationType: 'cooler', facings: [facing(0.8)] } },
+        { imageId: 'cap-2', result: { ...empty, locationType: 'cooler', facings: [facing(0.1)] } },
+        { imageId: 'cap-3', result: { ...empty, locationType: 'shelf', facings: [facing(0.1)] } },
+      ],
+      catalogue,
+      analysedAt: at,
+      model: null,
+    });
+    expect(r.locations.map((l) => [l.label, l.imageIds.length])).toEqual([
+      ['Cooler 1', 2],
+      ['Shelf 1', 1],
+    ]);
+    const reconciled = reconcileFacings(r.facings, r.locations);
+    expect(reconciled.unreconciledLocationIds).toEqual([r.locations[0].locationId]);
+    expect(r.warnings.map((w) => w.code)).toEqual(['overlap-unreconciled']);
   });
 });
 

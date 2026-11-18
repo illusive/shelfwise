@@ -12,6 +12,7 @@ import {
   type Region,
 } from '@/contracts/analysis';
 import type { CatalogueIndex } from '@/domain/catalogue';
+import { createNameMatcher, type NameMatcher } from '@/domain/catalogueMatch';
 
 export const COPILOT_STUDIO_PROVIDER_ID = 'copilot-studio';
 export const COPILOT_STUDIO_METHOD_VERSION = 'copilot-studio-photo-v1';
@@ -45,22 +46,41 @@ export function splitRegion(region: Region | null, count: number): (Region | nul
   return Array.from({ length: count }, (_, i) => ({ ...region, x: region.x + i * width, width }));
 }
 
+export interface MatchHints {
+  /** Name the agent read on the pack or label (used when its ids are missing or invalid). */
+  name?: string | null;
+  pack?: { volumeMl?: number | null; units?: number | null };
+}
+
 /**
- * Keeps only ids that exist in our catalogue. A "matched" claim without a known product or
- * brand becomes "unknown" (never silently dropped, never trusted).
+ * Keeps only ids that exist in our catalogue. When ids are missing or invalid, the agent's
+ * name for the item is matched against the catalogue (brand on whole words; product only if
+ * pack and wording leave one candidate). A claim nothing can be resolved for becomes "unknown"
+ * (never silently dropped, never trusted); `downgraded` flags it for the not-in-catalogue list.
  */
 export function resolveMatch(
   catalogue: CatalogueIndex,
   claim: Pick<PhotoFacingGroup, 'status' | 'brandId' | 'productId' | 'category' | 'score'>,
+  hints: MatchHints = {},
+  matcher: NameMatcher = createNameMatcher(catalogue),
 ): { match: ProductMatch; downgraded: boolean } {
-  const product = claim.productId ? catalogue.productById.get(claim.productId) : undefined;
-  const brand = product
+  let product = claim.productId ? catalogue.productById.get(claim.productId) : undefined;
+  let brand = product
     ? catalogue.brandById.get(product.brandId)
     : claim.brandId
       ? catalogue.brandById.get(claim.brandId)
       : undefined;
+  const name = hints.name?.trim() || null;
+  if (!brand && name) {
+    const id = matcher.brandFor(name);
+    brand = id ? catalogue.brandById.get(id) : undefined;
+  }
+  if (!product && brand && name) {
+    const id = matcher.productFor(brand.id, name, hints.pack);
+    product = id ? catalogue.productById.get(id) : undefined;
+  }
   const claimed = claim.status !== 'unknown';
-  if (!claimed || (!product && !brand)) {
+  if (!product && !brand) {
     return {
       match: {
         status: 'unknown',
@@ -74,15 +94,32 @@ export function resolveMatch(
   }
   return {
     match: {
-      status: claim.status,
+      // A name we can place, from an agent that wasn't sure, still needs the rep's confirmation.
+      status: claimed ? claim.status : 'candidate',
       productId: product?.id ?? null,
       brandId: brand?.id ?? null,
       // The agent sees the item; a brand's category is only a default (e.g. Harboe makes beer and cola).
       category: product?.category ?? claim.category ?? brand?.category ?? null,
       providerScore: claim.score,
     },
-    downgraded: Boolean(claim.productId && !product),
+    downgraded: false,
   };
+}
+
+/**
+ * A "facing" box no single product could fill: one unit more than three times wider than tall
+ * (in pixels), or wider than half the photo. Typically a shelf edge or price strip.
+ */
+export function implausibleFacing(
+  region: Region | null,
+  count: number,
+  image: { width: number; height: number },
+): boolean {
+  if (!region) return false;
+  const unitWidth = region.width / Math.max(1, count);
+  const unitWidthPx = unitWidth * image.width;
+  const heightPx = region.height * image.height;
+  return unitWidth > 0.5 || unitWidthPx > 3 * heightPx;
 }
 
 const centreX = (f: FacingObservation) => (f.region ? f.region.x + f.region.width / 2 : null);
@@ -104,6 +141,8 @@ export function buildResponse(input: {
   model: string | null;
 }): AnalysisResponse {
   const { request, catalogue } = input;
+  const matcher = createNameMatcher(catalogue);
+  const discarded = new Map<string, number>();
   const byId = new Map(input.photos.map((p) => [p.imageId, p.result]));
   const images = [...request.images].sort((a, b) => a.sequence - b.sequence);
   const warnings: AnalysisWarning[] = [];
@@ -120,6 +159,7 @@ export function buildResponse(input: {
   const displays: AnalysisResponse['displays'] = [];
   const counters: Record<LocationType, number> = { shelf: 0, cooler: 0, display: 0 };
   let previous: { type: LocationType; run: number; position: number } | null = null;
+  let previousUnplaced: LocationType | null = null;
   let current: AnalysisLocation | null = null;
   let previousFacings: FacingObservation[] = [];
 
@@ -135,6 +175,7 @@ export function buildResponse(input: {
       });
       unusable.push(image.imageId);
       previous = null;
+      previousUnplaced = null;
       current = null;
       previousFacings = [];
       continue;
@@ -142,13 +183,16 @@ export function buildResponse(input: {
 
     const type = result.locationType;
     const placement = image.placement ?? null;
-    const continues =
+    const continuesRun =
       previous !== null &&
-      current !== null &&
       placement !== null &&
       previous.type === type &&
       previous.run === placement.run &&
       previous.position + 1 === placement.position;
+    // Imported photos carry no placement: consecutive imports of the same type are treated as one
+    // location whose overlap is unknown, so possible duplicates qualify the result.
+    const continuesImport = placement === null && previousUnplaced === type;
+    const continues = current !== null && (continuesRun || continuesImport);
     if (!continues || !current) {
       counters[type] += 1;
       const label = `${type[0].toUpperCase()}${type.slice(1)} ${counters[type]}`;
@@ -169,7 +213,11 @@ export function buildResponse(input: {
     // Facings: each group expands into `count` observations.
     const imageFacings: FacingObservation[] = [];
     result.facings.forEach((group, g) => {
-      const { match, downgraded } = resolveMatch(catalogue, group);
+      if (implausibleFacing(toRegion(group.box), group.count, image)) {
+        discarded.set(image.imageId, (discarded.get(image.imageId) ?? 0) + group.count);
+        return;
+      }
+      const { match, downgraded } = resolveMatch(catalogue, group, { name: group.name }, matcher);
       if (downgraded) {
         outside.add(image.imageId);
         const name = group.name?.trim() || null;
@@ -189,7 +237,7 @@ export function buildResponse(input: {
     });
 
     if (continues) {
-      pairOverlap(previousFacings, imageFacings, placement!.overlap, () =>
+      pairOverlap(previousFacings, imageFacings, placement?.overlap ?? null, () =>
         unreconciled.add(image.imageId),
       );
     }
@@ -197,7 +245,7 @@ export function buildResponse(input: {
     previousFacings = imageFacings;
 
     result.priceLabels.forEach((label, i) => {
-      const mapped = mapPriceLabel(catalogue, label);
+      const mapped = mapPriceLabel(catalogue, label, matcher);
       if (mapped.downgraded) outside.add(image.imageId);
       priceLabels.push({
         labelId: `${image.imageId}-l${i + 1}`,
@@ -233,6 +281,7 @@ export function buildResponse(input: {
 
     // Photos without placement (imports) never continue a location.
     previous = placement ? { type, run: placement.run, position: placement.position } : null;
+    previousUnplaced = placement ? null : type;
   }
 
   if (unusable.length)
@@ -241,6 +290,14 @@ export function buildResponse(input: {
       message: `${unusable.length} photo(s) could not be analysed.`,
       imageIds: unusable,
     });
+  if (discarded.size) {
+    const total = [...discarded.values()].reduce((a, b) => a + b, 0);
+    warnings.push({
+      code: 'facings-discarded',
+      message: `${total} reported facing(s) had a shape no single product could have (e.g. a shelf edge) and were left out.`,
+      imageIds: [...discarded.keys()],
+    });
+  }
   if (outside.size) {
     const names = [...outsideNames]
       .sort((a, b) => b[1] - a[1])
@@ -329,14 +386,19 @@ export function pairOverlap(
   if (!reconciled || unboxed.length) onUnreconciled();
 }
 
-function mapPriceLabel(catalogue: CatalogueIndex, label: PhotoPriceLabel) {
-  const { match, downgraded } = resolveMatch(catalogue, {
-    status: label.productId || label.brandId ? 'candidate' : 'unknown',
-    productId: label.productId,
-    brandId: label.brandId,
-    category: null,
-    score: null,
-  });
+function mapPriceLabel(catalogue: CatalogueIndex, label: PhotoPriceLabel, matcher: NameMatcher) {
+  const { match, downgraded } = resolveMatch(
+    catalogue,
+    {
+      status: label.productId || label.brandId ? 'candidate' : 'unknown',
+      productId: label.productId,
+      brandId: label.brandId,
+      category: null,
+      score: null,
+    },
+    { name: label.rawText, pack: label.pack },
+    matcher,
+  );
   const resolved = label.status === 'resolved' && label.priceDkk !== null;
   const out: Omit<
     PriceLabelObservation,
