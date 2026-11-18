@@ -132,7 +132,8 @@ when nothing holds it (`useHoldUpdates`: camera open, export running) and the pa
   It has a 120 s timeout per photo and retries throttling, timeouts and unreadable replies
   twice. It reports per-photo progress to the job.
 - `sdkTransport.ts` uses the Microsoft 365 Agents SDK (`CopilotStudioClient`, direct-connect
-  URL). It sends the photo, downscaled to a 2,560 px long edge, as a `data:` URL attachment,
+  URL). Each conversation is started with the start event, because browsers can't read the
+  conversation-ID header, which isn't CORS-exposed; the start activities carry the ID. It sends the photo, downscaled to a 2,560 px long edge, as a `data:` URL attachment,
   and maps HTTP 401/403/429/5xx to job failure codes.
 - `contracts/agentPhoto.ts` is the lenient per-photo reply schema (`shelfwise-photo-v1`) and
   JSON extraction.

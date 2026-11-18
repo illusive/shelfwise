@@ -92,8 +92,16 @@ export function createSdkTransport(options: {
         ]);
         const client = new sdk.CopilotStudioClient(settings, token);
         signal?.throwIfAborted();
-        // No greeting: the photo is the first and only turn.
-        const start = await client.startConversationWithResponse(false);
+        // Browsers can't read the conversation-id response header (not CORS-exposed), so the
+        // conversation is started with the start event: its activities carry the id. Any
+        // greeting is ignored; only the reply to the photo is read.
+        const start = await client.startConversationWithResponse(true);
+        if (!start.conversationId) {
+          throw new ProviderError(
+            'provider-unavailable',
+            'The analysis agent did not start a conversation.',
+          );
+        }
         const photo = await prepare(image);
         signal?.throwIfAborted();
         const activity = Activity.fromObject({

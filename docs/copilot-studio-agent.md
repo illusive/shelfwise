@@ -39,8 +39,10 @@ with a delegated token. **No secret is used.** This may need an IT or applicatio
    answer from a photo without a matching knowledge source.
 5. **Knowledge:** upload [`catalogue.csv`](copilot-studio/catalogue.csv). It holds our brand
    and product IDs. Any ID that isn't in it is treated as "unknown".
-6. **Behaviour:** see section 3. Turn off or ignore the greeting. Shelfwise starts a conversation
-   without the greeting and sends the photo as the first message.
+6. **Behaviour:** see section 3. Shelfwise starts each conversation with the normal start
+   event, which the browser needs in order to learn the conversation ID. It ignores any greeting
+   and then sends the photo. Keep the Conversation Start topic short, and don't make it wait for
+   an answer or require a choice.
 7. **Publish** after every change; the app talks to the published agent.
 
 ## 3. What the agent should do
