@@ -224,6 +224,7 @@ export const en = {
     } satisfies Record<JobStatus, string>,
     preparing: (done: number, total: number) => `${done} of ${total} photos ready`,
     analysed: (done: number, total: number) => `${done} of ${total} photos analysed`,
+    details: 'Technical details',
     analysingHint: 'You can leave this screen — the visit is saved and will finish here.',
     failedHint: 'Your photos are safe on this device.',
     retry: 'Retry analysis',

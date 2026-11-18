@@ -95,6 +95,8 @@ test('unreadable agent replies fail the job with a retry', async ({ page }) => {
     timeout: 20_000,
   });
   await expect(page.getByRole('button', { name: 'Retry analysis' })).toBeVisible();
+  await page.getByText('Technical details').click();
+  await expect(page.getByTestId('failure-details')).toContainText('Sorry, I can only chat.');
 });
 
 test('a signed-out tester is told to sign in, and photos stay safe', async ({ page }) => {

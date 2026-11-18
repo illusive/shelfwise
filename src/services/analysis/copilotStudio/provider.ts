@@ -10,6 +10,8 @@ export interface AgentReply {
   text: string | null;
   /** Structured payload, if the agent sent one (event/message `value`). */
   value: unknown;
+  /** Every agent message in the turn (oldest first), when the agent split its answer. */
+  all?: { text: string | null; value: unknown }[];
 }
 
 /** Sends one photo + instruction to the agent in a fresh conversation and returns its reply. */
@@ -35,15 +37,88 @@ export interface CopilotStudioProviderOptions {
   now?: () => Date;
 }
 
-/** Short, self-contained instruction sent with every photo (the agent prompt holds the rest). */
-export function photoInstruction(request: AnalysisRequest, imageId: string): string {
+/**
+ * Self-contained instruction sent with every photo: format, rules and catalogue ids, so the
+ * agent can answer correctly even if its own prompt doesn't describe the format.
+ */
+export function photoInstruction(
+  request: AnalysisRequest,
+  imageId: string,
+  catalogue?: CatalogueIndex,
+): string {
   const image = request.images.find((i) => i.imageId === imageId);
+  const ids = catalogue
+    ? [
+        `brandId values: ${catalogue.brands.map((b) => b.id).join(', ')}`,
+        `productId values: ${catalogue.products.map((p) => p.id).join(', ')}`,
+      ]
+    : [];
   return [
-    `${PHOTO_RESULT_FORMAT}: analyse this one store photo of beverages in Denmark.`,
-    'Reply with ONLY the JSON object described in your instructions, no other text.',
-    `Catalogue ${request.catalogueVersion}; use its brandId/productId values, or null.`,
-    `Store chain: ${request.store.chain}. Photo ${image?.sequence ?? '?'} of ${request.images.length}.`,
+    `${PHOTO_RESULT_FORMAT}: analyse the attached photo of beverages in a Danish store (${request.store.chain}; photo ${image?.sequence ?? '?'} of ${request.images.length}).`,
+    'Reply with ONLY one JSON object, no other text, in exactly this shape:',
+    PHOTO_FORMAT_SKELETON,
+    'Rules: list every front-row beverage left to right; group identical neighbours with "count". box = [x, y, width, height] as fractions 0-1 of the photo from the top-left, or null. Use only the ids below, or null if unsure; status "candidate" if unsure, "unknown" if you cannot tell. Prices in DKK as shown; pant separately in deposit; never guess an unreadable price (status "unresolved", priceDkk null). If the photo is not a beverage shelf/cooler/display, set usable false with issues.',
+    `locationType: shelf | cooler | display. issues: blurry, glare, reflection, too-dark, obstructed, low-resolution, not-a-shelf. category: beer, soft-drinks, water, energy-functional, rtd-cider, other.`,
+    ...ids,
   ].join('\n');
+}
+
+/** Compact example of the reply shape (full spec: docs/copilot-studio-agent.md). */
+export const PHOTO_FORMAT_SKELETON = JSON.stringify({
+  format: PHOTO_RESULT_FORMAT,
+  usable: true,
+  locationType: 'cooler',
+  issues: [],
+  facings: [
+    {
+      status: 'matched',
+      brandId: 'faxe-kondi',
+      productId: 'faxe-kondi-330',
+      category: 'soft-drinks',
+      score: 0.8,
+      count: 3,
+      box: [0.05, 0.1, 0.3, 0.2],
+    },
+  ],
+  priceLabels: [
+    {
+      status: 'resolved',
+      unresolvedReason: null,
+      rawText: '2 STK 30,-',
+      brandId: 'faxe-kondi',
+      productId: 'faxe-kondi-330',
+      priceType: 'promotion',
+      priceDkk: 17.95,
+      deposit: { shown: true, dkk: 1.5, included: false },
+      pack: { units: 1, volumeMl: 330 },
+      multibuy: { quantity: 2, totalDkk: 30 },
+      conditionText: null,
+      box: [0.08, 0.31, 0.1, 0.04],
+    },
+  ],
+  promotions: [],
+  displays: [],
+});
+
+/** Parses a reply, trying the newest agent message first, then all text together. */
+export function parseAgentReply(reply: AgentReply) {
+  const candidates = [reply, ...[...(reply.all ?? [])].reverse()];
+  for (const c of candidates) {
+    const result = parsePhotoReply(c);
+    if (result) return result;
+  }
+  const joined = (reply.all ?? []).map((a) => a.text ?? '').join('\n');
+  return joined ? parsePhotoReply({ text: joined }) : null;
+}
+
+/** Short excerpt of what the agent said, for diagnostics (no photo data). */
+export function replyExcerpt(reply: AgentReply | null, max = 240): string {
+  if (!reply) return '(no reply)';
+  const text = (reply.all?.length ? reply.all.map((a) => a.text ?? '').join(' | ') : reply.text)
+    ?.replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return reply.value ? JSON.stringify(reply.value).slice(0, max) : '(empty reply)';
+  return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
 const wait = (ms: number, signal?: AbortSignal) =>
@@ -100,7 +175,8 @@ export function createCopilotStudioProvider(
     request: AnalysisRequest,
     image: { imageId: string; blob: Blob },
     signal?: AbortSignal,
-  ): Promise<PhotoOutcome> {
+  ): Promise<PhotoOutcome & { excerpt: string | null }> {
+    let excerpt: string | null = null;
     for (let attempt = 0; ; attempt++) {
       try {
         const reply = await withTimeout(
@@ -109,15 +185,19 @@ export function createCopilotStudioProvider(
               {
                 image: image.blob,
                 imageId: image.imageId,
-                instruction: photoInstruction(request, image.imageId),
+                instruction: photoInstruction(request, image.imageId, catalogue),
               },
               s,
             ),
           timeoutMs,
           signal,
         );
-        const result = parsePhotoReply(reply);
-        if (result || attempt >= retries) return { imageId: image.imageId, result };
+        const result = parseAgentReply(reply);
+        if (!result) {
+          excerpt = replyExcerpt(reply);
+          console.warn(`Copilot Studio: unreadable reply for ${image.imageId}: ${excerpt}`);
+        }
+        if (result || attempt >= retries) return { imageId: image.imageId, result, excerpt };
       } catch (error) {
         const retryable =
           error instanceof ProviderError &&
@@ -132,7 +212,7 @@ export function createCopilotStudioProvider(
     id: COPILOT_STUDIO_PROVIDER_ID,
     source: 'live',
     async analyse({ request, images, onProgress }, signal) {
-      const outcomes: PhotoOutcome[] = [];
+      const outcomes: (PhotoOutcome & { excerpt: string | null })[] = [];
       let next = 0;
       let done = 0;
       const worker = async () => {
@@ -147,9 +227,10 @@ export function createCopilotStudioProvider(
       await Promise.all(Array.from({ length: Math.min(concurrency, images.length) }, worker));
       // Unusable photos are a valid answer; replies we couldn't read at all are not.
       if (!outcomes.some((o) => o.result)) {
+        const said = outcomes.find((o) => o.excerpt)?.excerpt ?? '(no reply)';
         throw new ProviderError(
           'invalid-response',
-          'The analysis agent did not return a usable result for any photo.',
+          `The analysis agent did not reply in the shelfwise-photo-v1 JSON format. It replied: "${said}"`,
         );
       }
       return buildResponse({

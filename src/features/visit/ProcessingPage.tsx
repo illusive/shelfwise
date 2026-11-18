@@ -180,6 +180,12 @@ export function ProcessingPage({ visitId }: { visitId: string }) {
       {failed && (
         <Notice tone="danger" title={t.processing.status.failed}>
           {t.failures[job.failure?.code ?? ''] ?? job.failure?.message} {t.processing.failedHint}
+          {job.failure?.message && t.failures[job.failure.code] && (
+            <details className={styles.details}>
+              <summary>{t.processing.details}</summary>
+              <code data-testid="failure-details">{job.failure.message}</code>
+            </details>
+          )}
         </Notice>
       )}
     </Screen>

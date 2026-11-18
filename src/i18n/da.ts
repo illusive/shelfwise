@@ -217,6 +217,7 @@ export const da: Strings = {
     },
     preparing: (done: number, total: number) => `${done} af ${total} billeder klar`,
     analysed: (done: number, total: number) => `${done} af ${total} billeder analyseret`,
+    details: 'Tekniske detaljer',
     analysingHint: 'Du kan godt forlade skærmen — besøget er gemt og bliver færdigt her.',
     failedHint: 'Dine billeder er i sikkerhed på denne enhed.',
     retry: 'Prøv analysen igen',

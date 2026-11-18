@@ -413,6 +413,47 @@ describe('agent connection', () => {
   });
 });
 
+describe('instruction and diagnostics', () => {
+  it('sends the full format and catalogue ids with every photo', async () => {
+    const { photoInstruction } = await import('./provider');
+    const text = photoInstruction(request([null]), 'cap-1', catalogue);
+    expect(text).toContain('shelfwise-photo-v1');
+    expect(text).toContain('"facings"');
+    expect(text).toContain(product.id);
+    expect(text).toContain(brand.id);
+    expect(text.length).toBeLessThan(6000);
+  });
+
+  it('finds the JSON in any agent message and quotes unreadable replies', async () => {
+    const { parseAgentReply, replyExcerpt } = await import('./provider');
+    const split = {
+      text: 'Done!',
+      value: null,
+      all: [
+        { text: '{"usable":true,"locationType":"shelf"}', value: null },
+        { text: 'Done!', value: null },
+      ],
+    };
+    expect(parseAgentReply(split)?.locationType).toBe('shelf');
+    expect(replyExcerpt({ text: 'Hello!\n How can I help?', value: null })).toBe(
+      'Hello! How can I help?',
+    );
+  });
+
+  it('puts what the agent said in the failure message', async () => {
+    const t: AgentTransport = {
+      model: null,
+      analysePhoto: async () => ({ text: 'I can only answer questions about HR.', value: null }),
+    };
+    await expect(
+      createCopilotStudioProvider({ transport: t, catalogue, retryDelayMs: 1 }).analyse({
+        request: request([null]),
+        images: [{ imageId: 'cap-1', blob: new Blob(['x']) }],
+      }),
+    ).rejects.toThrow('It replied: "I can only answer questions about HR."');
+  });
+});
+
 describe('SDK transport helpers', () => {
   it('classifies HTTP failures from the SDK', () => {
     const err = (status: string) => new Error(`Copilot Studio request failed: ${status}`);
@@ -440,7 +481,7 @@ describe('SDK transport helpers', () => {
         { type: 'message', text: '{"usable":true}', from: { role: 'bot' } },
         { type: 'event', from: { role: 'bot' } },
       ]),
-    ).toEqual({ text: '{"usable":true}', value: null });
+    ).toMatchObject({ text: '{"usable":true}', value: null });
     expect(pickReply([{ type: 'message', text: 'me', from: { role: 'user' } }])).toEqual({
       text: null,
       value: null,

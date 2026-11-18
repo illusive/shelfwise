@@ -33,13 +33,11 @@ export function pickReply(
   const replies = activities.filter(
     (a) => (a.type === 'message' || a.type === 'event') && a.from?.role !== 'user',
   );
-  for (let i = replies.length - 1; i >= 0; i--) {
-    const { text, value } = replies[i];
-    if ((text && text.trim()) || (value && typeof value === 'object')) {
-      return { text: text ?? null, value: value ?? null };
-    }
-  }
-  return { text: null, value: null };
+  const all = replies
+    .filter((r) => (r.text && r.text.trim()) || (r.value && typeof r.value === 'object'))
+    .map((r) => ({ text: r.text ?? null, value: r.value ?? null }));
+  const last = all.at(-1);
+  return last ? { ...last, all } : { text: null, value: null };
 }
 
 function toDataUrl(blob: Blob): Promise<string> {
