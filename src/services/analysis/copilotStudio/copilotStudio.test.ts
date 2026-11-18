@@ -454,6 +454,43 @@ describe('instruction and diagnostics', () => {
   });
 });
 
+describe('real agent turn shape', () => {
+  // Copilot Studio streams typing/streaminfo/thought activities, then the final message, then a
+  // `turn.complete` event whose value is only a turn id. That event must not be the answer.
+  const turn = [
+    { type: 'typing', text: '{"format":"shelfwise-photo-v1","usa', from: { role: 'bot' } },
+    { type: 'message', text: JSON.stringify(example), from: { role: 'bot' } },
+    { type: 'event', value: { turnId: 'abc' }, from: { role: 'bot' } },
+  ];
+
+  it('reads the final message, not the turn.complete event', async () => {
+    const { parseAgentReply } = await import('./provider');
+    const reply = pickReply(turn);
+    expect(reply.text).toBe(JSON.stringify(example));
+    expect(parseAgentReply(reply)?.locationType).toBe('cooler');
+  });
+
+  it('does not accept unrelated JSON as an empty result', () => {
+    expect(parsePhotoReply({ value: { turnId: 'abc' } })).toBeNull();
+    expect(parsePhotoReply({ text: '{"answer":"Here is the analysis"}' })).toBeNull();
+    expect(parsePhotoReply({ text: '{"facings":[]}' })).not.toBeNull();
+  });
+
+  it('keeps the agent’s category when only the brand is known', () => {
+    const harboe = catalogue.brands.find(
+      (b) => b.category === 'beer' && b.relation === 'competitor',
+    )!;
+    const { match } = resolveMatch(catalogue, {
+      status: 'matched',
+      brandId: harboe.id,
+      productId: null,
+      category: 'soft-drinks',
+      score: 0.9,
+    });
+    expect(match).toMatchObject({ status: 'matched', brandId: harboe.id, category: 'soft-drinks' });
+  });
+});
+
 describe('SDK transport helpers', () => {
   it('classifies HTTP failures from the SDK', () => {
     const err = (status: string) => new Error(`Copilot Studio request failed: ${status}`);

@@ -66,8 +66,10 @@ Suggested prompt (adjust freely):
 >   Issues: blurry, glare, reflection, too-dark, obstructed, low-resolution, not-a-shelf.
 > - `facings`: every front-row product visible, left to right. Group adjacent identical
 >   facings into one entry with `count` and a `box` spanning them. Use `brandId`/`productId`
->   from the catalogue (knowledge file) only. If you are not sure, use `status: "candidate"`;
->   if you can't tell, use `status: "unknown"` with null IDs. Never invent IDs. Count every
+>   from the catalogue (knowledge file) only. Use `status: "matched"` when you can read the brand,
+>   with `brandId` set even if the exact product isn't listed (`productId: null`). Use
+>   `"candidate"` when you only think it's that brand, and `"unknown"` with null IDs if you can't
+>   tell. Never invent IDs. Count every
 >   beverage, including competitors and unknowns.
 > - `priceLabels`: every shelf label. Price in DKK as shown (`priceDkk`); pant separately in
 >   `deposit`; multibuy as `{quantity, totalDkk}`; `priceType` regular/promotion/member. If you
@@ -95,6 +97,8 @@ Shelfwise's tests check that this example is accepted.
 | `promotions[].mechanic`                     | `multibuy` `price-cut` `member-price` `bundle` `other`                                                 |
 
 Shelfwise is lenient. An invalid field becomes unknown or empty rather than failing the photo.
+Shelfwise also sends the full format, rules and catalogue IDs with every photo, so the agent's
+own prompt only needs to tell it to follow that message. Answers take about 45–50 s per photo.
 An unreadable reply is retried twice, then that photo is reported as "could not be analysed".
 
 ## 4. Facts we need from you

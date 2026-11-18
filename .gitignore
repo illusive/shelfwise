@@ -16,3 +16,4 @@ certs/*.pem
 
 # Copied from node_modules at build time (vite.config.ts)
 public/mediapipe/
+test_images/

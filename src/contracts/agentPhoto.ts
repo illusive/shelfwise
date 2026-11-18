@@ -66,6 +66,7 @@ const priceLabelSchema = z.object({
 const promotionSchema = z.object({
   mechanic: z.enum(['multibuy', 'price-cut', 'member-price', 'bundle', 'other']).catch('other'),
   headline: z.string().trim().catch(''),
+  rawText: textOrNull.optional(),
   conditionText: textOrNull,
   productIds: idList,
   brandIds: idList,
@@ -136,10 +137,26 @@ export function extractJson(reply: { text?: string | null; value?: unknown }): u
   return null;
 }
 
-/** Parses an agent reply into a photo result; null if it holds no usable JSON object. */
+/**
+ * True for an object that is recognisably a photo result. Lenient field parsing must not turn
+ * any JSON (e.g. `{"turnId": …}`) into an empty "usable" result.
+ */
+export function looksLikePhotoResult(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const o = value as Record<string, unknown>;
+  return (
+    o.format === PHOTO_RESULT_FORMAT ||
+    Array.isArray(o.facings) ||
+    'locationType' in o ||
+    (typeof o.usable === 'boolean' && Array.isArray(o.issues))
+  );
+}
+
+/** Parses an agent reply into a photo result; null if it holds no recognisable result. */
 export function parsePhotoReply(reply: { text?: string | null; value?: unknown }) {
-  const json = extractJson(reply);
-  if (!json || typeof json !== 'object' || Array.isArray(json)) return null;
+  const fromValue = looksLikePhotoResult(reply.value) ? reply.value : null;
+  const json = fromValue ?? extractJson({ text: reply.text });
+  if (!looksLikePhotoResult(json)) return null;
   const parsed = photoResultSchema.safeParse(json);
   return parsed.success ? parsed.data : null;
 }

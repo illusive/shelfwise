@@ -1,6 +1,7 @@
 import type { CopilotStudioConfig } from '@/app/config';
 import { ProviderError } from '../provider';
 import { connectionSettings } from './connection';
+import { looksLikePhotoResult } from '@/contracts/agentPhoto';
 import type { AgentReply, AgentTransport } from './provider';
 
 /** Long edge sent to the agent: vision models downscale anyway; this keeps uploads ~1 MB. */
@@ -30,8 +31,12 @@ export function classifyAgentError(error: unknown): unknown {
 export function pickReply(
   activities: { type?: string; text?: string; value?: unknown; from?: { role?: string } }[],
 ): AgentReply {
+  // Messages carry the answer; events only when their value is a payload (Copilot Studio also
+  // ends each turn with e.g. a `turn.complete` event whose value is just a turn id).
   const replies = activities.filter(
-    (a) => (a.type === 'message' || a.type === 'event') && a.from?.role !== 'user',
+    (a) =>
+      a.from?.role !== 'user' &&
+      (a.type === 'message' || (a.type === 'event' && looksLikePhotoResult(a.value))),
   );
   const all = replies
     .filter((r) => (r.text && r.text.trim()) || (r.value && typeof r.value === 'object'))

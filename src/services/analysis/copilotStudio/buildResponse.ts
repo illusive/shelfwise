@@ -77,7 +77,8 @@ export function resolveMatch(
       status: claim.status,
       productId: product?.id ?? null,
       brandId: brand?.id ?? null,
-      category: product?.category ?? brand?.category ?? claim.category,
+      // The agent sees the item; a brand's category is only a default (e.g. Harboe makes beer and cola).
+      category: product?.category ?? claim.category ?? brand?.category ?? null,
       providerScore: claim.score,
     },
     downgraded: Boolean(claim.productId && !product),
@@ -208,7 +209,7 @@ export function buildResponse(input: {
         imageId: image.imageId,
         region: toRegion(p.box),
         mechanic: p.mechanic,
-        headline: p.headline || p.conditionText || '—',
+        headline: p.headline || p.rawText || p.conditionText || '—',
         conditionText: p.conditionText,
         productIds: p.productIds.filter((id) => catalogue.productById.has(id)),
         brandIds: p.brandIds.filter((id) => catalogue.brandById.has(id)),

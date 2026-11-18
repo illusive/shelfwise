@@ -57,7 +57,7 @@ export function photoInstruction(
     `${PHOTO_RESULT_FORMAT}: analyse the attached photo of beverages in a Danish store (${request.store.chain}; photo ${image?.sequence ?? '?'} of ${request.images.length}).`,
     'Reply with ONLY one JSON object, no other text, in exactly this shape:',
     PHOTO_FORMAT_SKELETON,
-    'Rules: list every front-row beverage left to right; group identical neighbours with "count". box = [x, y, width, height] as fractions 0-1 of the photo from the top-left, or null. Use only the ids below, or null if unsure; status "candidate" if unsure, "unknown" if you cannot tell. Prices in DKK as shown; pant separately in deposit; never guess an unreadable price (status "unresolved", priceDkk null). If the photo is not a beverage shelf/cooler/display, set usable false with issues.',
+    'Rules: list every front-row beverage left to right; group identical neighbours with "count". box = [x, y, width, height] as fractions 0-1 of the photo from the top-left, or null. Use only the ids below, or null. status "matched" when you can read the brand (set brandId even if the exact product is not listed; productId null), "candidate" when you only think it is that brand, "unknown" if you cannot tell. Prices in DKK as shown; pant separately in deposit; never guess an unreadable price (status "unresolved", priceDkk null). If the photo is not a beverage shelf/cooler/display, set usable false with issues.',
     `locationType: shelf | cooler | display. issues: blurry, glare, reflection, too-dark, obstructed, low-resolution, not-a-shelf. category: beer, soft-drinks, water, energy-functional, rtd-cider, other.`,
     ...ids,
   ].join('\n');
